@@ -26,7 +26,7 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username, password=None):
+    def create_superuser(self, email, username, password=None, **kwargs):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -35,6 +35,7 @@ class MyUserManager(BaseUserManager):
             email,
             password=password,
             username=username,
+            **kwargs
         )
         user.is_admin = True
         user.save(using=self._db)
@@ -43,20 +44,20 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email",max_length=255,unique=True,)
-    username = models.CharField(max_length=255,)
-    phone = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
     password = models.CharField(max_length=255)
 
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
     objects = MyUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = ["username", "phone", "address"]
 
     def __str__(self):
         return self.email
