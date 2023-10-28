@@ -41,6 +41,8 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+def image_upload(instance, filename):
+    return '/'.join(['images', str(instance.name), filename])
 
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email",max_length=255,unique=True,)
@@ -48,6 +50,7 @@ class User(AbstractBaseUser):
     phone = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     password = models.CharField(max_length=255)
+    profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
 
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
@@ -78,8 +81,6 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
     
-def image_upload(instance, filename):
-    return '/'.join(['images', str(instance.name), filename])
 
 class Tenant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -87,7 +88,7 @@ class Tenant(models.Model):
     appartment_no = models.CharField(max_length=255)
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
     phone = models.CharField(max_length=255)
-    avatar = models.ImageField(upload_to=image_upload, null=True, blank=True)
+    profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
 
     def __str__(self):
         return self.name

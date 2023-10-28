@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
@@ -9,12 +9,14 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
+from django.utils.encoding import force_bytes, smart_str, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .Utils import Utils
 import jwt
 from django.conf import settings
 from django.template.loader import render_to_string
-from .serializers import UserSerializer, TenantSerializer, ProfileSerializer
 
+from .serializers import UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSerializer
 
 
 class UserRegisterView(APIView):
@@ -72,9 +74,30 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [FormParser, MultiPartParser]
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'user': request.user})
+        serializer.is_valid(raise_exception=True)
+        return Response({"Message": "Password Has been Changed"}, status=status.HTTP_200_OK)
+
+
+class SendPasswordResetEmailView(APIView):
+    def post(self, request):
+        serializer = SendPasswordResetEmailSerializer(data=request.data, context = {'request': request})
+        serializer.is_valid(raise_exception=True)
+        return Response("Password Reset Email Send Successfully", status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(APIView):
+    def post(self, request, uid, token):
+        serializer = ResetPasswordSerializer()
 
 
 class TenantView(viewsets.ModelViewSet):
