@@ -15,8 +15,9 @@ from .Utils import Utils
 import jwt
 from django.conf import settings
 from django.template.loader import render_to_string
-
+from django.contrib.auth import authenticate
 from .serializers import UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer
+from .token_utils import get_tokens_for_user
 
 
 class UserRegisterView(APIView):
@@ -75,8 +76,22 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(serializer.data)
-        return Response("Login Successful")
+        email = serializer.data.get('email')
+        password = serializer.data.get('password')
+
+        user = authenticate(email=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                if user.is_verified:
+                    token = get_tokens_for_user(user)
+                    return Response({'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"Message": "User is not verified"})
+            else:
+                return Response({"Message": "User is not active"})
+        else:
+            return Response({"Message":"Email and Password is not valid"})
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
