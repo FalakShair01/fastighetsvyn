@@ -44,17 +44,21 @@ class MyUserManager(BaseUserManager):
 def image_upload(instance, filename):
     return '/'.join(['images', str(instance.name), filename])
 
+def upload_to(instance, filename):
+    return '/'.join(['images', str(instance.username), filename])
+
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email",max_length=255,unique=True,)
     username = models.CharField(max_length=255)
     phone = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     password = models.CharField(max_length=255)
-    profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
+    profile = models.ImageField(upload_to=upload_to, null=True, blank=True)
 
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
     objects = MyUserManager()

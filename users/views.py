@@ -16,7 +16,7 @@ import jwt
 from django.conf import settings
 from django.template.loader import render_to_string
 
-from .serializers import UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSerializer
+from .serializers import UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer
 
 
 class UserRegisterView(APIView):
@@ -32,11 +32,12 @@ class UserRegisterView(APIView):
         current_site = get_current_site(request).domain
 
         relativeUrl = reverse('email-verify')
-        absUrl = "http://" + current_site + relativeUrl + "?token=" + str(token)
+        absUrl = "http://" + current_site + \
+            relativeUrl + "?token=" + str(token)
 
-        try: 
-            email_body = render_to_string('emails/verify_email.html', {'username': user.username, 'absUrl': absUrl})
-
+        try:
+            email_body = render_to_string(
+                'emails/verify_email.html', {'username': user.username, 'absUrl': absUrl})
 
             data = {
                 'body': email_body,
@@ -45,23 +46,23 @@ class UserRegisterView(APIView):
             }
 
             Utils.send_email(data)
-            return Response({"Message": "User Created Successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"Message": "Please check you Email for verification."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             user.delete()
             return Response({"Message": "Registration Fail Please try again later", "Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    
+
 
 class VerifyEmail(generics.GenericAPIView):
     def get(self, request):
         token = request.GET.get('token')
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['user_id'])
-            if not user.is_active:
-                user.is_active = True
+            if not user.is_verified:
+                user.is_verified = True
                 user.save()
-            return render(request,'emails/verification_success.html')
+            return render(request, 'emails/verification_success.html')
             # return Response({'Message': 'Email Successfully activated'}, status=status.HTTP_200_OK)
 
         except jwt.ExpiredSignatureError as identifier:
@@ -69,7 +70,15 @@ class VerifyEmail(generics.GenericAPIView):
         except jwt.exceptions.DecodeError as identifier:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
-    
+
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.data)
+        return Response("Login Successful")
+
+
 class ProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileSerializer
@@ -82,22 +91,28 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data, context={'user': request.user})
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         return Response({"Message": "Password Has been Changed"}, status=status.HTTP_200_OK)
 
 
 class SendPasswordResetEmailView(APIView):
     def post(self, request):
-        serializer = SendPasswordResetEmailSerializer(data=request.data, context = {'request': request})
+        serializer = SendPasswordResetEmailSerializer(
+            data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        return Response("Password Reset Email Send Successfully", status=status.HTTP_200_OK)
+        return Response({"Message": "Password Reset Email Send Successfully"}, status=status.HTTP_200_OK)
 
 
 class ResetPasswordView(APIView):
     def post(self, request, uid, token):
-        serializer = ResetPasswordSerializer()
+        serializer = ResetPasswordSerializer(data=request.data, context={
+                                             'uid': uid, 'token': token})
+        serializer.is_valid(raise_exception=True)
+        return Response({"Message": "Password Has been Reset Successfully"}, status=status.HTTP_200_OK)
 
 
 class TenantView(viewsets.ModelViewSet):
@@ -111,4 +126,3 @@ class TenantView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
-

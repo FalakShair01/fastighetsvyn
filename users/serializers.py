@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
+from .Utils import Utils
 from .models import Tenant
 
 User = get_user_model()
@@ -17,10 +18,16 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
-    
+
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
-    
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,9 +36,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
-    password2 = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
-    class Mete:
+    password = serializers.CharField(
+        max_length=255, style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(
+        max_length=255, style={'input_type': 'password'}, write_only=True)
+
+    class Meta:
         fields = ['password', 'password2']
 
     def validate(self, attrs):
@@ -39,61 +49,73 @@ class ChangePasswordSerializer(serializers.Serializer):
         password2 = attrs.get('password2')
         user = self.context.get('user')
         if password != password2:
-            raise serializers.ValidationError("Password and confirm password doesn't match")
-        
+            raise serializers.ValidationError(
+                "Password and confirm password doesn't match")
+
         user.set_password(password)
         user.save()
         return attrs
-    
 
 
 class SendPasswordResetEmailSerializer(serializers.Serializer):
-    email  = serializers.EmailField(max_length=255)
+    email = serializers.EmailField(max_length=255)
+
     class Meta:
         fields = ['email']
-    
+
     def validate(self, attrs):
         email = attrs.get('email')
         request = self.context.get('request')
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            print("Encoding User id: ", uid)
             token = PasswordResetTokenGenerator().make_token(user)
-            print("Token: ", token)
             domain = get_current_site(request).domain
-            print(domain)
-            url = reverse('reset-password')
-            link = 'http://'+domain+url+uid+'/'+token
-            print(link)
+            # url = reverse('reset-password')
+            link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
+            data = {
+                "subject": "Reset Password",
+                "body": f"Please click the link to Reset Your Password {link}",
+                "to": email
+            }
+            Utils.send_email(data)
+            return attrs
 
-
-        else: 
+        else:
             raise serializers.ValidationError("No User found with this Email.")
-        
-        return super().validate(attrs)
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
-    password2 = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
-    
+    password = serializers.CharField(
+        max_length=255, style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(
+        max_length=255, style={'input_type': 'password'}, write_only=True)
+
     class Meta:
         fields = ['password', 'password2']
-    
+
     def validate(self, attrs):
         password = attrs.get('password')
         password2 = attrs.get('password2')
         uid = self.context.get('uid')
         token = self.context.get('token')
         if password != password2:
-            raise serializers.ValidationError("Password and Confrim Password doesn't match.")
-        
+            raise serializers.ValidationError(
+                "Password and Confrim Password doesn't match.")
 
-        return super().validate(attrs)
+        id = urlsafe_base64_decode(smart_str(uid))
+        user = User.objects.get(id=id)
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            raise serializers.ValidationError("Invalid Token")
+
+        user.set_password(password)
+        user.is_active = True
+        user.save()
+
+        return attrs
 
 
 class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ['id','name', 'appartment_no', 'email', 'phone', 'profile']
+        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile']
