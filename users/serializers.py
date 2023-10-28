@@ -110,7 +110,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid Token")
 
         user.set_password(password)
-        user.is_active = True
+        user.is_verified = True
         user.save()
 
         return attrs

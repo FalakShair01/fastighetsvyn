@@ -13,6 +13,8 @@ class Blog(models.Model):
     cover_photo = models.ImageField(upload_to='blog-cover/', blank=True, null=True)
     content = models.TextField()
 
+    is_sendmail = models.BooleanField(default=True)
+    is_sendsms = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
