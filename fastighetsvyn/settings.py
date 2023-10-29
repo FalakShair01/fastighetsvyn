@@ -180,4 +180,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Domain
-FRONTEND_DOMAIN = 'localhost:3000'
+FRONTEND_DOMAIN = 'http://localhost:3000'

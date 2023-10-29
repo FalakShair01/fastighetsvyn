@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255)
+
     class Meta:
         model = User
         fields = ['email', 'password']
@@ -74,7 +75,7 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             token = PasswordResetTokenGenerator().make_token(user)
             frontend_domain = settings.FRONTEND_DOMAIN
             # url = reverse('reset-password')
-            link = 'http://' + frontend_domain + reverse('reset-password', args=[uid, token])
+            link = frontend_domain + reverse('reset-password', args=[uid, token])
             # link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
             data = {
                 "subject": "Reset Password",

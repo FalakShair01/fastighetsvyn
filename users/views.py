@@ -31,8 +31,7 @@ class UserRegisterView(APIView):
         current_site = get_current_site(request).domain
 
         relativeUrl = reverse('email-verify')
-        absUrl = "http://" + current_site + \
-            relativeUrl + "?token=" + str(token)
+        absUrl = "http://" + current_site + relativeUrl + "?token=" + str(token)
 
         try:
             email_body = render_to_string(

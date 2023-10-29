@@ -87,7 +87,7 @@ class User(AbstractBaseUser):
     
 
 class Tenant(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenants')
     name = models.CharField(max_length=255)
     appartment_no = models.CharField(max_length=255)
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
