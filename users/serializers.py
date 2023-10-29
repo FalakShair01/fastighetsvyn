@@ -7,6 +7,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .Utils import Utils
 from .models import Tenant
+from django.conf import settings
 
 User = get_user_model()
 
@@ -71,9 +72,10 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            domain = get_current_site(request).domain
+            frontend_domain = settings.FRONTEND_DOMAIN
             # url = reverse('reset-password')
-            link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
+            link = 'http://' + frontend_domain + reverse('reset-password', args=[uid, token])
+            # link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
             data = {
                 "subject": "Reset Password",
                 "body": f"Please click the link to Reset Your Password {link}",

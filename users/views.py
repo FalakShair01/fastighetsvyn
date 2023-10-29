@@ -9,8 +9,6 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
-from django.utils.encoding import force_bytes, smart_str, DjangoUnicodeDecodeError
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .Utils import Utils
 import jwt
 from django.conf import settings

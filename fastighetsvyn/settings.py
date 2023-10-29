@@ -166,7 +166,7 @@ AUTH_USER_MODEL = "users.User"
 #EMAIL
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.simply.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
@@ -178,3 +178,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://localhost:3000',
 ]
+
+# Domain
+FRONTEND_DOMAIN = 'localhost:3000'
