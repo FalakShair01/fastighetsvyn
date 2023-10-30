@@ -177,7 +177,9 @@ EMAIL_PORT = 587
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://localhost:3000',
+    'https://fastighetsvyn.vercel.app'
 ]
 
 # Domain
-FRONTEND_DOMAIN = 'http://localhost:3000'
+# FRONTEND_DOMAIN = 'http://localhost:3000'
+FRONTEND_DOMAIN = 'https://fastighetsvyn.vercel.app'
