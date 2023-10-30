@@ -38,7 +38,16 @@ class BlogListCreateView(generics.ListCreateAPIView):
         print(link)
 
         if blog.is_sendmail and blog.is_sendsms:
-            pass
+            
+            tenants = user.tenants.all()
+            for i in tenants:
+
+                data = {
+                    'subject': 'New Blog Notification',
+                    'body': f'Hi {i.name}, A new Blog has been Published. Click the link Below to Read it \n\n '+link,
+                    'to': i.email
+                }
+                Utils.send_email(data)
 
         elif blog.is_sendmail:
             tenants = user.tenants.all()
