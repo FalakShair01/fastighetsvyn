@@ -8,6 +8,7 @@ from django.urls import reverse
 from .Utils import Utils
 from .models import Tenant
 from django.conf import settings
+from django.template.loader import render_to_string
 
 User = get_user_model()
 
@@ -77,13 +78,24 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             # url = reverse('reset-password')
             link = frontend_domain + reverse('reset-password', args=[uid, token])
             # link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
-            data = {
-                "subject": "Reset Password",
-                "body": f"Please click the link to Reset Your Password {link}",
-                "to": email
-            }
-            Utils.send_email(data)
-            return attrs
+            try: 
+                email_body = render_to_string(
+                    'emails/verify_email.html', {'title': 'Reset Password','username': user.username, 'absUrl': link, 'message': 'We received a request to reset your password for your Fastighetsvyn account. To create a new password, click on the following link:', 'endingMessage': "If you didn't request this change, please contact our support team immediately."})
+                data = {
+                    'body': email_body,
+                    'subject': "Reset Password",
+                    'to': user.email,
+                }
+
+                # data = {
+                #     "subject": "Reset Password",
+                #     "body": f"Please click the link to Reset Your Password {link}",
+                #     "to": email
+                # }
+                Utils.send_email(data)
+                return attrs
+            except Exception as e:
+                return ({"Error": str(e)})
 
         else:
             raise serializers.ValidationError("No User found with this Email.")

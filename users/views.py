@@ -35,11 +35,11 @@ class UserRegisterView(APIView):
 
         try:
             email_body = render_to_string(
-                'emails/verify_email.html', {'username': user.username, 'absUrl': absUrl})
+                'emails/verify_email.html', {'title': 'Account Verification','username': user.username, 'absUrl': absUrl, 'message': 'Thank you for registering with Fastighetsvyn. To complete your registration, please click the following link to verify your email address:', 'endingMessage':"If you did not register on Fastighetsvyn, please disregard this email."})
 
             data = {
                 'body': email_body,
-                'subject': "Verify Your Email",
+                'subject': "Account Verification",
                 'to': user.email,
             }
 
