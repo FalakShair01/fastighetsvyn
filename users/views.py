@@ -101,6 +101,17 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class RemoveUserProfile(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request):
+        instance=request.user
+        serializer = ProfileSerializer(instance=instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance.profile = ""
+        serializer.save()
+        return Response(serializer.data)
+
+
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 

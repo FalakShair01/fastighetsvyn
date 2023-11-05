@@ -95,7 +95,7 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
                 Utils.send_email(data)
                 return attrs
             except Exception as e:
-                return ({"Error": str(e)})
+                return serializers.ValidationError({"Error": str(e)})
 
         else:
             raise serializers.ValidationError("No User found with this Email.")

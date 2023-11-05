@@ -180,6 +180,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://fastighetsvyn.vercel.app'
 ]
 
-# Domain
+# Set this Domain to generate read blog link
 # FRONTEND_DOMAIN = 'http://localhost:3000'
 FRONTEND_DOMAIN = 'https://fastighetsvyn.vercel.app'

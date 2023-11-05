@@ -13,6 +13,7 @@ from django.utils.encoding import force_bytes, smart_str
 from django.conf import settings
 from django.urls import reverse
 from users.Utils import Utils
+from django.template.loader import render_to_string
 # from django.contrib.
 
 
@@ -37,32 +38,43 @@ class BlogListCreateView(generics.ListCreateAPIView):
         link = frontend_domain + url
         print(link)
 
-        if blog.is_sendmail and blog.is_sendsms:
-            
+        # if blog.is_sendmail and blog.is_sendsms:
+
+        #     tenants = user.tenants.all()
+        #     for i in tenants:
+        #         try:
+        #             email_body = render_to_string('emails/verify_email.html', {'title': 'New Blog Notification', 'username': i.name, 'absUrl': link,
+        #                                           'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn."})
+
+        #             data = {
+        #                 'body': email_body,
+        #                 'subject': "New Blog Notification",
+        #                 'to': i.email,
+        #             }
+        #             Utils.send_email(data)
+        #         except Exception as e:
+        #             return Response({"message": "email failed to send.", "error": str(e)}, )
+
+        if blog.is_sendmail:
             tenants = user.tenants.all()
             for i in tenants:
 
-                data = {
-                    'subject': 'New Blog Notification',
-                    'body': f'Hi {i.name}, A new Blog has been Published. Click the link Below to Read it \n\n '+link,
-                    'to': i.email
-                }
-                Utils.send_email(data)
+                try:
+                    email_body = render_to_string('emails/verify_email.html', {'title': 'New Blog Notification', 'username': i.name, 'absUrl': link,
+                                                  'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn."})
 
-        elif blog.is_sendmail:
-            tenants = user.tenants.all()
-            for i in tenants:
+                    data = {
+                        'body': email_body,
+                        'subject': "New Blog Notification",
+                        'to': i.email,
+                    }
+                    Utils.send_email(data)
+                except Exception as e:
+                    return Response({"message": "email failed to send.", "error": str(e)}, )
 
-                data = {
-                    'subject': 'New Blog Notification',
-                    'body': f'Hi {i.name}, A new Blog has been Published. Click the link Below to Read it \n\n '+link,
-                    'to': i.email
-                }
-                Utils.send_email(data)
+        # elif blog.is_sendsms:
+        #     pass
 
-        elif blog.is_sendsms:
-            pass
-        
         return serializer
 
 

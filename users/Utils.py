@@ -4,6 +4,7 @@ from django.conf import settings
 class Utils():
     @staticmethod
     def send_email(data):
-        email = EmailMessage(subject=data['subject'], body=data['body'], from_email=settings.EMAIL_HOST_USER, to=[data['to']])
+        email = EmailMessage(subject=data['subject'], body=data['body'], from_email=f"Support Fastighetsvyn <{settings.EMAIL_HOST_USER}>", to=[data['to']])
         email.content_subtype = "html"
         email.send()
+
