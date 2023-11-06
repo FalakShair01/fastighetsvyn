@@ -21,6 +21,9 @@ from .token_utils import get_tokens_for_user
 class UserRegisterView(APIView):
 
     def post(self, request):
+        email = request.data.get('email').lower()
+        if User.objects.filter(email=email).exists():
+            return Response({"Message": "User with email already exist"}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -73,7 +76,7 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email')
+        email = serializer.data.get('email').lower()
         password = serializer.data.get('password')
 
         user = authenticate(email=email, password=password)
@@ -84,7 +87,7 @@ class LoginView(APIView):
                     token = get_tokens_for_user(user)
                     return Response({'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
                 else:
-                    return Response({"Message": "User is not verified"})
+                    return Response({"Message": "Please check your email to verify."})
             else:
                 return Response({"Message": "User is not active"})
         else:
