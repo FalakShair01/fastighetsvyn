@@ -61,7 +61,7 @@ class BlogListCreateView(generics.ListCreateAPIView):
 
                 try:
                     email_body = render_to_string('emails/verify_email.html', {'title': 'New Blog Notification', 'username': i.name, 'absUrl': link,
-                                                  'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn."})
+                                                  'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn.", 'btn':'Read Blog'})
 
                     data = {
                         'body': email_body,
