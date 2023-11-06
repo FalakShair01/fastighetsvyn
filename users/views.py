@@ -102,7 +102,6 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 class RemoveUserProfile(APIView):
-    permission_classes = [IsAuthenticated]
     def patch(self, request):
         instance=request.user
         serializer = ProfileSerializer(instance=instance, data=request.data, partial=True)
