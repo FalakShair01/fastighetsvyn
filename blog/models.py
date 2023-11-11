@@ -4,13 +4,14 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Create your models here.
-
+def blog_cover(instance, filename):
+    return '/'.join(['blog-cover', str(instance.title), filename])
 
 class Blog(models.Model):
     user  = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=300, blank=True, null=True)
-    cover_photo = models.ImageField(upload_to='blog-cover/', blank=True, null=True)
+    cover_photo = models.ImageField(upload_to=blog_cover, blank=True, null=True)
     content = models.TextField()
 
     is_sendmail = models.BooleanField(default=False)
