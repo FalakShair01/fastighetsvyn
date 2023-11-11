@@ -151,3 +151,14 @@ class TenantView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
+    
+
+class RemoveTenantProfile(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request, pk):
+        tenant = Tenant.objects.get(user=request.user, id=pk)
+        data = {'profile':None}
+        serializer = TenantSerializer(tenant, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
