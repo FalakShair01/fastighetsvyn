@@ -22,6 +22,7 @@ class Property(models.Model):
     installered_effekt = models.IntegerField()
     geo_energi = models.BooleanField()
     epc_tal = models.IntegerField()
+    address = models.CharField(max_length=255)
     picture = models.ImageField(upload_to=picture_upload)
 
     def __str__(self):
