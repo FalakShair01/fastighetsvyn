@@ -5,7 +5,7 @@ from .models import Property, Document
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
-        fields = ('id', 'byggand', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion',
+        fields = ('id', 'byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion',
                   'installered_effekt', 'geo_energi', 'epc_tal', 'address', 'picture')
         
 class DocumentSerializer(serializers.ModelSerializer):

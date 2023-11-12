@@ -42,10 +42,11 @@ INSTALLED_APPS = [
 
     'users',
     'blog',
+    'property',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
     'corsheaders',
-    'property',
 
 ]
 
@@ -84,7 +85,10 @@ WSGI_APPLICATION = 'fastighetsvyn.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+     'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
 }
  #JWT Settings
 
