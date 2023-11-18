@@ -5,8 +5,15 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from .models import Property, Document
-from .serializers import PropertySerializer, DocumentSerializer
+from .serializers import PropertySerializer, DocumentSerializer, ChartSerializer
 from django_filters import rest_framework as filters
+from django.db.models import Count
+from django.http import HttpResponse
+import csv
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.db import models
+
 
 class PropertyFilter(filters.FilterSet):
     lokal_elproduktion = filters.BooleanFilter()
@@ -107,3 +114,61 @@ class DeleteDocumentView(generics.DestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"detail": "Document deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+class GetPieChartView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        data = Property.objects.filter(user=request.user)
+        total_fond = data.count()
+
+        # Annotate the queryset with the count for each 'fond'
+        fonds_with_counts = data.values('fond').annotate(count=Count('fond'))
+
+        result = []
+
+        for item in fonds_with_counts:
+            fond_name = item['fond']
+            count = item['count']
+            percentage = (count / total_fond) * 100
+
+            # Append the result as a dictionary
+            result.append({fond_name: round(percentage, 1)})  # Round to 1 decimal place
+
+        return Response(result)
+
+
+class PropertyExportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(csrf_exempt)
+    def get(self, request):
+        # Apply the same filters as in PropertyFilter
+        property_filter = PropertyFilter(request.GET, queryset=Property.objects.filter(user=request.user))
+        filtered_properties = property_filter.qs
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="properties_export.csv"'
+
+        writer = csv.writer(response)
+
+        # Write CSV header excluding created_at and updated_at
+        header_fields = ['byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion', 'installered_effekt', 'geo_energi', 'epc_tal', 'address']
+        writer.writerow(header_fields)
+
+        # Write data rows
+        for property in filtered_properties:
+            data_row = [self.get_field_value(property, field) for field in header_fields]
+            writer.writerow(data_row)
+
+        return response
+
+    def get_field_value(self, instance, field_name):
+        field = Property._meta.get_field(field_name)
+        value = getattr(instance, field_name)
+        
+        if isinstance(field, models.BigAutoField):
+            return ''  # Exclude BigAutoField from CSV export
+        elif isinstance(field, models.DateTimeField):
+            return value.strftime('%Y-%m-%d %H:%M:%S') if value else ''
+        else:
+            return str(value)

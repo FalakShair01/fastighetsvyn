@@ -12,3 +12,8 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ('id', 'file',)
+
+
+class ChartSerializer(serializers.Serializer):
+    fond = serializers.CharField(max_length=200)
+    percentage = serializers.CharField(max_length=200)
