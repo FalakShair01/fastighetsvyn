@@ -23,7 +23,7 @@ class Property(models.Model):
     geo_energi = models.BooleanField()
     epc_tal = models.IntegerField()
     address = models.CharField(max_length=255)
-    picture = models.ImageField(upload_to=picture_upload)
+    picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
