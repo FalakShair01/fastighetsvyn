@@ -12,3 +12,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+property/migrations/0006_alter_property_picture.py

@@ -16,48 +16,20 @@ from django.db import models
 
 
 class PropertyFilter(filters.FilterSet):
-    lokal_elproduktion = filters.BooleanFilter()
-    geo_energi = filters.BooleanFilter()
-
-    byggnad = filters.CharFilter(lookup_expr='exact')
-    fond = filters.CharFilter(lookup_expr='exact')
-    ansvarig_AM = filters.CharFilter(lookup_expr='exact')
-    yta = filters.NumberFilter(lookup_expr='exact')
-    loa = filters.NumberFilter(lookup_expr='exact')
-    bta = filters.NumberFilter(lookup_expr='exact')
-    installered_effekt = filters.NumberFilter(lookup_expr='exact')
-    epc_tal = filters.NumberFilter(lookup_expr='exact')
-
-    yta__lt = filters.NumberFilter(field_name='yta', lookup_expr='lt')
-    yta__lte = filters.NumberFilter(field_name='yta', lookup_expr='lte')
-    yta__gt = filters.NumberFilter(field_name='yta', lookup_expr='gt')
-    yta__gte = filters.NumberFilter(field_name='yta', lookup_expr='gte')
-
-    loa__lt = filters.NumberFilter(field_name='loa', lookup_expr='lt')
-    loa__gt = filters.NumberFilter(field_name='loa', lookup_expr='gt')
-    loa__lte = filters.NumberFilter(field_name='loa', lookup_expr='lte')
-    loa__gte = filters.NumberFilter(field_name='loa', lookup_expr='gte')
-
-    bta__lt = filters.NumberFilter(field_name='bta', lookup_expr='lt')
-    bta__gt = filters.NumberFilter(field_name='bta', lookup_expr='gt')
-    bta__lte = filters.NumberFilter(field_name='bta', lookup_expr='lte')
-    bta__gte = filters.NumberFilter(field_name='bta', lookup_expr='gte')
-
-    installered_effekt__lt = filters.NumberFilter(field_name='installered_effekt', lookup_expr='lt')
-    installered_effekt__gt = filters.NumberFilter(field_name='installered_effekt', lookup_expr='gt')
-    installered_effekt__lte = filters.NumberFilter(field_name='installered_effekt', lookup_expr='lte')
-    installered_effekt__gte = filters.NumberFilter(field_name='installered_effekt', lookup_expr='gte')
-
-    epc_tal__lt = filters.NumberFilter(field_name='epc_tal', lookup_expr='lt')
-    epc_tal__gt = filters.NumberFilter(field_name='epc_tal', lookup_expr='gt')
-    epc_tal__lte = filters.NumberFilter(field_name='epc_tal', lookup_expr='lte')
-    epc_tal__gte = filters.NumberFilter(field_name='epc_tal', lookup_expr='gte')
-
     class Meta:
         model = Property
-        fields = '__all__'
-        exclude = ['picture']
-
+        fields = {
+            'fond': ['in','exact'],
+            'byggnad': ['in','exact'],
+            'ansvarig_AM': ['in','exact'],
+            'yta': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'loa': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'bta': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'installered_effekt': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'epc_tal': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'lokal_elproduktion': ['exact'],
+            'geo_energi': ['exact'],
+        }
 
 class PropertyListCreateView(generics.ListCreateAPIView):
     queryset = Property.objects.all()
@@ -66,7 +38,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = PropertyFilter
-
+    
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
     
