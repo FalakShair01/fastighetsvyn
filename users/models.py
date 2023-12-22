@@ -7,7 +7,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, username, phone, address, password=None):
+    def create_user(self, email, username, phone, address, password=None, **kwargs):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -19,9 +19,9 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email).lower(),
             username=username,
             phone= phone,
-            address = address
+            address = address,
+            **kwargs
         )
-
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -58,7 +58,7 @@ class User(AbstractBaseUser):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
     objects = MyUserManager()

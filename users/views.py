@@ -11,6 +11,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .Utils import Utils
 import jwt
+import os
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.contrib.auth import authenticate
@@ -46,7 +47,7 @@ class UserRegisterView(APIView):
                 'to': user.email,
             }
 
-            Utils.send_email(data)
+            # Utils.send_email(data)
             return Response({"Message": "Please check you Email for verification."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             user.delete()
@@ -109,9 +110,14 @@ class RemoveUserProfile(APIView):
         instance=request.user
         serializer = ProfileSerializer(instance=instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        instance.profile = ""
-        serializer.save()
-        return Response(serializer.data)
+        try:
+            profile_path = instance.profile.path
+            if profile_path and os.path.exists(profile_path):
+                os.remove(profile_path)
+        except Exception as e:
+            instance.profile = ""
+            serializer.save()
+            return Response(serializer.data)
 
 
 class ChangePasswordView(APIView):
@@ -157,8 +163,14 @@ class RemoveTenantProfile(APIView):
     permission_classes = [IsAuthenticated]
     def patch(self, request, pk):
         tenant = Tenant.objects.get(user=request.user, id=pk)
-        data = {'profile':None}
-        serializer = TenantSerializer(tenant, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            profile_path = tenant.profile.path
+            if profile_path and os.path.exists(profile_path):
+                os.remove(profile_path)
+        except Exception as e:
+            
+            data = {'profile':None}
+            serializer = TenantSerializer(tenant, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)

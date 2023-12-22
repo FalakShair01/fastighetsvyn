@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
@@ -85,6 +86,22 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Blog.objects.filter(user=self.request.user)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Delete the associated cover_photo file from the directory
+        cover_photo_path = instance.cover_photo.path
+        try:
+            if cover_photo_path and os.path.exists(cover_photo_path):
+                os.remove(cover_photo_path)
+        except Exception as e:
+            return Response(f"Error deleting cover_photo: {str(e)}")
+
+        # Call the superclass's destroy method to delete the database record
+        self.perform_destroy(instance)
+
+        return Response({"detail": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class TenantBlogView(APIView):
