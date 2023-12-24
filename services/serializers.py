@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Development, UserDevelopmentServices, Maintenance
+from .models import Development, UserDevelopmentServices, Maintenance, UserMaintenanceServices
 
 
 class DevelopmentSerializer(serializers.ModelSerializer):
@@ -18,3 +18,9 @@ class MaintainceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Maintenance
         fields = '__all__'
+
+
+class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserMaintenanceServices
+        fields = ['id', 'maintenance', 'status', 'started_date', 'end_date']

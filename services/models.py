@@ -18,6 +18,9 @@ class Development(models.Model):
 
     def __str__(self) :
         return self.title
+    
+    class Meta:
+        ordering = ['-created_at']
 
 
 class UserDevelopmentServices(models.Model):
@@ -28,6 +31,7 @@ class UserDevelopmentServices(models.Model):
         ('Pending', 'Pending'),
         ('Active', 'Active'),
         ('Completed', 'Completed'),
+
     )
 
     status = models.CharField(choices=STATUS, max_length=10)
@@ -42,6 +46,9 @@ class UserDevelopmentServices(models.Model):
             self.end_date = timezone.now()
         
         super().save(*args, **kwargs)
+    
+    class Meta:
+        ordering = ['-pk']
 
 
 
@@ -57,3 +64,33 @@ class Maintenance(models.Model):
 
     def __str__(self) :
         return self.title
+    
+    class Meta:
+        ordering = ['-created_at']
+
+
+class UserMaintenanceServices(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_maintenance')
+    maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='maintenance_services')
+
+    STATUS = (
+        ('Active', 'Active'),
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+    )
+
+    status = models.CharField(choices=STATUS, max_length=10)
+    started_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+
+        if self.status == 'Completed' and not self.end_date:
+            self.end_date = timezone.now()
+        if self.status == 'Active':
+            self.end_date = timezone.now()
+        
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        ordering = ['-pk']
