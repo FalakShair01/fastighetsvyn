@@ -113,7 +113,8 @@ class LoginView(APIView):
             if user.is_active:
                 if user.is_verified:
                     token = get_tokens_for_user(user)
-                    return Response({'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
+                    serializer = UserSerializer(user)
+                    return Response({'user':serializer.data,'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
                 else:
                     return Response({"Message": "Please check your email to verify."})
             else:
