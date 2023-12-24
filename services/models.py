@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from django.db import models
 from django.contrib.auth import get_user_model
-from datetime import datetime
+from django.utils import timezone
 
 User = get_user_model()
 # Create your models here.
@@ -17,6 +17,7 @@ class Development(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
     def __str__(self) :
         return self.title
 
@@ -24,16 +25,18 @@ class Development(models.Model):
 class UserDevelopmentServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_development')
     development = models.ForeignKey(Development, on_delete=models.CASCADE, related_name='development_services')
+
     STATUS = (
         ('Pending', 'Pending'),
         ('Active', 'Active'),
         ('Completed', 'Completed'),
     )
+
     status = models.CharField(choices=STATUS, max_length=10)
     started_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.status == 'Completed' and not self.end_date:
-            self.end_date = datetime.now()
+            self.end_date = timezone.now()
         super().save(*args, **kwargs)

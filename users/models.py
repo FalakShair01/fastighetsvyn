@@ -7,7 +7,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, username, phone, address, password=None, **kwargs):
+    def create_user(self, email, username, phone, address, role, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -19,9 +19,9 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email).lower(),
             username=username,
             phone= phone,
-            address = address,
-            **kwargs
-        )
+            address = address,   
+            role = role
+            )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -35,6 +35,7 @@ class MyUserManager(BaseUserManager):
             email,
             password=password,
             username=username,
+            role = 'ADMIN',
             **kwargs
         )
         user.is_admin = True
@@ -54,9 +55,14 @@ class User(AbstractBaseUser):
     address = models.CharField(max_length=255, null=True, blank=True)
     password = models.CharField(max_length=255)
     profile = models.ImageField(upload_to=upload_to, null=True, blank=True)
+    ROLES = (
+        ('ADMIN', 'Admin'),
+        ('USER', 'User')
+    )
+    role = models.CharField(max_length=10,choices=ROLES, default='USER')
 
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)

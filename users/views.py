@@ -14,9 +14,36 @@ import jwt
 import os
 from django.conf import settings
 from django.template.loader import render_to_string
+from django.contrib.auth.hashers import make_password  # Import make_password to hash passwords
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer
+from .serializers import (UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, 
+                          SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer)
 from .token_utils import get_tokens_for_user
+from .permissions import IsAdminOrSelf
+
+
+class UserViewset(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminOrSelf]
+
+    def get_queryset(self):
+        return User.objects.exclude(id=self.request.user.id)
+    
+    # def create(self, request, *args, **kwargs):
+    #     # Generate a random password for the user
+    #     generated_password = User.objects.make_random_password()
+
+    #     # Set the generated password in the request data
+    #     request.data['password'] = generated_password
+
+    #     # Use the serializer to create the user
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class UserRegisterView(APIView):
@@ -90,7 +117,7 @@ class LoginView(APIView):
                 else:
                     return Response({"Message": "Please check your email to verify."})
             else:
-                return Response({"Message": "User is not active"})
+                return Response({"Message": "User is not active. Please Contact to Support team."})
         else:
             return Response({"Message":"Email and Password is not valid"})
 

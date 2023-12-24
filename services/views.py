@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import viewsets, generics
+from rest_framework.response import Response
+from rest_framework import viewsets, generics, status
 from rest_framework import permissions
 from blog.custom_permission import IsAdminUserOrReadOnly
 from .models import Development, UserDevelopmentServices
@@ -14,8 +15,14 @@ class DevelopmentViewset(viewsets.ModelViewSet):
     permission_classes = [IsAdminUserOrReadOnly, permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+    def perform_destroy(self, instance):
+        if instance.image:
+            instance.image.delete()
+        instance.delete()
+        return Response({"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-class UserDevelopmentServicesView(generics.ListCreateAPIView):
+
+class UserDevelopmentServicesView(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
     serializer_class = UserDevelopmentServicesSerializer
     permission_classes = [permissions.IsAuthenticated]
