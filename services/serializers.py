@@ -9,9 +9,10 @@ class DevelopmentSerializer(serializers.ModelSerializer):
 
 
 class UserDevelopmentServicesSerializer(serializers.ModelSerializer):
+    development = DevelopmentSerializer(read_only=True)
     class Meta:
         model = UserDevelopmentServices
-        fields = ['id', 'development', 'status', 'started_date', 'end_date']
+        fields = ['id', 'status', 'started_date', 'end_date', 'development']
 
 # Maintaince
 class MaintainceSerializer(serializers.ModelSerializer):
@@ -21,6 +22,7 @@ class MaintainceSerializer(serializers.ModelSerializer):
 
 
 class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
+    maintenance = MaintainceSerializer(read_only=True)
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id', 'maintenance', 'status', 'started_date', 'end_date']
+        fields = ['id', 'status', 'started_date', 'end_date', 'maintenance']
