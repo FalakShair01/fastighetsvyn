@@ -9,3 +9,4 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
         # Allow write access only to admins
         return request.user.is_authenticated and request.user.role == 'ADMIN'
+

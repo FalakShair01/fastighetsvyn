@@ -6,6 +6,7 @@ from .models import Development, UserDevelopmentServices, Maintenance, UserMaint
 from .serializers import DevelopmentSerializer, UserDevelopmentServicesSerializer, MaintainceSerializer, UserMaintenanceServicesSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
+from .filters import UserMaintenanceFilter, UserDevelopmentFilter
 # Create your views here.
 
 class DevelopmentViewset(viewsets.ModelViewSet):
@@ -38,6 +39,7 @@ class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
     serializer_class = UserDevelopmentServicesSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = UserDevelopmentFilter
 
     def get_queryset(self):
         return UserDevelopmentServices.objects.filter(user=self.request.user)
@@ -78,9 +80,24 @@ class UserMaintenanceViewset(viewsets.ModelViewSet):
     queryset = UserMaintenanceServices.objects.all()
     serializer_class = UserMaintenanceServicesSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = UserMaintenanceFilter
 
     def get_queryset(self):
         return UserMaintenanceServices.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
+
+
+# Admin See All Pending, Active ,Completed
+class AdminDevelopemStatusView(viewsets.ModelViewSet):
+    queryset = UserDevelopmentServices.objects.all()
+    serializer_class = UserDevelopmentServicesSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filterset_class = UserDevelopmentFilter
+
+class AdminMaintenanceStatusView(viewsets.ModelViewSet):
+    queryset = UserMaintenanceServices.objects.all()
+    serializer_class = UserMaintenanceServicesSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filterset_class = UserMaintenanceFilter

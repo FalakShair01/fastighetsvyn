@@ -31,7 +31,6 @@ class UserDevelopmentServices(models.Model):
         ('Pending', 'Pending'),
         ('Active', 'Active'),
         ('Completed', 'Completed'),
-
     )
 
     status = models.CharField(choices=STATUS, max_length=10)
