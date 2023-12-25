@@ -5,8 +5,8 @@ from .views import (DevelopmentViewset, UserDevelopmentServicesViewset, Maintena
 router = DefaultRouter()
 
 router.register('development', DevelopmentViewset, basename='development-service'),
-router.register('user/development', UserDevelopmentServicesViewset),
 router.register('maintenance', MaintenanceViewset, basename='maintenance-service')
+router.register('user/development', UserDevelopmentServicesViewset),
 router.register('user/maintenance', UserMaintenanceViewset, basename='user-maintenance')
 router.register('admin/development', AdminDevelopemStatusView, basename='admin-development')
 router.register('admin/maintenance', AdminMaintenanceStatusView, basename='admin-maintenance')
