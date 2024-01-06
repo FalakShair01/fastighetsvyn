@@ -12,7 +12,7 @@ class Development(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=9, decimal_places=2)
     image = models.ImageField(upload_to=service_images, null=True, blank=True)
-
+    type = models.CharField(max_length=255, default='Energy')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -26,6 +26,7 @@ class Development(models.Model):
 class UserDevelopmentServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_development')
     development = models.ForeignKey(Development, on_delete=models.CASCADE, related_name='development_services')
+    comment = models.TextField(max_length=255, null=True, blank=True)
 
     STATUS = (
         ('Pending', 'Pending'),
@@ -57,7 +58,7 @@ class Maintenance(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=9, decimal_places=2)
     image = models.ImageField(upload_to=service_images, null=True, blank=True)
-
+    type = models.CharField(max_length=255, default='Energy')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,7 +72,7 @@ class Maintenance(models.Model):
 class UserMaintenanceServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_maintenance')
     maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='maintenance_services')
-
+    comment = models.TextField(max_length=255, null=True, blank=True)
     STATUS = (
         ('Active', 'Active'),
         ('Pending', 'Pending'),

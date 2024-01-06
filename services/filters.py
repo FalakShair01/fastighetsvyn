@@ -1,6 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import UserDevelopmentServices, UserMaintenanceServices
-
+from .models import UserDevelopmentServices, UserMaintenanceServices, Maintenance, Development
 
 class UserDevelopmentFilter(filters.FilterSet):
     class Meta:
@@ -15,4 +14,19 @@ class UserMaintenanceFilter(filters.FilterSet):
         model = UserMaintenanceServices
         fields = {
             'status': ['exact']
+        }
+
+class MaintainceFilter(filters.FilterSet):
+    class Meta:
+        model = Maintenance
+        fields ={
+            'type' : ['in', 'exact']
+        }
+    
+
+class DevelopmentFilter(filters.FilterSet):
+    class Meta:
+        model = Development
+        fields ={
+            'type' : ['in', 'exact']
         }

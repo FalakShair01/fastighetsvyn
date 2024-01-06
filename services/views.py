@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from rest_framework import permissions
 from .models import Development, UserDevelopmentServices, Maintenance, UserMaintenanceServices
-from .serializers import DevelopmentSerializer, UserDevelopmentServicesSerializer, MaintainceSerializer, UserMaintenanceServicesSerializer
+from .serializers import (DevelopmentSerializer, UserDevelopmentServicesSerializer, MaintainceSerializer, 
+                          UserMaintenanceServicesSerializer,AdminMaintenanceStatusSerializer)
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
-from .filters import UserMaintenanceFilter, UserDevelopmentFilter
+from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintainceFilter
 # Create your views here.
 
 class DevelopmentViewset(viewsets.ModelViewSet):
@@ -14,6 +15,7 @@ class DevelopmentViewset(viewsets.ModelViewSet):
     serializer_class = DevelopmentSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
+    filterset_class = DevelopmentFilter
 
     def perform_destroy(self, instance):
         if instance.image:
@@ -54,6 +56,8 @@ class MaintenanceViewset(viewsets.ModelViewSet):
     serializer_class = MaintainceSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
+    filterset_class = MaintainceFilter
+
 
     def perform_destroy(self, instance):
         if instance.image:
@@ -98,6 +102,6 @@ class AdminDevelopemStatusView(viewsets.ModelViewSet):
 
 class AdminMaintenanceStatusView(viewsets.ModelViewSet):
     queryset = UserMaintenanceServices.objects.all()
-    serializer_class = UserMaintenanceServicesSerializer
+    serializer_class = AdminMaintenanceStatusSerializer
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserMaintenanceFilter
