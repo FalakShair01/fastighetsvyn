@@ -58,7 +58,6 @@ class Maintenance(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=9, decimal_places=2)
     image = models.ImageField(upload_to=service_images, null=True, blank=True)
-    type = models.CharField(max_length=255, default='Energy')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

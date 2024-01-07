@@ -16,13 +16,6 @@ class UserMaintenanceFilter(filters.FilterSet):
             'status': ['exact']
         }
 
-class MaintainceFilter(filters.FilterSet):
-    class Meta:
-        model = Maintenance
-        fields ={
-            'type' : ['in', 'exact']
-        }
-    
 
 class DevelopmentFilter(filters.FilterSet):
     class Meta:

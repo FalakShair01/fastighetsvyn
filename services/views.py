@@ -7,7 +7,7 @@ from .serializers import (DevelopmentSerializer, UserDevelopmentServicesSerializ
                           UserMaintenanceServicesSerializer,AdminMaintenanceStatusSerializer)
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
-from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintainceFilter
+from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter
 # Create your views here.
 
 class DevelopmentViewset(viewsets.ModelViewSet):
@@ -56,7 +56,6 @@ class MaintenanceViewset(viewsets.ModelViewSet):
     serializer_class = MaintainceSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
-    filterset_class = MaintainceFilter
 
 
     def perform_destroy(self, instance):

@@ -31,6 +31,8 @@ class Property(models.Model):
     def __str__(self):
         return self.byggnad
 
+class Folder(models.Model):
+    pass
 
 class Document(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='documents')
