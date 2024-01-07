@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, Document
+from .models import Property, Document, Folder
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -7,6 +7,11 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = ('id', 'byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion',
                   'installered_effekt', 'geo_energi', 'epc_tal', 'address', 'picture')
+        
+class FolderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Folder
+        fields = ('id', 'name', 'created_at', 'updated_at')
         
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:

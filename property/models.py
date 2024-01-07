@@ -32,11 +32,13 @@ class Property(models.Model):
         return self.byggnad
 
 class Folder(models.Model):
-    pass
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='folders', null=True)
+    name = models.CharField(max_length=50, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Document(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='documents')
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name='documents', null=True)
     file = models.FileField(upload_to=document_upload, null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
-from rest_framework import status, generics
-from .models import Property, Document
-from .serializers import PropertySerializer, DocumentSerializer, ChartSerializer
+from rest_framework import status, generics, viewsets
+from .models import Property, Document, Folder
+from .serializers import PropertySerializer, DocumentSerializer, ChartSerializer, FolderSerializer
 from django_filters import rest_framework as filters
 from django.db.models import Count
 from django.http import HttpResponse
@@ -68,6 +68,19 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         self.perform_destroy(instance)
 
         return Response({"detail": "Property deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+class FolderViewset(viewsets.ModelViewSet):
+    queryset = Folder.objects.all()
+    serializer_class = FolderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        property = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
+        return serializer.save(property=property)
+    
+    def get_queryset(self):
+        property_instance = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
+        return property_instance.folders.all()
     
 
 class PropertyDocumentView(generics.ListCreateAPIView):
@@ -77,12 +90,12 @@ class PropertyDocumentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        property_instance = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
-        return serializer.save(property=property_instance)
+        folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])
+        return serializer.save(property=folder_instance)
 
     def get_queryset(self):
-        property_instance = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
-        return property_instance.documents.all()
+        folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])
+        return folder_instance.documents.all()
     
 
 class DeleteDocumentView(generics.DestroyAPIView):
@@ -91,10 +104,10 @@ class DeleteDocumentView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        property_id = self.kwargs['property_id']
+        folder_id = self.kwargs['folder_id']
         document_id = self.kwargs['document_id']
-        property_instance = generics.get_object_or_404(Property, id=property_id, user = self.request.user)
-        return generics.get_object_or_404(Document, property=property_instance, id=document_id)
+        folder_instance = generics.get_object_or_404(Folder, id=folder_id)
+        return generics.get_object_or_404(Document, property=folder_instance, id=document_id)
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
