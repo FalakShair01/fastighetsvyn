@@ -12,3 +12,6 @@ class AdminFeedback(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     image = models.ImageField(upload_to=admin_feeback_image, null=True, blank=True)
+    is_done = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
