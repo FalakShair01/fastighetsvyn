@@ -91,7 +91,7 @@ class PropertyDocumentView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])
-        return serializer.save(property=folder_instance)
+        return serializer.save(folder=folder_instance)
 
     def get_queryset(self):
         folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])

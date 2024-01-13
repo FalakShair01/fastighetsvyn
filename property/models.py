@@ -5,7 +5,7 @@ User = get_user_model()
 
 # Create your models here.
 def document_upload(instance, filename):
-    return '/'.join(['property', str(instance.property.byggnad), 'documents', filename])
+    return '/'.join(['property', str(instance.folder.name), 'documents', filename])
 
 def picture_upload(instance, filename):
     return '/'.join(['property', str(instance.byggnad), 'picture', filename])
