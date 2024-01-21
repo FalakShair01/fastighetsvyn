@@ -107,7 +107,7 @@ class DeleteDocumentView(generics.DestroyAPIView):
         folder_id = self.kwargs['folder_id']
         document_id = self.kwargs['document_id']
         folder_instance = generics.get_object_or_404(Folder, id=folder_id)
-        return generics.get_object_or_404(Document, property=folder_instance, id=document_id)
+        return generics.get_object_or_404(Document, folder=folder_instance, id=document_id)
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

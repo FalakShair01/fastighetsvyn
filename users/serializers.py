@@ -79,19 +79,19 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             link = frontend_domain + reverse('reset-password', args=[uid, token])
             # link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
             try: 
-                email_body = render_to_string(
-                    'emails/verify_email.html', {'title': 'Reset Password','username': user.username, 'absUrl': link, 'message': 'We received a request to reset your password for your Fastighetsvyn account. To create a new password, click on the following link:', 'endingMessage': "If you didn't request this change, please contact our support team immediately.", "btn": "Change Password"})
-                data = {
-                    'body': email_body,
-                    'subject': "Reset Password",
-                    'to': user.email,
-                }
-
+                # email_body = render_to_string(
+                #     'emails/verify_email.html', {'title': 'Reset Password','username': user.username, 'absUrl': link, 'message': 'We received a request to reset your password for your Fastighetsvyn account. To create a new password, click on the following link:', 'endingMessage': "If you didn't request this change, please contact our support team immediately.", "btn": "Change Password"})
                 # data = {
-                #     "subject": "Reset Password",
-                #     "body": f"Please click the link to Reset Your Password {link}",
-                #     "to": email
+                #     'body': email_body,
+                #     'subject': "Reset Password",
+                #     'to': user.email,
                 # }
+
+                data = {
+                    "subject": "Reset Password",
+                    "body": f"Please click the link to Reset Your Password {link}",
+                    "to": email
+                }
                 Utils.send_email(data)
                 return attrs
             except Exception as e:

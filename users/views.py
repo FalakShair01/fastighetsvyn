@@ -30,20 +30,33 @@ class UserViewset(viewsets.ModelViewSet):
     def get_queryset(self):
         return User.objects.exclude(id=self.request.user.id)
     
-    # def create(self, request, *args, **kwargs):
-    #     # Generate a random password for the user
-    #     generated_password = User.objects.make_random_password()
+    def create(self, request, *args, **kwargs):
+        # Generate a random password for the user
+        generated_password = User.objects.make_random_password()
 
-    #     # Set the generated password in the request data
-    #     request.data['password'] = generated_password
+        # Set the generated password in the request data
+        request.data['password'] = generated_password
 
-    #     # Use the serializer to create the user
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
+        # Use the serializer to create the user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try: 
+            data = {
+                    "subject": "Account Registration",
+                    "body": f"Your account is created at Fastighetsvn. Your Login Credientials are: \
+                      \n Email: {request.data['email']} \n Password: {generated_password} \n Website: https://fastighetsvyn.se/ ",
+                    "to": request.data['email']
+                }
 
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            Utils.send_email(data=data)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Exception as e:
+            return Response({"Message": "Registration Fail Please try again later", "Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 class UserRegisterView(APIView):
@@ -65,11 +78,11 @@ class UserRegisterView(APIView):
         absUrl = "http://" + current_site + relativeUrl + "?token=" + str(token)
 
         try:
-            email_body = render_to_string(
-                'emails/verify_email.html', {'title': 'Account Verification','username': user.username, 'absUrl': absUrl, 'message': 'Thank you for registering with Fastighetsvyn. To complete your registration, please click the following link to verify your email address:', 'endingMessage':"If you did not register on Fastighetsvyn, please disregard this email.", 'btn': 'Verify Email'})
+            # email_body = render_to_string(
+            #     'emails/verify_email.html', {'title': 'Account Verification','username': user.username, 'absUrl': absUrl, 'message': 'Thank you for registering with Fastighetsvyn. To complete your registration, please click the following link to verify your email address:', 'endingMessage':"If you did not register on Fastighetsvyn, please disregard this email.", 'btn': 'Verify Email'})
 
             data = {
-                'body': email_body,
+                'body': "Your Account is created",
                 'subject': "Account Verification",
                 'to': user.email,
             }
