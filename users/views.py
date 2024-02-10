@@ -41,13 +41,21 @@ class UserViewset(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try: 
-            data = {
-                    "subject": "Account Registration",
-                    "body": f"Your account is created at Fastighetsvn. Your Login Credientials are: \
-                      \n Email: {request.data['email']} \n Password: {generated_password} \n Website: https://fastighetsvyn.se/ ",
-                    "to": request.data['email']
-                }
+            email_body = f"""
+                <p>Welcome to Fastighetsvn!</p>
+                <p>Your account has been successfully created. Here are your login credentials:</p>
+                <ul>
+                    <li><strong>Email:</strong> {request.data['email']}</li>
+                    <li><strong>Password:</strong> {generated_password}</li>
+                </ul>
+                <p>Website: <a href="https://fastighetsvyn.se/">https://fastighetsvyn.se/</a></p>
+            """
 
+            data = {
+                "subject": "Account Registration",
+                "body": email_body,
+                "to": request.data['email']
+            }
             Utils.send_email(data=data)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)

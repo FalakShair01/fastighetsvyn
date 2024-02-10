@@ -4,7 +4,7 @@ from rest_framework import viewsets, generics, status
 from rest_framework import permissions
 from .models import Development, UserDevelopmentServices, Maintenance, UserMaintenanceServices
 from .serializers import (DevelopmentSerializer, UserDevelopmentServicesSerializer, MaintainceSerializer, 
-                          UserMaintenanceServicesSerializer,AdminMaintenanceStatusSerializer)
+                          UserMaintenanceServicesSerializer,AdminMaintenanceStatusSerializer, AdminDevelopmentStatusSerializer)
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
 from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter
@@ -95,7 +95,7 @@ class UserMaintenanceViewset(viewsets.ModelViewSet):
 # Admin See All Pending, Active ,Completed
 class AdminDevelopemStatusView(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
-    serializer_class = UserDevelopmentServicesSerializer
+    serializer_class = AdminDevelopmentStatusSerializer
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserDevelopmentFilter
 

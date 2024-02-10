@@ -2,8 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models.signals import post_save
-from django.dispatch import receiver
-from notifications.models import AdminNotifications
+from property.models import Property
 
 User = get_user_model()
 # Create your models here.
@@ -29,6 +28,7 @@ class Development(models.Model):
 class UserDevelopmentServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_development')
     development = models.ForeignKey(Development, on_delete=models.CASCADE, related_name='development_services')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='development_property')
     comment = models.TextField(max_length=255, null=True, blank=True)
 
     STATUS = (
@@ -74,6 +74,7 @@ class Maintenance(models.Model):
 class UserMaintenanceServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_maintenance')
     maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='maintenance_services')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='maintaince_property')
     comment = models.TextField(max_length=255, null=True, blank=True)
     STATUS = (
         ('Active', 'Active'),
@@ -96,18 +97,3 @@ class UserMaintenanceServices(models.Model):
     
     class Meta:
         ordering = ['-pk']
-
-@receiver(post_save, sender=UserMaintenanceServices)
-def notify_maintenance_to_admin(sender, instance, created, **kwargs):
-    if created:
-        title = "Underhållstjänstförfrågan"
-        description = f"Användare {instance.user.username} begärde en ny underhållstjänst."
-        AdminNotifications.objects.create(maintenance=instance, title=title, description=description)
-
-
-@receiver(post_save, sender=UserDevelopmentServices)
-def notify_development_to_admin(sender, instance, created, **kwargs):
-    if created:
-        title = "Utvecklingstjänstförfrågan"
-        description = f"Användare {instance.user.username} begärde en ny utvecklingstjänst."
-        AdminNotifications.objects.create(development=instance, title=title, description=description)
