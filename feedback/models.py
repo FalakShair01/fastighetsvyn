@@ -26,3 +26,6 @@ def notify_feedback_to_admin(sender, instance, created, **kwargs):
         description = f"En användare, {instance.user.username}, har gett feedback. Kolla in det nu."
         AdminNotifications.objects.create(feedback=instance, title=title, description=description)
         
+# class UserFeedback(models.Model):
+#     """Feedback that will be given to users(property owner)"""
+#     full_name = models.CharField(max_length=50)

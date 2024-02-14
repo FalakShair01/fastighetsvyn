@@ -55,14 +55,14 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance']
+        fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance', 'property']
 
     def create(self, validated_data):
         maintenance_id = self.initial_data.get('maintenance')
         property_id = self.initial_data.get('property')
         maintenance = Maintenance.objects.get(pk=maintenance_id)
         property = Property.objects.get(pk=property_id)
-        user_dev_service = UserMaintenanceServices.objects.create(maintenance=maintenance, **validated_data)
+        user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
         return user_dev_service
 
 class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
