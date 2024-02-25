@@ -137,11 +137,11 @@ class LoginView(APIView):
                     serializer = UserSerializer(user)
                     return Response({'user':serializer.data,'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
                 else:
-                    return Response({"Message": "Please check your email to verify."})
+                    return Response({"Message": "Please check your email to verify."}, status=status.HTTP_403_FORBIDDEN)
             else:
-                return Response({"Message": "User is not active. Please Contact to Support team."})
+                return Response({"Message": "User is not active. Please Contact to Support team."}, status=status.HTTP_403_FORBIDDEN)
         else:
-            return Response({"Message":"Email and Password is not valid"})
+            return Response({"Message":"Email and Password is not valid"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
