@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .Utils import Utils
-from .models import Tenant
+from .models import Tenant, Managers
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -135,3 +135,8 @@ class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
         fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile']
+
+class ManagerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Managers
+        fields = ['id', 'email', 'full_name', 'password', 'phone', 'is_active']

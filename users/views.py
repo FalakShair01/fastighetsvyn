@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
-from .models import Tenant, User
+from .models import Tenant, User, Managers
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
@@ -17,10 +17,11 @@ from django.template.loader import render_to_string
 from django.contrib.auth.hashers import make_password  # Import make_password to hash passwords
 from django.contrib.auth import authenticate
 from .serializers import (UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, 
-                          SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer)
+                          SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer, ManagerSerializer)
 from .token_utils import get_tokens_for_user
 from .permissions import IsAdminOrSelf
-
+from django.shortcuts import get_object_or_404
+import json 
 
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -42,8 +43,8 @@ class UserViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         try: 
             email_body = f"""
-                <p>Welcome to Fastighetsvn!</p>
-                <p>Your account has been successfully created. Here are your login credentials:</p>
+                <p>Välkommen till Fastighetsvn!</p>
+                <p>Hej {request.data['username']}, Ditt konto har skapats. Här är dina inloggningsuppgifter:</p>
                 <ul>
                     <li><strong>Email:</strong> {request.data['email']}</li>
                     <li><strong>Password:</strong> {generated_password}</li>
@@ -123,26 +124,42 @@ class VerifyEmail(generics.GenericAPIView):
 
 class LoginView(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email').lower()
-        password = serializer.data.get('password')
+        user_type = request.query_params.get('user')
 
-        user = authenticate(email=email, password=password)
+        if user_type == 'manager':
+            email = request.data['email']
+            password = request.data['password']
+            manager = get_object_or_404(Managers, email=email, password=password)
+            user = manager.owner
+            user_data = {
+                'id': manager.id,
+                'email': manager.email,
+                'username': manager.full_name,
+                'phone': manager.phone,
+                'password': manager.password,
+                'role': manager.role,
+                'is_active': manager.is_active
+                # Add any other fields you want to include
+            }
+        else:
+            serializer = LoginSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            email = serializer.data.get('email').lower()
+            password = serializer.data.get('password')
+            user = authenticate(email=email, password=password)
+            user_data = UserSerializer(user).data
 
         if user is not None:
             if user.is_active:
-                if user.is_verified:
-                    token = get_tokens_for_user(user)
-                    serializer = UserSerializer(user)
-                    return Response({'user':serializer.data,'token': token,"Message":"Login Successfull"}, status=status.HTTP_200_OK)
+                token = get_tokens_for_user(user)
+                if user_type == 'manager':
+                    return Response({'user': user_data, 'token': token, "Message": "Login Successful"}, status=status.HTTP_200_OK)
                 else:
-                    return Response({"Message": "Please check your email to verify."}, status=status.HTTP_403_FORBIDDEN)
+                    return Response({'user': user_data, 'token': token, "Message": "Login Successful"}, status=status.HTTP_200_OK)
             else:
-                return Response({"Message": "User is not active. Please Contact to Support team."}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"Message": "User is not active. Please Contact the Support team."}, status=status.HTTP_403_FORBIDDEN)
         else:
-            return Response({"Message":"Email and Password is not valid"}, status=status.HTTP_404_NOT_FOUND)
-
+            return Response({"Message": "Email and Password are not valid"}, status=status.HTTP_404_NOT_FOUND)
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
@@ -223,3 +240,37 @@ class RemoveTenantProfile(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ManagersViewset(viewsets.ModelViewSet):
+    queryset = Managers.objects.all()
+    serializer_class = ManagerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Managers.objects.filter(owner=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.validated_data['owner'] = self.request.user
+        # Call the parent perform_create method to save the instance
+        instance = serializer.save()
+
+        # Your custom logic to send an email
+        email_body = f"""
+                <p>Välkommen till Fastighetsvn!</p>
+                <p>Hej {instance.full_name}, Ditt konto har skapats. Här är dina inloggningsuppgifter:</p>
+                <ul>
+                    <li><strong>Email:</strong> {instance.email}</li>
+                    <li><strong>Password:</strong> {instance.password}</li>
+                </ul>
+                <p>Website: <a href="https://fastighetsvyn.se/">https://fastighetsvyn.se/</a></p>
+            """
+        data = {
+            'subject': 'Du läggs till som chef',
+            'body': email_body,
+            'to': instance.email
+        }
+        Utils.send_email(data)
+
+        # Return the result of the parent perform_create method
+        return super().perform_create(serializer)

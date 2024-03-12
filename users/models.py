@@ -102,3 +102,12 @@ class Tenant(models.Model):
 
     def __str__(self):
         return self.name
+
+class Managers(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='managers')
+    email = models.EmailField()
+    username = models.CharField(max_length=100)
+    phone  = models.CharField(max_length=150)
+    password = models.CharField(max_length=25, null=True)
+    role = models.CharField(max_length=7, default='Manager')
+    is_active = models.BooleanField(default=True)
