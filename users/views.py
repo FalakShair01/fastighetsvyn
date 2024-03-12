@@ -130,6 +130,8 @@ class LoginView(APIView):
             email = request.data['email']
             password = request.data['password']
             manager = get_object_or_404(Managers, email=email, password=password)
+            if not manager.is_active:
+                return Response({"Message": "User is not active. Please Contact the Support team."}, status=status.HTTP_403_FORBIDDEN)
             user = manager.owner
             user_data = {
                 'id': manager.id,
