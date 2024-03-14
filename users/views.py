@@ -136,7 +136,7 @@ class LoginView(APIView):
             user_data = {
                 'id': manager.id,
                 'email': manager.email,
-                'username': manager.full_name,
+                'username': manager.username,
                 'phone': manager.phone,
                 'password': manager.password,
                 'role': manager.role,
