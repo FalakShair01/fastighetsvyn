@@ -111,3 +111,10 @@ class Managers(models.Model):
     password = models.CharField(max_length=25, null=True)
     role = models.CharField(max_length=7, default='Manager')
     is_active = models.BooleanField(default=True)
+
+class Worker(models.Model):
+    name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=150, null=True)
+    service_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'services',
     'feedback',
     'notifications',
+    'dashboard',
 
 ]
 
