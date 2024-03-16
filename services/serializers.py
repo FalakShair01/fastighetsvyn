@@ -3,6 +3,8 @@ from .models import Development, UserDevelopmentServices, Maintenance, UserMaint
 from django.contrib.auth import get_user_model
 from property.serializers import PropertySerializer
 from property.models import Property
+from users.serializers import ServiceProviderSerializer
+from users.models import ServiceProvider
 
 User = get_user_model()
 
@@ -55,8 +57,8 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance', 'property']
-
+        fields = ['id','status', 'comment', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
+        
     def create(self, validated_data):
         maintenance_id = self.initial_data.get('maintenance')
         property_id = self.initial_data.get('property')
@@ -64,7 +66,7 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
         property = Property.objects.get(pk=property_id)
         user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
         return user_dev_service
-
+    
 class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
     maintenance = MaintainceSerializer(read_only=True)
     user = UserSerializer(read_only=True)

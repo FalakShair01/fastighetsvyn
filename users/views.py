@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
-from .models import Tenant, User, Managers
+from .models import Tenant, User, Managers ,ServiceProvider
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
@@ -17,7 +17,8 @@ from django.template.loader import render_to_string
 from django.contrib.auth.hashers import make_password  # Import make_password to hash passwords
 from django.contrib.auth import authenticate
 from .serializers import (UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, 
-                          SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer, ManagerSerializer)
+                          SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer, 
+                          ManagerSerializer, ServiceProviderSerializer)
 from .token_utils import get_tokens_for_user
 from .permissions import IsAdminOrSelf
 from django.shortcuts import get_object_or_404
@@ -243,7 +244,6 @@ class RemoveTenantProfile(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class ManagersViewset(viewsets.ModelViewSet):
     queryset = Managers.objects.all()
     serializer_class = ManagerSerializer
@@ -276,3 +276,9 @@ class ManagersViewset(viewsets.ModelViewSet):
 
         # Return the result of the parent perform_create method
         return super().perform_create(serializer)
+    
+
+class ServerProviderViewset(viewsets.ModelViewSet):
+    queryset = ServiceProvider.objects.all()
+    serializer_class = ServiceProviderSerializer
+    permission_classes = [IsAuthenticated]

@@ -1,13 +1,14 @@
 from django.urls import path, include
 from .views import (UserRegisterView,VerifyEmail, ProfileView, TenantView, ChangePasswordView, 
                     SendPasswordResetEmailView, ResetPasswordView, LoginView, RemoveUserProfile, 
-                    RemoveTenantProfile, UserViewset, ManagersViewset)
+                    RemoveTenantProfile, UserViewset, ManagersViewset, ServerProviderViewset)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'user/tenant', TenantView, basename='tenant-create')
 router.register(r'user/management', UserViewset, basename='user-management')
 router.register(r'user/manager', ManagersViewset)
+router.register(r'service-provider', ServerProviderViewset)
 
 urlpatterns = [
     path("user/register/", UserRegisterView.as_view(), name="register"),

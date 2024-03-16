@@ -112,7 +112,7 @@ class Managers(models.Model):
     role = models.CharField(max_length=7, default='Manager')
     is_active = models.BooleanField(default=True)
 
-class Worker(models.Model):
+class ServiceProvider(models.Model):
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=150, null=True)
     service_name = models.CharField(max_length=255)

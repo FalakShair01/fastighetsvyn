@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models.signals import post_save
 from property.models import Property
+from users.models import ServiceProvider
 
 User = get_user_model()
 # Create your models here.
@@ -75,6 +76,7 @@ class UserMaintenanceServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_maintenance')
     maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='maintenance_services')
     property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='maintaince_property')
+    service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, blank=True, null=True, related_name='maintenance_service_provider')
     comment = models.TextField(max_length=255, null=True, blank=True)
     STATUS = (
         ('Active', 'Active'),
