@@ -6,6 +6,8 @@ from property.models import Property
 from django.db.models import Count, Sum
 from services.models import Maintenance, UserMaintenanceServices
 from rest_framework.permissions import IsAuthenticated
+from users.serializers import ServiceProviderSerializer
+
 # Create your views here.
 
 class UserDashboardstatusCount(APIView):
@@ -29,3 +31,20 @@ class UserDashboardstatusCount(APIView):
             'ongoing_cost': ongoing_cost
         }
         return Response(data, status=status.HTTP_200_OK)
+    
+class UserDashboardServiceProvider(APIView):
+    def get(self, request):
+        # Query UserMaintenanceServices to get active services for the current user
+        active_services = UserMaintenanceServices.objects.filter(
+            user=request.user,
+            status='Active',
+            service_provider__isnull=False  # Exclude instances where service_provider is null
+        ).select_related('service_provider')
+
+        # Collect unique service provider instances
+        unique_service_providers = set(service.service_provider for service in active_services)
+
+        # Serialize the unique service provider instances
+        serializer = ServiceProviderSerializer(unique_service_providers, many=True)
+
+        return Response(serializer.data)
