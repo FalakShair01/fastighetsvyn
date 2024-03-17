@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import AdminFeedback
+from .models import AdminFeedback, TenantsFeedback
 from django.contrib.auth import get_user_model
+from users.serializers import TenantSerializer
 
 User = get_user_model()
 
@@ -15,3 +16,17 @@ class AdminFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdminFeedback
         fields = ['id', 'title', 'description', 'image','is_done', 'created_at', 'updated_at', 'user']
+
+
+class UserFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TenantsFeedback
+        fields = '__all__'
+
+class GetUserFeedbackSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    tenant = TenantSerializer(read_only=True)
+    class Meta:
+        model = TenantsFeedback
+        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'is_done', 'created_at', 'updated_at']
+
