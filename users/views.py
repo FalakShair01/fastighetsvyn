@@ -8,7 +8,7 @@ from .models import Tenant, User, Managers ,ServiceProvider
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from .Utils import Utils
 import jwt
 import os
@@ -214,7 +214,6 @@ class ResetPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response({"Message": "Password Has been Reset Successfully"}, status=status.HTTP_200_OK)
 
-
 class TenantView(viewsets.ModelViewSet):
     queryset = Tenant.objects.all()
     serializer_class = TenantSerializer
@@ -225,9 +224,27 @@ class TenantView(viewsets.ModelViewSet):
         return Tenant.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+        tenant_instance = serializer.save(user=self.request.user)
+        feedback_link = self.get_feedback_link(tenant_instance)
+        email_body = f"""
+            <p>Välkommen till Fastighetsvn!</p>
+            <p>Hej {tenant_instance.name},</p>
+            <p>Du har blivit tillagd av {self.request.user.username}. Nedan finns länken för återkoppling. Vänligen spara den här länken. Använd den för eventuella framtida kommentarer eller frågor, men dela den inte med någon annan.</p>
+            <p>Återkoppling: <a href="{feedback_link}">Klicka här</a></p>
+        """
+        data = {
+            'body': email_body,
+            'subject': "Ditt konto har skapats - Återkopplingslänk",
+            'to': tenant_instance.email,
+        }
+        Utils.send_email(data)
+        return tenant_instance
     
-
+    def get_feedback_link(self, tenant_instance):
+        # Assuming the feedback URL is in a different app named 'feedback'
+        feedback_url = settings.FRONTEND_DOMAIN + f'/tenant-feedback/{self.request.user.id}/{tenant_instance.id}/'
+        return feedback_url
+    
 class RemoveTenantProfile(APIView):
     permission_classes = [IsAuthenticated]
     def patch(self, request, pk):

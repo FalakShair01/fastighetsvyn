@@ -24,7 +24,6 @@ class AdminFeedbackViewset(viewsets.ModelViewSet):
         return serializer.save(user=self.request.user)    
 
 class UserFeedbackView(APIView):
-    permission_classes = [IsAuthenticated]
     def post(self, requests, user, tenant):
         data = {
             'user': user,
