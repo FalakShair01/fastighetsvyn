@@ -42,4 +42,4 @@ class UserFeedbackviewset(viewsets.ModelViewSet):
     filterset_class = UserFeedbackMarkAsDoneFilter
 
     def get_queryset(self):
-        return TenantsFeedback.objects.filter(user=self.request.user)
+        return TenantsFeedback.objects.filter(user=self.request.user).order_by('-created_at')
