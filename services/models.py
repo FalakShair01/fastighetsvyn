@@ -91,9 +91,9 @@ class UserMaintenanceServices(models.Model):
         ('Other', 'Other'),
     )
     iteration = models.CharField(choices=ITERATIVE, max_length=7, null=True, blank=True)
-    day = models.CharField(max_length=50, null=True, blank=True)
-    date = models.DateField(null=True, blank=True)
-    time = models.TimeField(max_length=50, null=True, blank=True)
+    day = models.TextField(null=True, blank=True)
+    date = models.TextField(null=True, blank=True)
+    time = models.TextField(null=True, blank=True)
     frequency = models.TextField(null=True, blank=True)
     started_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
