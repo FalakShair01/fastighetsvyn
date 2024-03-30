@@ -21,5 +21,5 @@ class DevelopmentFilter(filters.FilterSet):
     class Meta:
         model = Development
         fields ={
-            'type' : ['in', 'exact']
+            'type' : ['in', 'exact', 'icontains']
         }
