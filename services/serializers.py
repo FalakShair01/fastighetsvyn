@@ -74,7 +74,7 @@ class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
     service_provider = ServiceProviderSerializer(read_only=True)
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
+        fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property','user', 'service_provider']
         # fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance', 'property', 'user']
 
 
