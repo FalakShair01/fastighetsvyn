@@ -59,10 +59,11 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Delete the associated picture file from the directory
-        picture_path = instance.picture.path
-        if picture_path and os.path.exists(picture_path):
-            os.remove(picture_path)
+        if instance.picture:
+            # Delete the associated picture file from the directory
+            picture_path = instance.picture.path
+            if picture_path and os.path.exists(picture_path):
+                os.remove(picture_path)
 
         # Call the superclass's destroy method to delete the database record
         self.perform_destroy(instance)
@@ -113,9 +114,10 @@ class DeleteDocumentView(generics.DestroyAPIView):
         instance = self.get_object()
 
         # Delete the associated file from the directory
-        file_path = instance.file.path
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if instance.file:
+            file_path = instance.file.path
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
         self.perform_destroy(instance)
         return Response({"detail": "Document deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
