@@ -29,7 +29,7 @@ class TenantsFeedback(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=255)
     comment = models.TextField()
-    # image = models.ImageField(upload_to=tenant_feedback_image, null=True, blank=True)
+    image = models.ImageField(upload_to=tenant_feedback_image, null=True, blank=True)
     is_done = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

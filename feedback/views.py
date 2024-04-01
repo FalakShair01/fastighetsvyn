@@ -9,6 +9,7 @@ from users.Utils import Utils
 from .filters import MarkAsDoneFilter, UserFeedbackMarkAsDoneFilter
 from rest_framework.views import APIView
 from .serializers import UserFeedbackSerializer, GetUserFeedbackSerializer
+import os
 
 
 # Create your views here.
@@ -43,3 +44,10 @@ class UserFeedbackviewset(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return TenantsFeedback.objects.filter(user=self.request.user).order_by('-created_at')
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        image = instance.image
+        if image and hasattr(image, 'path') and os.path.exists(image.path):
+            os.remove(image.path)
+        return super().destroy(request, *args, **kwargs)

@@ -28,5 +28,5 @@ class GetUserFeedbackSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     class Meta:
         model = TenantsFeedback
-        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'is_done', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'created_at', 'updated_at']
 
