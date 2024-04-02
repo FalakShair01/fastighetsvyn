@@ -25,11 +25,17 @@ class AdminFeedbackViewset(viewsets.ModelViewSet):
         return serializer.save(user=self.request.user)    
 
 class UserFeedbackView(APIView):
-    def post(self, requests, user, tenant):
+    parser_classes = [FormParser, MultiPartParser]
+
+    def post(self, request, user, tenant):
         data = {
             'user': user,
             'tenant': tenant,
-            **requests.data
+            "full_name": request.data.get('full_name'),
+            "email": request.data.get('email'),
+            "phone": request.data.get('phone'),
+            "comment": request.data.get('comment'),
+            "image": request.FILES.get('image'),  # Access file through request.FILES
         }
         serializer = UserFeedbackSerializer(data=data)
         serializer.is_valid(raise_exception=True)
