@@ -2,7 +2,7 @@ from .models import AdminFeedback
 from django.dispatch import receiver
 from notifications.models import AdminNotifications
 from django.db.models.signals import post_save
-from users import Utils
+from users.Utils import Utils
 
 @receiver(post_save, sender=AdminFeedback)
 def notify_feedback_to_admin(sender, instance, created, **kwargs):
