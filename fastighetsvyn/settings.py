@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'users',
     'blog',
     'property',
@@ -191,3 +190,6 @@ CORS_ALLOWED_ORIGINS = [
 # Set this Domain to generate read blog link
 # FRONTEND_DOMAIN = 'http://localhost:3000'
 FRONTEND_DOMAIN = 'https://fastighetsvyn.se'
+
+
+

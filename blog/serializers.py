@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Blog
+from .models import Blog, Newsletter
 
 
 class BlogSerializer(serializers.ModelSerializer):
@@ -13,3 +13,8 @@ class TenantBlogSerializer(serializers.ModelSerializer):
         model = Blog
         fields = ['id','title', 'description', 'content', 'cover_photo', 'created_at']
     
+
+class NewsletterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Newsletter
+        fields = '__all__'

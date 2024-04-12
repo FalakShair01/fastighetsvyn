@@ -7,8 +7,8 @@ from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .custom_permission import IsOwnerOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import BlogSerializer, TenantBlogSerializer
-from .models import Blog
+from .serializers import BlogSerializer, TenantBlogSerializer, NewsletterSerializer
+from .models import Blog, Newsletter
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, smart_str
 from django.conf import settings
@@ -37,7 +37,6 @@ class BlogListCreateView(generics.ListCreateAPIView):
         uid = urlsafe_base64_encode(force_bytes(user.id))
         url = reverse('blog-notification', args=[uid, blog_id])
         link = frontend_domain + url
-        print(link)
 
         # if blog.is_sendmail and blog.is_sendsms:
 
@@ -116,3 +115,10 @@ class TenantBlogView(APIView):
             blog = Blog.objects.filter(user=user, id=blog_id)
             serializer = TenantBlogSerializer(blog, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+class NewsletterViewset(viewsets.ModelViewSet):
+    queryset = Newsletter.objects.all().order_by('-created_at')
+    serializer_class = NewsletterSerializer
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
