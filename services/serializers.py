@@ -67,6 +67,12 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
         user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
         return user_dev_service
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['service_provider'] = ServiceProviderSerializer(instance.service_provider).data
+        return representation
+
+    
 class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
     maintenance = MaintainceSerializer(read_only=True)
     user = UserSerializer(read_only=True)
