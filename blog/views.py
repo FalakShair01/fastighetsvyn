@@ -7,8 +7,8 @@ from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .custom_permission import IsOwnerOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import BlogSerializer, TenantBlogSerializer, NewsletterSerializer
-from .models import Blog, Newsletter
+from .serializers import BlogSerializer, TenantBlogSerializer, NewsletterSerializer, NewsLetterSubscriberSerializer
+from .models import Blog, Newsletter, NewsLetterSubscriber
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, smart_str
 from django.conf import settings
@@ -115,10 +115,17 @@ class TenantBlogView(APIView):
             blog = Blog.objects.filter(user=user, id=blog_id)
             serializer = TenantBlogSerializer(blog, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
-class NewsletterViewset(viewsets.ModelViewSet):
+        
+class NewsletterListCreateAPIView(generics.ListCreateAPIView):
     queryset = Newsletter.objects.all().order_by('-created_at')
     serializer_class = NewsletterSerializer
-    parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+
+class NewsletterRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Newsletter.objects.all()
+    serializer_class = NewsletterSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+class NewsLetterSubscriberViewset(viewsets.ModelViewSet):
+    queryset = NewsLetterSubscriber.objects.all()
+    serializer_class = NewsLetterSubscriberSerializer

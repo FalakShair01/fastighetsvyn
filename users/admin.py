@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Tenant, ServiceProvider
+from .models import User, Tenant, ServiceProvider, DemoRequests
 
 
 
@@ -39,3 +39,4 @@ admin.site.register(User, UserAdmin)
 # unregister the Group model from admin.
 admin.site.register(Tenant)
 admin.site.register(ServiceProvider)
+admin.site.register(DemoRequests)

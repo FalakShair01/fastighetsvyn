@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .Utils import Utils
-from .models import Tenant, Managers, ServiceProvider
+from .models import Tenant, Managers, ServiceProvider, DemoRequests
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -145,4 +145,10 @@ class ManagerSerializer(serializers.ModelSerializer):
 class ServiceProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model= ServiceProvider
+        fields = '__all__'
+
+
+class DemoRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DemoRequests
         fields = '__all__'

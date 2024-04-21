@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Blog, Newsletter
+from .models import Blog, Newsletter, NewsLetterSubscriber
 from users.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 
@@ -23,3 +23,8 @@ class NewsletterSerializer(serializers.ModelSerializer):
         model = Newsletter
         fields = ['id','author', 'title', 'description', 'content', 'cover_photo', 'created_at', 'creator']
     
+
+class NewsLetterSubscriberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsLetterSubscriber
+        fields = '__all__'

@@ -33,3 +33,9 @@ class Newsletter(models.Model):
     cover_photo = models.ImageField(upload_to=newsletter_cover, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class NewsLetterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
