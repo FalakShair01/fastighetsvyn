@@ -30,17 +30,21 @@ def send_demo_notification_to_admin(sender, instance, created, **kwargs):
 def send_contact_us_notification_to_admin(sender, instance, created, **kwargs):
     if created:
         email = instance.email
+        phone = instance.phone  
+        message = instance.message
         admins_emails = User.objects.filter(role='ADMIN').values_list('email', flat=True)
         subject = "Ny Kontakta oss-förfrågan"
         body = """
             <html>
                 <body>
                     <p>Hej Admin,</p>
-                    <p>En ny förfrågan har skickats in med följande e-postadress:</p>
-                    <p><b>E-post:</b> {}</p>
+                    <p>En ny förfrågan har skickats in med följande uppgifter:</p>
+                    <p><b>E-post:</b> {email}</p>
+                    <p><b>Telefonnummer:</b> {phone}</p>
+                    <p><b>Meddelande:</b> {message}</p>
                     <p>Vänligen granska och svara enligt behov.</p>
                 </body>
             </html>
-        """.format(email)
+        """.format(email=email, phone=phone, message=message)
         data = {'subject': subject, 'body': body, 'to': list(admins_emails)}
         Utils.send_email(data)
