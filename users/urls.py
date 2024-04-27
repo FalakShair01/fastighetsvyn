@@ -1,7 +1,8 @@
 from django.urls import path, include
 from .views import (UserRegisterView,VerifyEmail, ProfileView, TenantView, ChangePasswordView, 
                     SendPasswordResetEmailView, ResetPasswordView, LoginView, RemoveUserProfile, 
-                    RemoveTenantProfile, UserViewset, ManagersViewset, ServerProviderViewset, DemoRequestView)
+                    RemoveTenantProfile, UserViewset, ManagersViewset, ServerProviderViewset, DemoRequestView,
+                      ContactUsViewset, SendContactUs)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -10,6 +11,7 @@ router.register(r'user/management', UserViewset, basename='user-management')
 router.register(r'user/manager', ManagersViewset)
 router.register(r'service-provider', ServerProviderViewset)
 router.register(r'demo-requests', DemoRequestView)
+router.register(r'contact-us', ContactUsViewset)
 
 urlpatterns = [
     path("user/register/", UserRegisterView.as_view(), name="register"),
@@ -21,5 +23,6 @@ urlpatterns = [
     path("user/change-password/", ChangePasswordView.as_view(), name="change-password"),
     path("user/reset-password-email/", SendPasswordResetEmailView.as_view(), name="reset-password-email"),
     path("user/reset-password/<uid>/<token>/", ResetPasswordView.as_view(), name="reset-password"),
+    path("contact-us-send/", SendContactUs.as_view(), name="send-contact-us"),
     path('', include(router.urls)),
 ]

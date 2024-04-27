@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
-from .models import Tenant, User, Managers ,ServiceProvider, DemoRequests
+from .models import Tenant, User, Managers ,ServiceProvider, DemoRequests, ContactUs
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
@@ -18,7 +18,7 @@ from django.contrib.auth.hashers import make_password  # Import make_password to
 from django.contrib.auth import authenticate
 from .serializers import (UserSerializer, TenantSerializer, ProfileSerializer, ChangePasswordSerializer, 
                           SendPasswordResetEmailSerializer, ResetPasswordSerializer, LoginSerializer, 
-                          ManagerSerializer, ServiceProviderSerializer, DemoRequestSerializer)
+                          ManagerSerializer, ServiceProviderSerializer, DemoRequestSerializer, ContactUsSerializer)
 from .token_utils import get_tokens_for_user
 from .permissions import IsAdminOrSelf
 from django.shortcuts import get_object_or_404
@@ -304,4 +304,12 @@ class ServerProviderViewset(viewsets.ModelViewSet):
 class DemoRequestView(viewsets.ModelViewSet):
     queryset = DemoRequests.objects.all()
     serializer_class = DemoRequestSerializer
-    # permission_classes = [AllowAny]
+    
+class SendContactUs(generics.CreateAPIView):
+    queryset = ContactUs.objects.all()
+    serializer_class = ContactUsSerializer
+
+class ContactUsViewset(viewsets.ModelViewSet):
+    queryset = ContactUs.objects.all()
+    serializer_class = ContactUsSerializer
+    permission_classes = [IsAuthenticated]
