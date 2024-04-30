@@ -185,7 +185,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://fastighetsvyn.vercel.app',
     'https://fastighetsvyn.se',
-    'https://fastvyn.se/'
+    'https://fastvyn.se'
 ]
 
 # Set this Domain to generate read blog link
