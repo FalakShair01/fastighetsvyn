@@ -184,7 +184,7 @@ EMAIL_PORT = 587
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://fastighetsvyn.vercel.app',
-    'https://fastighetsvyn.se',
+    # 'https://fastighetsvyn.se',
     'https://fastvyn.se'
 ]
 

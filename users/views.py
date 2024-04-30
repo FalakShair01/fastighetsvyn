@@ -50,7 +50,7 @@ class UserViewset(viewsets.ModelViewSet):
                     <li><strong>Email:</strong> {request.data['email']}</li>
                     <li><strong>Password:</strong> {generated_password}</li>
                 </ul>
-                <p>Website: <a href="https://fastighetsvyn.se/">https://fastighetsvyn.se/</a></p>
+                <p>Website: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
             """
 
             data = {
@@ -282,7 +282,7 @@ class ManagersViewset(viewsets.ModelViewSet):
                     <li><strong>Email:</strong> {instance.email}</li>
                     <li><strong>Password:</strong> {instance.password}</li>
                 </ul>
-                <p>Website: <a href="https://fastighetsvyn.se/">https://fastighetsvyn.se/</a></p>
+                <p>Website: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
             """
         data = {
             'subject': 'Du läggs till som chef',
