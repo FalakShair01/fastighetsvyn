@@ -44,21 +44,22 @@ class UserViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         try: 
             email_body = f"""
-                <p>Välkommen till Fastighetsvn!</p>
+                <p>Välkommen till Fastighetsvyn!</p>
                 <p>Hej {request.data['username']}, Ditt konto har skapats. Här är dina inloggningsuppgifter:</p>
                 <ul>
                     <li><strong>Email:</strong> {request.data['email']}</li>
-                    <li><strong>Password:</strong> {generated_password}</li>
+                    <li><strong>Lösenord:</strong> {generated_password}</li>
                 </ul>
-                <p>Website: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
+                <p>Webbplats: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
             """
 
             data = {
-                "subject": "Account Registration",
+                "subject": "Konto Registrering",
                 "body": email_body,
                 "to": request.data['email']
             }
             Utils.send_email(data=data)
+
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

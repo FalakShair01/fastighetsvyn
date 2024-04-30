@@ -60,8 +60,16 @@ class BlogListCreateView(generics.ListCreateAPIView):
             for i in tenants:
 
                 try:
-                    email_body = render_to_string('emails/verify_email.html', {'title': 'New Blog Notification', 'username': i.name, 'absUrl': link,
-                                                  'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn.", 'btn':'Read Blog'})
+                    email_body = """
+                            <html>
+                                <body>
+                                    <p>Hej {username},</p>
+                                    <p>Vi är glada att informera dig om att en ny blogg har publicerats. Klicka på länken nedan för att läsa den:</p>
+                                    <p><a href="{absUrl}">{btn}</a></p>
+                                    <p>Tack för att du valde Fastighetsvyn.</p>
+                                </body>
+                            </html>
+                        """.format(username=i.name, absUrl=link, btn='Läs blogg')
 
                     data = {
                         'body': email_body,
