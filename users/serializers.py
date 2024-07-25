@@ -16,7 +16,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "username", "profile", "phone", "address", "password", "role", "is_active", "created_at"]
+        fields = ["id", "email", "username", "profile", "phone", "address", "password", "role", "is_active", "subscription_type", "allow_access_account", "created_at"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -105,7 +105,6 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
                 return attrs
             except Exception as e:
                 return serializers.ValidationError({"Error": str(e)})
-
         else:
             raise serializers.ValidationError("No User found with this Email.")
 

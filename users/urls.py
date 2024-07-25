@@ -2,7 +2,8 @@ from django.urls import path, include
 from .views import (UserRegisterView,VerifyEmail, ProfileView, TenantView, ChangePasswordView, 
                     SendPasswordResetEmailView, ResetPasswordView, LoginView, RemoveUserProfile, 
                     RemoveTenantProfile, UserViewset, ManagersViewset, ServerProviderViewset, DemoRequestView,
-                      ContactUsViewset, SendContactUs)
+                      ContactUsViewset, SendContactUs, AdminAccessUserAccountView)
+
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -24,5 +25,6 @@ urlpatterns = [
     path("user/reset-password-email/", SendPasswordResetEmailView.as_view(), name="reset-password-email"),
     path("user/reset-password/<uid>/<token>/", ResetPasswordView.as_view(), name="reset-password"),
     path("contact-us-send/", SendContactUs.as_view(), name="send-contact-us"),
+    path("admin/user-account-login/", AdminAccessUserAccountView.as_view()),
     path('', include(router.urls)),
 ]

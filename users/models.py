@@ -4,6 +4,13 @@ from django.db import models
 
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+# from property.models import Property
+
+def image_upload(instance, filename):
+    return '/'.join(['images', str(instance.name), filename])
+
+def upload_to(instance, filename):
+    return '/'.join(['images', str(instance.username), filename])
 
 
 class MyUserManager(BaseUserManager):
@@ -42,11 +49,6 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-def image_upload(instance, filename):
-    return '/'.join(['images', str(instance.name), filename])
-
-def upload_to(instance, filename):
-    return '/'.join(['images', str(instance.username), filename])
 
 class User(AbstractBaseUser):
     email = models.EmailField(verbose_name="Email",max_length=255,unique=True,)
@@ -60,6 +62,13 @@ class User(AbstractBaseUser):
         ('USER', 'User')
     )
     role = models.CharField(max_length=10,choices=ROLES, default='USER')
+
+    SUB_TYPE = (
+        ('TRIAL', 'Trial'),
+        ('ORIGNAL', 'Orignal')
+    )
+    subscription_type = models.CharField(max_length=10,choices=SUB_TYPE, default='TRIAL')
+    allow_access_account = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -95,6 +104,7 @@ class User(AbstractBaseUser):
 class Tenant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenants')
     name = models.CharField(max_length=255)
+    # property = models.ForeignKey('property.Property', on_delete=models.SET_NULL, null=True)
     appartment_no = models.CharField(max_length=255)
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
     phone = models.CharField(max_length=255)

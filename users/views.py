@@ -142,7 +142,9 @@ class LoginView(APIView):
                 'phone': manager.phone,
                 'password': manager.password,
                 'role': manager.role,
-                'is_active': manager.is_active
+                'is_active': manager.is_active,
+                # 'subscription_type': manager.subscription_type,
+                # 'allow_access_account': manager.allow_access_account,
                 # Add any other fields you want to include
             }
         else:
@@ -165,6 +167,26 @@ class LoginView(APIView):
         else:
             return Response({"Message": "Email and Password are not valid"}, status=status.HTTP_404_NOT_FOUND)
 
+class AdminAccessUserAccountView(APIView):
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({"Message": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"Message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserSerializer(user)
+        user_data = serializer.data
+        
+        if user.is_active:
+            token = get_tokens_for_user(user)
+            return Response({'user': user_data, 'token': token, "Message": "Login Successful"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"Message": "User is not active. Please contact the Support team."}, status=status.HTTP_403_FORBIDDEN)
+        
 class ProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = ProfileSerializer
