@@ -18,7 +18,7 @@ class AdminFeedback(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to=admin_feeback_image, null=True, blank=True)
     is_done = models.BooleanField(default=False)
-    is_archieve = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -32,6 +32,6 @@ class TenantsFeedback(models.Model):
     comment = models.TextField()
     image = models.ImageField(upload_to=tenant_feedback_image, null=True, blank=True)
     is_done = models.BooleanField(default=False)
-    is_archieve = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

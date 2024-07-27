@@ -15,7 +15,7 @@ class AdminFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = AdminFeedback
-        fields = ['id', 'title', 'description', 'image', 'is_done', 'is_archieve', 'created_at', 'updated_at', 'user']
+        fields = ['id', 'title', 'description', 'image', 'is_done', 'is_archive', 'created_at', 'updated_at', 'user']
 
 
 class UserFeedbackSerializer(serializers.ModelSerializer):
@@ -28,5 +28,5 @@ class GetUserFeedbackSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     class Meta:
         model = TenantsFeedback
-        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'is_archieve', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'is_archive', 'created_at', 'updated_at']
 
