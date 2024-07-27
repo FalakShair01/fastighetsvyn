@@ -6,7 +6,7 @@ class MarkAsDoneFilter(filters.FilterSet):
         model = AdminFeedback
         fields  ={
             'is_done': ['exact'],
-            'is_archieve': ['exact']
+            'is_archive': ['exact']
         }
 
 
@@ -15,5 +15,5 @@ class UserFeedbackMarkAsDoneFilter(filters.FilterSet):
         model = TenantsFeedback
         fields  ={
             'is_done': ['exact'],
-            'is_archieve': ['exact']
+            'is_archive': ['exact']
         }
