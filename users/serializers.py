@@ -36,7 +36,9 @@ class LoginSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "username", "phone", "address", "profile", "subscription_type", "allow_access_account"]
+        fields = '__all__'
+
+        # fields = ["email", "username", "phone", "address", "profile", "subscription_type", "allow_access_account"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
