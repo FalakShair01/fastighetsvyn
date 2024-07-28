@@ -68,8 +68,6 @@ class UserViewset(viewsets.ModelViewSet):
             return Response({"Message": "Registration Fail Please try again later", "Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
 class UserRegisterView(APIView):
 
     def post(self, request):
@@ -168,11 +166,12 @@ class LoginView(APIView):
             return Response({"Message": "Email and Password are not valid"}, status=status.HTTP_404_NOT_FOUND)
 
 class AdminAccessUserAccountView(APIView):
+    permission_classes = [IsAdminOrSelf]
     def post(self, request):
         user_id = request.data.get('user_id')
         if not user_id:
             return Response({"Message": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+    
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:

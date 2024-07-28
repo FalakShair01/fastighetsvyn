@@ -1,9 +1,12 @@
+from typing import Iterable
 from django.db import models
 
 # Create your models here.
 
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.utils.text import slugify
+
 # from property.models import Property
 
 def image_upload(instance, filename):
@@ -69,7 +72,7 @@ class User(AbstractBaseUser):
     )
     subscription_type = models.CharField(max_length=10,choices=SUB_TYPE, default='TRIAL')
     allow_access_account = models.BooleanField(default=False)
-
+    username_slug = models.SlugField(blank=True) # unique=True will add later
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -100,11 +103,15 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
     
+    def save(self, *args, **kwargs):
+        if not self.username_slug:
+            self.username_slug = slugify(self.username)
+        super(User, self).save(*args, **kwargs)
 
 class Tenant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenants')
     name = models.CharField(max_length=255)
-    # property = models.ForeignKey('property.Property', on_delete=models.SET_NULL, null=True)
+    # property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True)
     appartment_no = models.CharField(max_length=255)
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
     phone = models.CharField(max_length=255)
