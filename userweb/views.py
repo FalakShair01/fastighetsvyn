@@ -6,7 +6,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import Homepage
 from .serializers import HomePageSerializer
 from users.models import User
-
+from blog.models import Blog
+from blog.serializers import TenantBlogSerializer
+from django.shortcuts import get_object_or_404
 
 class HomepageView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -36,3 +38,27 @@ class HomepageView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
  
  
+class ListUserBlogView(APIView):
+
+    def get(self, request, username_slug):
+        try:
+            user = User.objects.get(username_slug=username_slug)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        blogs = Blog.objects.filter(user=user)
+        serializer = TenantBlogSerializer(blogs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RetrieveUserBlogView(APIView):
+
+    def get(self, request, username_slug, pk):
+        try:
+            user = User.objects.get(username_slug=username_slug)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        blogs = get_object_or_404(Blog, id=pk , user=user)
+        serializer = TenantBlogSerializer(blogs)
+        return Response(serializer.data, status=status.HTTP_200_OK)
