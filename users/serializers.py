@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .Utils import Utils
-from .models import Tenant, Managers, ServiceProvider, DemoRequests, ContactUs
+from .models import Tenant, Managers, ServiceProvider, DemoRequests
 from django.conf import settings
 from django.template.loader import render_to_string
 
@@ -162,7 +162,8 @@ class DemoRequestSerializer(serializers.ModelSerializer):
         model = DemoRequests
         fields = '__all__'
 
-class ContactUsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactUs
-        fields = '__all__'
+class ContactUsSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    phone = serializers.CharField(max_length=255)
+    email = serializers.EmailField()
+    message = serializers.CharField()

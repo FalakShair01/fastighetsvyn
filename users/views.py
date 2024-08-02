@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
-from .models import Tenant, User, Managers ,ServiceProvider, DemoRequests, ContactUs
+from .models import Tenant, User, Managers ,ServiceProvider, DemoRequests
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
@@ -50,7 +50,7 @@ class UserViewset(viewsets.ModelViewSet):
                     <li><strong>Email:</strong> {request.data['email']}</li>
                     <li><strong>Lösenord:</strong> {generated_password}</li>
                 </ul>
-                <p>Webbplats: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
+                <p>Webbplats: <a href="{settings.FRONTEND_DOMAIN}"{settings.FRONTEND_DOMAIN}</a></p>
             """
 
             data = {
@@ -113,8 +113,8 @@ class VerifyEmail(generics.GenericAPIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
-            return render(request, 'emails/verification_success.html')
-            # return Response({'Message': 'Email Successfully activated'}, status=status.HTTP_200_OK)
+            # return render(request, 'emails/verification_success.html')
+            return Response({'Message': 'Email Successfully activated'}, status=status.HTTP_200_OK)
 
         except jwt.ExpiredSignatureError as identifier:
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
@@ -304,7 +304,7 @@ class ManagersViewset(viewsets.ModelViewSet):
                     <li><strong>Email:</strong> {instance.email}</li>
                     <li><strong>Password:</strong> {instance.password}</li>
                 </ul>
-                <p>Website: <a href="https://fastvyn.se">https://fastvyn.se</a></p>
+                <p>Website: <a href="{settings.FRONTEND_DOMAIN}"{settings.FRONTEND_DOMAIN}</a></p>
             """
         data = {
             'subject': 'Du läggs till som chef',
@@ -327,11 +327,36 @@ class DemoRequestView(viewsets.ModelViewSet):
     queryset = DemoRequests.objects.all()
     serializer_class = DemoRequestSerializer
     
-class SendContactUs(generics.CreateAPIView):
-    queryset = ContactUs.objects.all()
-    serializer_class = ContactUsSerializer
+class SendContactUs(APIView):
+    def post(self, request):
+        serializer = ContactUsSerializer(data=request.data)
+        if serializer.is_valid():
+            sender_name = serializer.validated_data['name']     
+            sender_phone = serializer.validated_data['phone']     
+            sender_email = serializer.validated_data['email']     
+            sender_message = serializer.validated_data['message']
+            admins_emails = User.objects.filter(role='ADMIN').values_list('email', flat=True)
 
-class ContactUsViewset(viewsets.ModelViewSet):
-    queryset = ContactUs.objects.all()
-    serializer_class = ContactUsSerializer
-    permission_classes = [IsAuthenticated]
+            subject = "Ny Kontakta oss-förfrågan"
+            body = f"""
+                <html>
+                    <body>
+                        <p>Hej Admin,</p>
+                        <p>En ny förfrågan har skickats in med följande uppgifter:</p>
+                        <p><strong>Namn:</strong> {sender_name}</p>      
+                        <p><strong>Telefon:</strong> {sender_phone}</p>
+                        <p><strong>E-post:</strong> {sender_email}</p>
+                        <p><strong>Meddelande:</strong><br>{sender_message}</p>
+                        <p>Vänligen granska och svara enligt behov.</p>
+                    </body>
+                </html>
+            """
+            data = {'subject': subject, 'body': body, 'to': list(admins_emails)}
+            Utils.send_email(data)
+            return Response({'message': 'Form submitted successfully.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# class ContactUsViewset(viewsets.ModelViewSet):
+#     queryset = ContactUs.objects.all()
+#     serializer_class = ContactUsSerializer
+#     permission_classes = [IsAuthenticated]

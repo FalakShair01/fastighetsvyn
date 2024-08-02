@@ -9,6 +9,9 @@ class Utils():
         else:
             to_emails = [data['to']]
         
-        email = EmailMessage(subject=data['subject'], body=data['body'], from_email='Support Fastighetsvyn <fastighetsvyn2@gmail.com>', to=to_emails)
-        email.content_subtype = "html"
-        email.send()
+        try:
+            email = EmailMessage(subject=data['subject'], body=data['body'], from_email='Support Fastighetsvyn <fastighetsvyn2@gmail.com>', to=to_emails)
+            email.content_subtype = "html"
+            email.send()
+        except Exception as e:
+            print(f"Sending email Failed : {e}")

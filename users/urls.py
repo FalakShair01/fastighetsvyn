@@ -2,7 +2,7 @@ from django.urls import path, include
 from .views import (UserRegisterView,VerifyEmail, ProfileView, TenantView, ChangePasswordView, 
                     SendPasswordResetEmailView, ResetPasswordView, LoginView, RemoveUserProfile, 
                     RemoveTenantProfile, UserViewset, ManagersViewset, ServerProviderViewset, DemoRequestView,
-                      ContactUsViewset, SendContactUs, AdminAccessUserAccountView)
+                    SendContactUs, AdminAccessUserAccountView)
 
 from rest_framework.routers import DefaultRouter
 
@@ -12,7 +12,7 @@ router.register(r'user/management', UserViewset, basename='user-management')
 router.register(r'user/manager', ManagersViewset)
 router.register(r'service-provider', ServerProviderViewset)
 router.register(r'demo-requests', DemoRequestView)
-router.register(r'contact-us', ContactUsViewset)
+# router.register(r'contact-us', ContactUsViewset)
 
 urlpatterns = [
     path("user/register/", UserRegisterView.as_view(), name="register"),

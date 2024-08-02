@@ -30,3 +30,4 @@ class Documents(models.Model):
     document = models.FileField(upload_to=upload_miniwebsite_document)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+

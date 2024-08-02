@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import HomepageView, ListUserBlogView, RetrieveUserBlogView, DocumentPageDetailView, DocumentView
+from .views import (HomepageView, ListUserBlogView, RetrieveUserBlogView, DocumentPageDetailView, 
+                    DocumentView, ContactPageView)
 
 urlpatterns = [
     path('homepage/', HomepageView.as_view(), name='homepage-create'),
@@ -11,4 +12,5 @@ urlpatterns = [
     path('document-detail/retrieve/<slug:username_slug>/', DocumentPageDetailView.as_view(), name='list-doc-detail'),
     path('create-document/', DocumentView.as_view(), name='create-doc'),
     path('document/retrieve/<slug:username_slug>/', DocumentView.as_view(), name='list-doc'),
+    path('contact-us/<slug:username_slug>/', ContactPageView.as_view(), name='contact-us'),
 ]

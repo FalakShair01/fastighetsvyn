@@ -17,3 +17,10 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Documents
         fields = '__all__'
+
+
+class ContactUsFormSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    phone = serializers.CharField(max_length=200)
+    email = serializers.EmailField()
+    message = serializers.CharField()
