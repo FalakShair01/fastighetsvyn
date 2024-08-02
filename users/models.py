@@ -7,8 +7,6 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.utils.text import slugify
 
-# from property.models import Property
-
 def image_upload(instance, filename):
     return '/'.join(['images', str(instance.name), filename])
 
@@ -108,10 +106,13 @@ class User(AbstractBaseUser):
             self.username_slug = slugify(self.username)
         super(User, self).save(*args, **kwargs)
 
+# imported here to avoid circular import 
+from property.models import Property
+
 class Tenant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenants')
     name = models.CharField(max_length=255)
-    # property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True)
+    property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True)  # Add this line
     appartment_no = models.CharField(max_length=255)
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
     phone = models.CharField(max_length=255)

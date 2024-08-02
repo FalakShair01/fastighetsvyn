@@ -9,6 +9,8 @@ from .Utils import Utils
 from .models import Tenant, Managers, ServiceProvider, DemoRequests
 from django.conf import settings
 from django.template.loader import render_to_string
+from property.serializers import PropertySerializer
+from property.models import Property
 
 User = get_user_model()
 
@@ -141,9 +143,14 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class TenantSerializer(serializers.ModelSerializer):
+    property = serializers.PrimaryKeyRelatedField(
+        queryset=Property.objects.all(),
+    )
+    property_detail = PropertySerializer(source='property', read_only=True)
+
     class Meta:
         model = Tenant
-        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile']
+        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile', 'property', 'property_detail']
 
 class ManagerSerializer(serializers.ModelSerializer):
     class Meta:
