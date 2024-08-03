@@ -117,7 +117,7 @@ class Tenant(models.Model):
     email = models.EmailField(verbose_name="Email", null=True, blank=False)
     phone = models.CharField(max_length=255)
     profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
-    comment = models.TextField()
+    comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
