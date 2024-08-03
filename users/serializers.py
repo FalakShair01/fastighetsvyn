@@ -150,7 +150,7 @@ class TenantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tenant
-        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile', 'property', 'property_detail']
+        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile', 'comment', 'property', 'property_detail']
 
 class ManagerSerializer(serializers.ModelSerializer):
     class Meta:
