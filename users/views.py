@@ -198,18 +198,22 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 class RemoveUserProfile(APIView):
     def patch(self, request):
-        instance=request.user
+        instance = request.user
         serializer = ProfileSerializer(instance=instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        
         try:
             profile_path = instance.profile.path
             if profile_path and os.path.exists(profile_path):
                 os.remove(profile_path)
+                instance.profile = ""  # Clear the profile field after successful removal
+                serializer.save()
+            else:
+                return Response({"error": "Profile path does not exist."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            instance.profile = ""
-            serializer.save()
-            return Response(serializer.data)
-
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -269,19 +273,24 @@ class TenantView(viewsets.ModelViewSet):
     
 class RemoveTenantProfile(APIView):
     permission_classes = [IsAuthenticated]
+
     def patch(self, request, pk):
-        tenant = Tenant.objects.get(user=request.user, id=pk)
+        tenant = get_object_or_404(Tenant, user=request.user, id=pk)
+        
         try:
             profile_path = tenant.profile.path
             if profile_path and os.path.exists(profile_path):
                 os.remove(profile_path)
+                tenant.profile = None  # Clear the profile field after successful removal
         except Exception as e:
-            
-            data = {'profile':None}
-            serializer = TenantSerializer(tenant, data=data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        data = {'profile': None}
+        serializer = TenantSerializer(tenant, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ManagersViewset(viewsets.ModelViewSet):
     queryset = Managers.objects.all()
