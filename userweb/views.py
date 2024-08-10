@@ -180,7 +180,7 @@ class DeleteContactPerson(APIView, UserMixin):
         instance.delete()
         return Response({"message": "Contact person deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-# FEEDBACK FORM AND LINK
+# FEEDBACK Page, FORM AND LINK
 class ListFormLinks(APIView, UserMixin):
     def get(self, request, username_slug):
         user = self.get_user(username_slug)

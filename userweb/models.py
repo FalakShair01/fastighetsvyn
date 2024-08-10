@@ -34,14 +34,6 @@ class Documents(models.Model):
     document = models.FileField(upload_to=upload_miniwebsite_document)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-class FormLinks(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    link = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     
 class ContactPerson(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -50,5 +42,13 @@ class ContactPerson(models.Model):
     address = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     picture = models.ImageField(upload_to=upload_miniwebsite_contact_person_image)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class FormLinks(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    link = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
