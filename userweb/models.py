@@ -9,6 +9,9 @@ def upload_miniwebsite_banner(instance, filename):
 def upload_miniwebsite_document(instance, filename):
     return '/'.join(['mini-site', 'documents', str(instance.user.username), filename])
 
+def upload_miniwebsite_contact_person_image(instance, filename):
+    return '/'.join(['mini-site', 'contact-person', str(instance.user.username), filename])
+
 class Homepage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_page')
     banner = models.ImageField(upload_to=upload_miniwebsite_banner)
@@ -27,7 +30,25 @@ class DocumentPageDetail(models.Model):
 
 class Documents(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=True)
     document = models.FileField(upload_to=upload_miniwebsite_document)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class FormLinks(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    link = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+class ContactPerson(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    address = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    picture = models.ImageField(upload_to=upload_miniwebsite_contact_person_image)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
