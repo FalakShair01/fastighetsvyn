@@ -96,7 +96,7 @@ class UserRegisterView(APIView):
                 'to': user.email,
             }
 
-            # Utils.send_email(data)
+            Utils.send_email(data)
             return Response({"Message": "Please check you Email for verification."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             user.delete()

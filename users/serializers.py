@@ -18,7 +18,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "username", "profile", "phone", "address", "password", "role", "is_active", "subscription_type", "allow_access_account", "username_slug", "created_at"]
+        fields = ["id", "email", "username", "profile", "phone", "address", "password", "role", "is_active", "subscription_type", "subscription_status", "allow_access_account", "username_slug", "created_at"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -78,17 +78,8 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             frontend_domain = settings.FRONTEND_DOMAIN
-            # url = reverse('reset-password')
             link = frontend_domain + reverse('reset-password', args=[uid, token])
-            # link = 'http://'+domain+'/api/user/reset-password/'+uid+'/'+token
             try: 
-                # email_body = render_to_string(
-                #     'emails/verify_email.html', {'title': 'Reset Password','username': user.username, 'absUrl': link, 'message': 'We received a request to reset your password for your Fastighetsvyn account. To create a new password, click on the following link:', 'endingMessage': "If you didn't request this change, please contact our support team immediately.", "btn": "Change Password"})
-                # data = {
-                #     'body': email_body,
-                #     'subject': "Reset Password",
-                #     'to': user.email,
-                # }
 
                 email_body = f"""
                             <html>
