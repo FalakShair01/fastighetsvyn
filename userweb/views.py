@@ -83,6 +83,14 @@ class DocumentPageDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def patch(self, request, username_slug, pk):
+        user = get_object_or_404(User, username_slug=username_slug)
+        instance = DocumentPageDetail.objects.get(pk=pk, user=user)
+        serializer = DocumentPageDetailSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
 class DocumentView(APIView):
@@ -103,6 +111,17 @@ class DocumentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, username_slug, pk):
+        try:
+            user = User.objects.get(username_slug=username_slug)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        document = Documents.objects.get(id=pk, user=user)
+        document.delete()
+        return Response("Document Delete Successfully.", status=status.HTTP_201_CREATED)
+    
     
 
 class ContactPageView(APIView):
