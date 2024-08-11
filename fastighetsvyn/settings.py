@@ -51,8 +51,8 @@ INSTALLED_APPS = [
     'notifications',
     'dashboard',
     'economi',
-    'userweb'
-
+    'userweb',
+    'subscription',
 ]
 
 MIDDLEWARE = [

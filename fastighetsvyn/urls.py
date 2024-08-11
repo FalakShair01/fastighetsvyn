@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/', include('dashboard.urls')),
     path('api/v1/', include('userweb.urls')),
     path('api/v1/', include('economi.urls')),
+    path('api/v1/', include('subscription.urls')),
 
 ] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
 
