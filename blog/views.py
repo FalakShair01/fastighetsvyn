@@ -7,14 +7,11 @@ from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .custom_permission import IsOwnerOrReadOnly
 from rest_framework.parsers import MultiPartParser, FormParser
-from .serializers import BlogSerializer, TenantBlogSerializer, NewsletterSerializer, NewsLetterSubscriberSerializer
+from .serializers import BlogSerializer, NewsletterSerializer, NewsLetterSubscriberSerializer
 from .models import Blog, Newsletter, NewsLetterSubscriber
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.utils.encoding import force_bytes, smart_str
 from django.conf import settings
-from django.urls import reverse
 from users.Utils import Utils
-from django.template.loader import render_to_string
+from users.models import Tenant
 # from django.contrib.
 
 
@@ -31,61 +28,54 @@ class BlogListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         blog = serializer.save(user=self.request.user)
-        blog_id = blog.id
-        user = blog.user
-        frontend_domain = settings.FRONTEND_DOMAIN
-        uid = urlsafe_base64_encode(force_bytes(user.id))
-        url = reverse('blog-notification', args=[uid, blog_id])
-        link = frontend_domain + url
-
-        # if blog.is_sendmail and blog.is_sendsms:
-
-        #     tenants = user.tenants.all()
-        #     for i in tenants:
-        #         try:
-        #             email_body = render_to_string('emails/verify_email.html', {'title': 'New Blog Notification', 'username': i.name, 'absUrl': link,
-        #                                           'message': 'We are Pleased to inform you that a new Blog has been Published. To read a new blog, click on the following link:', 'endingMessage': "Thanks For Choosing Fastighetsvyn."})
-
-        #             data = {
-        #                 'body': email_body,
-        #                 'subject': "New Blog Notification",
-        #                 'to': i.email,
-        #             }
-        #             Utils.send_email(data)
-        #         except Exception as e:
-        #             return Response({"message": "email failed to send.", "error": str(e)}, )
-
-        if blog.is_sendmail:
-            tenants = user.tenants.all()
-            for i in tenants:
-
-                try:
-                    email_body = """
-                            <html>
-                                <body>
-                                    <p>Hej {username},</p>
-                                    <p>Vi är glada att informera dig om att en ny blogg har publicerats. Klicka på länken nedan för att läsa den:</p>
-                                    <p><a href="{absUrl}">{btn}</a></p>
-                                    <p>Tack för att du valde Fastighetsvyn.</p>
-                                </body>
-                            </html>
-                        """.format(username=i.name, absUrl=link, btn='Läs blogg')
-
-                    data = {
-                        'body': email_body,
-                        'subject': "New Blog Notification",
-                        'to': i.email,
-                    }
-                    Utils.send_email(data)
-                except Exception as e:
-                    return Response({"message": "email failed to send.", "error": str(e)}, )
-
-        # elif blog.is_sendsms:
-        #     pass
-
+        self.send_blog_notification(blog)
         return serializer
 
+    def send_blog_notification(self, blog):
+        user = blog.user.username_slug
+        username_slug = user.username_slug
+        frontend_domain = settings.FRONTEND_DOMAIN
+        link = f"{frontend_domain}/website/{username_slug}/blogg"
 
+        if blog.is_sendmail:
+            self.send_email_notifications(user, link)
+
+        # Uncomment if SMS functionality is added
+        # elif blog.is_sendsms:
+        #     self.send_sms_notifications(user, link)
+
+    def send_email_notifications(self, user, link):
+        # tenants = user.tenants.all()
+        tenants_email_list = Tenant.objects.filter(user=user).values_list('email', flat=True)
+        # for tenant in tenants:
+        try:
+            email_body = f"""
+            <html>
+                <body>
+                    <p>Hej,</p>
+                    <p>Vi är glada att informera dig om att en ny blogg har publicerats. Besök vår webbplats och klicka på bloggfliken för att läsa den senaste bloggen.</p>
+                    <p>
+                        <a href="{link}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007BFF; text-decoration: none; border-radius: 5px;">Besök vår webbplats</a>
+                    </p>
+                    <p>Tack för att du valde Fastighetsvyn.</p>
+                </body>
+
+            </html>
+            """
+            data = {
+                'body': email_body,
+                'subject': "New Blog Notification",
+                'to': tenants_email_list,
+            }
+            Utils.send_email(data)
+        except Exception as e:
+            # Log the exception
+            print(f"Failed to send email to in tenants {tenants_email_list}: {str(e)}")
+
+    # Uncomment if SMS functionality is added
+    # def send_sms_notifications(self, user, link):
+    #     pass
+    
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
@@ -111,19 +101,6 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response({"detail": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class TenantBlogView(APIView):
-    def get(self, request, uid, blog_id):
-        show_list = request.GET.get('list')
-        user = urlsafe_base64_decode(smart_str(uid))
-        if show_list:
-            blog = Blog.objects.filter(user=user).order_by('-created_at')
-            serializer = TenantBlogSerializer(blog, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            blog = Blog.objects.filter(user=user, id=blog_id)
-            serializer = TenantBlogSerializer(blog, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
 class NewsletterListCreateAPIView(generics.ListCreateAPIView):
     queryset = Newsletter.objects.all().order_by('-created_at')
     serializer_class = NewsletterSerializer

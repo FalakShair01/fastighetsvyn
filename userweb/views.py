@@ -9,7 +9,7 @@ from .serializers import (HomePageSerializer, DocumentPageDetailSerializer, Docu
 from users.models import User
 from users.Utils import Utils
 from blog.models import Blog
-from blog.serializers import TenantBlogSerializer
+from blog.serializers import BlogSerializer
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
@@ -51,7 +51,7 @@ class ListUserBlogView(APIView, UserMixin):
     def get(self, request, username_slug):
         user = self.get_user(username_slug)
         blogs = Blog.objects.filter(user=user)
-        serializer = TenantBlogSerializer(blogs, many=True)
+        serializer = BlogSerializer(blogs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -59,7 +59,7 @@ class RetrieveUserBlogView(APIView, UserMixin):
     def get(self, request, username_slug, pk):
         user = self.get_user(username_slug)
         blogs = get_object_or_404(Blog, id=pk , user=user)
-        serializer = TenantBlogSerializer(blogs)
+        serializer = BlogSerializer(blogs)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 # DOCUMENT PAGE
