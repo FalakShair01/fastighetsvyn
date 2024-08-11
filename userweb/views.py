@@ -91,9 +91,16 @@ class UpdateDocumentPageDetailView(APIView, UserMixin):
 
 class ListDocumentView(APIView, UserMixin):
     def get(self, request, username_slug):
-        user = self.get_user(username_slug)        
-        document = Documents.objects.filter(user=user)
-        serializer = DocumentSerializer(document, many=True)
+        user = self.get_user(username_slug)
+        # Retrieve the 'name' query parameter
+        name = request.query_params.get('name', None)
+        # Filter documents by user and optionally by name
+        if name:
+            documents = Documents.objects.filter(user=user, name__icontains=name)
+        else:
+            documents = Documents.objects.filter(user=user)
+        
+        serializer = DocumentSerializer(documents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
