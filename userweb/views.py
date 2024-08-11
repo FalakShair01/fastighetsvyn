@@ -15,20 +15,20 @@ from django.http import Http404
 
 # HOME PAGE
 class UserMixin:
-    def get_user(username_slug):
+    def get_user(self, username_slug):
         try:
             return User.objects.get(username_slug=username_slug)
         except User.DoesNotExist:
             raise Http404("User not found")
 
-class ListHomepageDetailView(APIView, UserMixin):
+class CreateHomePageDetailView(APIView, UserMixin):
     def get(self, request, username_slug):
         user = self.get_user(username_slug)
         homepage_detail = Homepage.objects.filter(user=user)
         serializer = HomePageSerializer(homepage_detail, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class CreateHomePageDetailView(APIView):
+class ListHomepageDetailView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = HomePageSerializer(data=request.data)
