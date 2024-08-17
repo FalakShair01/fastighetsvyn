@@ -11,7 +11,6 @@ from .serializers import BlogSerializer, NewsletterSerializer, NewsLetterSubscri
 from .models import Blog, Newsletter, NewsLetterSubscriber
 from django.conf import settings
 from users.Utils import Utils
-from users.models import Tenant
 # from django.contrib.
 
 
@@ -28,53 +27,9 @@ class BlogListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         blog = serializer.save(user=self.request.user)
-        self.send_blog_notification(blog)
+        # self.send_blog_notification(blog)
         return serializer
 
-    def send_blog_notification(self, blog):
-        user = blog.user.username_slug
-        username_slug = user.username_slug
-        frontend_domain = settings.FRONTEND_DOMAIN
-        link = f"{frontend_domain}/website/{username_slug}/blogg"
-
-        if blog.is_sendmail:
-            self.send_email_notifications(user, link)
-
-        # Uncomment if SMS functionality is added
-        # elif blog.is_sendsms:
-        #     self.send_sms_notifications(user, link)
-
-    def send_email_notifications(self, user, link):
-        # tenants = user.tenants.all()
-        tenants_email_list = Tenant.objects.filter(user=user).values_list('email', flat=True)
-        # for tenant in tenants:
-        try:
-            email_body = f"""
-            <html>
-                <body>
-                    <p>Hej,</p>
-                    <p>Vi är glada att informera dig om att en ny blogg har publicerats. Besök vår webbplats och klicka på bloggfliken för att läsa den senaste bloggen.</p>
-                    <p>
-                        <a href="{link}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007BFF; text-decoration: none; border-radius: 5px;">Besök vår webbplats</a>
-                    </p>
-                    <p>Tack för att du valde Fastighetsvyn.</p>
-                </body>
-
-            </html>
-            """
-            data = {
-                'body': email_body,
-                'subject': "New Blog Notification",
-                'to': tenants_email_list,
-            }
-            Utils.send_email(data)
-        except Exception as e:
-            # Log the exception
-            print(f"Failed to send email to in tenants {tenants_email_list}: {str(e)}")
-
-    # Uncomment if SMS functionality is added
-    # def send_sms_notifications(self, user, link):
-    #     pass
     
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
