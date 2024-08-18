@@ -124,9 +124,9 @@ class Tenant(models.Model):
     profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
 
-    class Meta:
-        unique_together = ('user', 'email')
-        
+    # class Meta:
+    #     unique_together = ('user', 'email')
+
     def __str__(self):
         return self.name
 
