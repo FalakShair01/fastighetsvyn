@@ -75,7 +75,8 @@ class Maintenance(models.Model):
 class UserMaintenanceServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_maintenance')
     maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name='maintenance_services')
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='maintaince_property')
+    # property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='maintaince_property')
+    properties = models.ManyToManyField(Property, related_name='maintenance_services', blank=True)  # Changed to ManyToManyField
     service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, blank=True, null=True, related_name='maintenance_service_provider')
     comment = models.TextField(max_length=255, null=True, blank=True)
     STATUS = (

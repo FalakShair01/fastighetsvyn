@@ -54,24 +54,46 @@ class MaintainceSerializer(serializers.ModelSerializer):
 
 class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
     maintenance = MaintainceSerializer(read_only=True)
-    property = PropertySerializer(read_only=True)
-
+    properties = PropertySerializer(many=True, read_only=True)  
+    
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
-        
+        fields = ['id', 'status', 'comment', 'iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'properties', 'service_provider']
+    
     def create(self, validated_data):
         maintenance_id = self.initial_data.get('maintenance')
-        property_id = self.initial_data.get('property')
+        properties_ids = self.initial_data.get('properties', [])
         maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
-        property = get_object_or_404(Property, pk=property_id)
-        user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
+        properties = Property.objects.filter(id__in=properties_ids)
+        user_dev_service = UserMaintenanceServices.objects.create(maintenance=maintenance, **validated_data)
+        user_dev_service.properties.set(properties)
         return user_dev_service
-    
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['service_provider'] = ServiceProviderSerializer(instance.service_provider).data
         return representation
+
+# class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
+#     maintenance = MaintainceSerializer(read_only=True)
+#     property = PropertySerializer(read_only=True)
+
+#     class Meta:
+#         model = UserMaintenanceServices
+#         fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
+        
+#     def create(self, validated_data):
+#         maintenance_id = self.initial_data.get('maintenance')
+#         property_id = self.initial_data.get('property')
+#         maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
+#         property = get_object_or_404(Property, pk=property_id)
+#         user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
+#         return user_dev_service
+    
+#     def to_representation(self, instance):
+#         representation = super().to_representation(instance)
+#         representation['service_provider'] = ServiceProviderSerializer(instance.service_provider).data
+#         return representation
 
     
 class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
