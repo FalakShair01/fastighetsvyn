@@ -8,9 +8,9 @@ from .models import Expense
 from .serializers import ExpenseSerializer
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
-from django.utils.dateparse import parse_date
 from django.utils import timezone
-
+from property.models import Property
+import pandas as pd
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
     queryset = Expense.objects.all()
@@ -111,3 +111,43 @@ class YearlyExpenseView(APIView):
             'labels': labels,
             'series': series_data
         })
+    
+
+class ImportExpensesView(APIView):
+    def post(self, request, *args, **kwargs):
+        
+        file = request.FILES['file']
+        try:
+            # Read the Excel file using pandas
+            df = pd.read_excel(file)
+
+            # Check if necessary columns exist in the DataFrame
+            required_columns = ['type_of_transaction', 'type_of_cost_or_revenue', 'date_of_transaction', 'total_sum', 'value_added_tax', 'account', 'building', 'comment']
+            if not all(column in df.columns for column in required_columns):
+                return Response({'detail': 'Missing required columns in the uploaded file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Iterate through the rows of the dataframe
+            for _, row in df.iterrows():
+                try:
+                # Get Property object
+                    building = Property.objects.get(byggnad__iexact=row['building'])
+                except Property.DoesNotExist:
+                    building = None
+
+                # Create Expense object
+                Expense.objects.create(
+                    user=request.user,  # Assuming the user is the logged-in user
+                    type_of_transaction=row['type_of_transaction'],
+                    type_of_cost_or_revenue=row['type_of_cost_or_revenue'],
+                    date_of_transaction=row['date_of_transaction'],
+                    total_sum=row['total_sum'],
+                    value_added_tax=row['value_added_tax'],
+                    account=row['account'],
+                    building=building,
+                    comment=row['comment'],
+                    attachment=None  # Handle attachments as needed
+                )
+
+            return Response({'detail': 'Expenses imported successfully.'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'detail': f'Error processing file: {e}'}, status=status.HTTP_400_BAD_REQUEST)
