@@ -8,6 +8,6 @@ router.register('tenant-feedback', UserFeedbackviewset, basename='tenant-feedbac
 
 
 urlpatterns = [
-    path('tenant-feedback/<user>/<tenant>/', UserFeedbackView.as_view()),
-    path('', include(router.urls)),   
+    path('tenant-feedback/<username_slug>/', UserFeedbackView.as_view()),
+    path('', include(router.urls)),  
 ]

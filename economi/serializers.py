@@ -6,3 +6,9 @@ class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = '__all__'
+        extra_kwargs = {'attachment': {'required': False}}
+
+    def validate_attachment(self, value):
+        if value in [None, '']:
+            return None
+        return value

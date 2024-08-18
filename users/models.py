@@ -119,7 +119,7 @@ class Tenant(models.Model):
     name = models.CharField(max_length=255)
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True)  # Add this line
     appartment_no = models.CharField(max_length=255)
-    email = models.EmailField(verbose_name="Email", null=True, blank=False)
+    email = models.EmailField(verbose_name="Email", unique=True, null=True, blank=False)
     phone = models.CharField(max_length=255)
     profile = models.ImageField(upload_to=image_upload, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)

@@ -1,4 +1,4 @@
-from .models import AdminFeedback, TenantsFeedback
+from .models import AdminFeedback, UserFeedback
 from django_filters import rest_framework as filters
 
 class MarkAsDoneFilter(filters.FilterSet):
@@ -12,7 +12,7 @@ class MarkAsDoneFilter(filters.FilterSet):
 
 class UserFeedbackMarkAsDoneFilter(filters.FilterSet):
     class Meta:
-        model = TenantsFeedback
+        model = UserFeedback
         fields  ={
             'is_done': ['exact'],
             'is_archive': ['exact']

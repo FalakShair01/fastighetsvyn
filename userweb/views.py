@@ -50,7 +50,7 @@ class UpdateHomePageDetailView(APIView, UserMixin):
 class ListUserBlogView(APIView, UserMixin):
     def get(self, request, username_slug):
         user = self.get_user(username_slug)
-        blogs = Blog.objects.filter(user=user)
+        blogs = Blog.objects.filter(user=user).order_by('-created_at')
         serializer = BlogSerializer(blogs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

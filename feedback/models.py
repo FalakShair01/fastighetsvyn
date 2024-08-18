@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from users.models import Tenant
+from property.models import Property
 
 User = get_user_model()
 
@@ -22,10 +23,11 @@ class AdminFeedback(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class TenantsFeedback(models.Model):
+class UserFeedback(models.Model):
     """Feedback that will be given to users(property owner) by Tenants"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedbacks', null=True)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, null=True)
     full_name = models.CharField(max_length=50)
     email = models.EmailField()
     phone = models.CharField(max_length=255)

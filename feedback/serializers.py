@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import AdminFeedback, TenantsFeedback
+from .models import AdminFeedback, UserFeedback
 from django.contrib.auth import get_user_model
-from users.serializers import TenantSerializer
+from users.models import Tenant
+from property.models import Property
 
 User = get_user_model()
 
@@ -10,7 +11,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', "email", "username", "phone", "address", "profile"]
 
+class TenantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tenant
+        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile']
 
+
+class PropertySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = ['id', 'byggnad', 'fond', 'address', 'picture']
+        
 class AdminFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
@@ -20,13 +31,15 @@ class AdminFeedbackSerializer(serializers.ModelSerializer):
 
 class UserFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TenantsFeedback
+        model = UserFeedback
         fields = '__all__'
+
 
 class GetUserFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     tenant = TenantSerializer(read_only=True)
+    property = PropertySerializer(read_only=True)
     class Meta:
-        model = TenantsFeedback
-        fields = ['id', 'user', 'tenant', 'full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'is_archive', 'created_at', 'updated_at']
+        model = UserFeedback
+        fields = ['id','full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'is_archive', 'user', 'tenant', 'property', 'created_at', 'updated_at']
 
