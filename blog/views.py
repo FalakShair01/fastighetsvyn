@@ -43,13 +43,20 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
 
         # Delete the associated cover_photo file from the directory
-        cover_photo_path = instance.cover_photo.path
-        try:
-            if cover_photo_path and os.path.exists(cover_photo_path):
-                os.remove(cover_photo_path)
-        except Exception as e:
-            return Response(f"Error deleting cover_photo: {str(e)}")
+        # Check if cover_photo is associated with the instance
+        cover_photo = instance.cover_photo
+        if cover_photo and hasattr(cover_photo, 'path'):
+            cover_photo_path = cover_photo.path
+            try:
+                if os.path.exists(cover_photo_path):
+                    os.remove(cover_photo_path)
+            except Exception as e:
+                return Response({"error": f"Error deleting cover_photo: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Call the superclass's destroy method to delete the database record
+        self.perform_destroy(instance)
+
+        return Response({"detail": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         # Call the superclass's destroy method to delete the database record
         self.perform_destroy(instance)
 

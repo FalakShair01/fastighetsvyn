@@ -9,12 +9,12 @@ from django.conf import settings  # Add this import
 
 @receiver(post_save, sender=Blog)
 def send_blog_notification(sender, instance, created, **kwargs):
-    user = instance.user.username_slug
+    user = instance.user
     blog_title = instance.title
     username_slug = user.username_slug
     frontend_domain = settings.FRONTEND_DOMAIN
-    link = f"{frontend_domain}/website/{username_slug}/blogg"
-
+    link = f"{frontend_domain}/website/{username_slug}"
+ 
     if instance.is_sendmail:
         send_email_notifications(user, link, blog_title)
 
@@ -42,7 +42,7 @@ def send_email_notifications(user, link, blog_title):
         data = {
             'body': email_body,
             'subject': blog_title,
-            'to': tenants_email_list,
+            'to': list(tenants_email_list),
         }
         Utils.send_email(data)
     except Exception as e:
@@ -58,8 +58,10 @@ def send_newsletter_notification(sender, instance, created, **kwargs):
     if created:
         newsletter_title = instance.title
         newsletter_url = settings.FRONTEND_DOMAIN
+        print(newsletter_title)
+        print(newsletter_url)
         subscribers_emails = NewsLetterSubscriber.objects.all().values_list('email', flat=True)
-        
+        print(subscribers_emails)
         subject = newsletter_title
         body = f"""
             <html>
