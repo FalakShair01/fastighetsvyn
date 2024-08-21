@@ -13,3 +13,5 @@ ENV/
 env.bak/
 venv.bak/
 property/migrations/0006_alter_property_picture.py
+db.sqlite3-backup
+.vscode
