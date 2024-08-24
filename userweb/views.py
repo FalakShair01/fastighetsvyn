@@ -10,6 +10,7 @@ from users.models import User
 from users.Utils import Utils
 from blog.models import Blog
 from blog.serializers import BlogSerializer
+from users.serializers import ProfileSerializer
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
@@ -220,3 +221,9 @@ class DeleteFormLinks(APIView, UserMixin):
         instance = get_object_or_404(FormLinks, user=user, id=pk)
         instance.delete()
         return Response({"message": "Form link deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+class MiniWebsiteOwnerDetails(APIView, UserMixin):
+    def get(self, request, username_slug):
+        user = self.get_user(username_slug)
+        serializer = ProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
