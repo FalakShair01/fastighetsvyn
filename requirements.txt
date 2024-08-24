@@ -10,11 +10,14 @@ django-js-asset==2.2.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 idna==3.6
+numpy==2.1.0
+pandas==2.2.2
 Pillow==10.1.0
 pycparser==2.21
 PyJWT==2.8.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
+pytz==2024.1
 requests==2.31.0
 six==1.16.0
 sqlparse==0.4.4
