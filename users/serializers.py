@@ -39,6 +39,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
         # fields = ["email", "username", "phone", "address", "profile", "subscription_type", "allow_access_account"]
 
 
