@@ -163,13 +163,26 @@ class YearlyExpenseView(APIView):
         })
 
 
+
 class ImportExpensesView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        
-        file = request.FILES['file']
         try:
-            # Read the Excel file using pandas
-            df = pd.read_excel(file)
+            if 'file' not in request.FILES:
+                return Response({'detail': 'No file provided in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+            # Assuming the file is uploaded as a CSV
+            file = request.FILES['file']
+            file_extension = file.name.split('.')[-1].lower()
+
+            if file_extension == 'csv':
+                # Read the CSV file
+                df = pd.read_csv(file)
+            elif file_extension in ['xls', 'xlsx']:
+                # Read the Excel file
+                df = pd.read_excel(file)
+            else:
+                return Response({'detail': 'Unsupported file format.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check if necessary columns exist in the DataFrame
             required_columns = ['type_of_transaction', 'type_of_cost_or_revenue', 'date_of_transaction', 'total_sum', 'value_added_tax', 'account', 'building', 'comment']
@@ -179,7 +192,7 @@ class ImportExpensesView(APIView):
             # Iterate through the rows of the dataframe
             for _, row in df.iterrows():
                 try:
-                # Get Property object
+                    # Get Property object
                     building = Property.objects.get(byggnad__iexact=row['building'])
                 except Property.DoesNotExist:
                     building = None
