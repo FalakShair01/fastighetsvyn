@@ -44,14 +44,14 @@ class UserViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         try: 
             email_body = f"""
-                <p>Välkommen till Fastighetsvyn!</p>
-                <p>Hej {request.data['username']}, Ditt konto har skapats. Här är dina inloggningsuppgifter:</p>
-                <ul>
-                    <li><strong>Email:</strong> {request.data['email']}</li>
-                    <li><strong>Lösenord:</strong> {generated_password}</li>
-                </ul>
-                <p>Webbplats: <a href="{settings.FRONTEND_DOMAIN}"{settings.FRONTEND_DOMAIN}</a></p>
-            """
+                    <p>Välkommen till Fastighetsvyn!</p>
+                    <p>Hej {request.data['username']}, ditt konto har skapats. Här är dina inloggningsuppgifter:</p>
+                    <ul>
+                        <li><strong>Email:</strong> {request.data['email']}</li>
+                        <li><strong>Lösenord:</strong> {generated_password}</li>
+                    </ul>
+                    <p>Webbplats: <a href="{settings.FRONTEND_DOMAIN}">{settings.FRONTEND_DOMAIN}</a></p>
+                """
 
             data = {
                 "subject": "Konto Registrering",

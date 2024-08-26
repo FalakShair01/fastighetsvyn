@@ -5,8 +5,9 @@ from .models import Property, Document, Folder
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
-        fields = ('id', 'byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion',
-                  'installered_effekt', 'geo_energi', 'epc_tal', 'address', 'picture', 'longitude', 'latitude')
+        fields = '__all__'
+        # fields = ('id', 'byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion',
+        #           'installered_effekt', 'geo_energi', 'epc_tal', 'address', 'picture', 'longitude', 'latitude')
         
 class FolderSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,5 +1,12 @@
 from rest_framework import serializers
 from .models import Homepage, DocumentPageDetail, Documents, FormLinks, ContactPerson
+from property.models import Property
+
+
+class PropertDetailPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = ['id', 'byggnad']
 
 class HomePageSerializer(serializers.ModelSerializer):
     class Meta:

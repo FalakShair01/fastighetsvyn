@@ -3,7 +3,7 @@ from .views import (ListHomepageDetailView, CreateHomePageDetailView, UpdateHome
                     RetrieveUserBlogView, CreateDocumentPageDetailView , ListDocumentPageDetailView, 
                     UpdateDocumentPageDetailView, CreateDocumentView, ListDocumentView, DeleteDocumentView, 
                     ContactPageView,ListContactPerson, CreateContactPerson, UpdateContactPerson, DeleteContactPerson,
-                    ListFormLinks, CreateFormLinks, UpdateFormLinks, DeleteFormLinks, MiniWebsiteOwnerDetails)
+                    ListFormLinks, CreateFormLinks, UpdateFormLinks, DeleteFormLinks, MiniWebsiteOwnerDetails, OwnerPropertyList)
 
 urlpatterns = [
     path('homepage/', ListHomepageDetailView.as_view(), name='homepage-create'),
@@ -27,5 +27,5 @@ urlpatterns = [
     path('users/<str:username_slug>/form-links/<int:pk>/update/', UpdateFormLinks.as_view(), name='update-form-links'),
     path('users/<str:username_slug>/form-links/<int:pk>/delete/', DeleteFormLinks.as_view(), name='delete-form-links'),
     path('users/<str:username_slug>/details/', MiniWebsiteOwnerDetails.as_view(), name='delete-form-links'),
-    #path('property-list/<username_slug>/', MiniWebsiteOwnerDetails.as_view(), name='delete-form-links'),
+    path('property-list/<username_slug>/', OwnerPropertyList.as_view(), name='public-property-view'),
 ]

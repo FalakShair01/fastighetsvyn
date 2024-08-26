@@ -14,23 +14,8 @@ import csv
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
+from .filters import PropertyFilter
 
-
-class PropertyFilter(filters.FilterSet):
-    class Meta:
-        model = Property
-        fields = {
-            'fond': ['in','exact'],
-            'byggnad': ['in','exact'],
-            'ansvarig_AM': ['in','exact'],
-            'yta': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'loa': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'bta': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'installered_effekt': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'epc_tal': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'lokal_elproduktion': ['exact'],
-            'geo_energi': ['exact'],
-        }
 
 class PropertyListCreateView(generics.ListCreateAPIView):
     queryset = Property.objects.all()

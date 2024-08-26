@@ -14,26 +14,32 @@ def picture_upload(instance, filename):
 
 class Property(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
-    byggnad = models.CharField(max_length=255)
-    fond = models.CharField(max_length=255)
-    ansvarig_AM = models.CharField(max_length=255)
-    yta = models.IntegerField()
-    loa = models.IntegerField()
-    bta = models.IntegerField()
-    lokal_elproduktion = models.BooleanField()
-    installered_effekt = models.IntegerField()
-    geo_energi = models.BooleanField()
-    epc_tal = models.IntegerField()
-    address = models.CharField(max_length=255)
+    byggnad = models.CharField(max_length=255, null=True, blank=True)
+    gatuadress = models.CharField(max_length=255, null=True, verbose_name="Street Address")
+    postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
+    byggår = models.CharField(max_length=255, null=True, verbose_name="Construction year")
+    antal_bostäder = models.CharField(max_length=255, null=True, verbose_name="Number of apartments")
+    CHOICE = (
+        ("No", "No"),
+        ("Yes", "Yes"),
+    )
+    skyddsrum = models.CharField(max_length=3, null=True, choices=CHOICE, verbose_name="Shelter")
+    boarea = models.CharField(max_length=255, null=True, verbose_name="Total living area in building")
+    snittarea_per_bostad = models.CharField(max_length=255, null=True, verbose_name="Average living area per apartment")
+    fjärrvärme = models.CharField(max_length=3, null=True, choices=CHOICE, verbose_name="Heating")
     picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
     longitude = models.CharField(max_length=150, blank=True, null=True)
     latitude = models.CharField(max_length=150, blank=True, null=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
     def __str__(self):
         return self.byggnad
+
+    def save(self, *args, **kwargs):
+        if not self.byggnad:
+            self.byggnad = self.gatuadress
+        super(Property, self).save(*args, **kwargs)
     
     # def save(self, *args, **kwargs):
     #     if not self.latitude or not self.longitude or self.address != self._original_address:
