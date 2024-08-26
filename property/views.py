@@ -114,17 +114,17 @@ class GetPieChartView(APIView):
         total_fond = data.count()
 
         # Annotate the queryset with the count for each 'fond'
-        fonds_with_counts = data.values('fond').annotate(count=Count('fond'))
+        # fonds_with_counts = data.values('fond').annotate(count=Count('fond'))
 
         result = []
 
-        for item in fonds_with_counts:
-            fond_name = item['fond']
-            count = item['count']
-            percentage = (count / total_fond) * 100
+        # for item in fonds_with_counts:
+        #     fond_name = item['fond']
+        #     count = item['count']
+        #     percentage = (count / total_fond) * 100
 
-            # Append the result as a dictionary
-            result.append({fond_name: round(percentage, 1)})  # Round to 1 decimal place
+        #     # Append the result as a dictionary
+        #     result.append({fond_name: round(percentage, 1)})  # Round to 1 decimal place
 
         return Response([{'AX01': 30}])
 
