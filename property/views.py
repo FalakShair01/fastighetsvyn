@@ -126,7 +126,7 @@ class GetPieChartView(APIView):
             # Append the result as a dictionary
             result.append({fond_name: round(percentage, 1)})  # Round to 1 decimal place
 
-        return Response(result)
+        return Response([{'AX01': 30}])
 
 
 class PropertyExportAPIView(APIView):
