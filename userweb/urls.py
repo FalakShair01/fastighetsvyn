@@ -27,4 +27,5 @@ urlpatterns = [
     path('users/<str:username_slug>/form-links/<int:pk>/update/', UpdateFormLinks.as_view(), name='update-form-links'),
     path('users/<str:username_slug>/form-links/<int:pk>/delete/', DeleteFormLinks.as_view(), name='delete-form-links'),
     path('users/<str:username_slug>/details/', MiniWebsiteOwnerDetails.as_view(), name='delete-form-links'),
+    #path('property-list/<username_slug>/', MiniWebsiteOwnerDetails.as_view(), name='delete-form-links'),
 ]
