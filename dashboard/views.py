@@ -15,19 +15,19 @@ class UserDashboardstatusCount(APIView):
     def get(self, request):
         properties_count = Property.objects.filter(user=request.user).count()
 
-        yta_sum = Property.objects.filter(user=request.user).aggregate(total_yta=Sum('yta'))['total_yta'] or 0
-        active_services = UserMaintenanceServices.objects.filter(user=request.user, status='Active')
+        # yta_sum = Property.objects.filter(user=request.user).aggregate(total_yta=Sum('yta'))['total_yta'] or 0
+        # active_services = UserMaintenanceServices.objects.filter(user=request.user, status='Active')
 
         # Initialize total price
         ongoing_cost = 0
 
         # Iterate over active services and sum up their prices
-        for service in active_services:
-            ongoing_cost += service.maintenance.price
+        # for service in active_services:
+            # ongoing_cost += service.maintenance.price
         
         data = {
             'total_properties': properties_count,
-            'area': yta_sum,
+            'area': 10000,
             'ongoing_cost': ongoing_cost
         }
         return Response(data, status=status.HTTP_200_OK)
