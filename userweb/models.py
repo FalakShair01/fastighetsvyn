@@ -16,7 +16,7 @@ class Homepage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='home_page')
     banner = models.ImageField(upload_to=upload_miniwebsite_banner)
     title = models.TextField()
-    sub_title = models.TextField()
+    sub_title = models.TextField(null=True, blank=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
