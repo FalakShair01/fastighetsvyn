@@ -19,14 +19,14 @@ class Property(models.Model):
     postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
     byggår = models.CharField(max_length=255, null=True, verbose_name="Construction year")
     antal_bostäder = models.CharField(max_length=255, null=True, verbose_name="Number of apartments")
-    CHOICE = (
-        ("No", "No"),
-        ("Yes", "Yes"),
-    )
-    skyddsrum = models.CharField(max_length=3, null=True, choices=CHOICE, verbose_name="Shelter")
+    # CHOICE = (
+    #     ("No", "No"),
+    #     ("Yes", "Yes"),
+    # )
+    skyddsrum = models.BooleanField(null=True)
     boarea = models.CharField(max_length=255, null=True, verbose_name="Total living area in building")
     snittarea_per_bostad = models.CharField(max_length=255, null=True, verbose_name="Average living area per apartment")
-    fjärrvärme = models.CharField(max_length=3, null=True, choices=CHOICE, verbose_name="Heating")
+    fjärrvärme = models.BooleanField(null=True)
     picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
     longitude = models.CharField(max_length=150, blank=True, null=True)
     latitude = models.CharField(max_length=150, blank=True, null=True)
