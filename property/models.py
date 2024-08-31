@@ -10,7 +10,7 @@ def document_upload(instance, filename):
 
 
 def picture_upload(instance, filename):
-    return "/".join(["property", str(instance.byggnad), "picture", filename])
+    return "/".join(["property", str(instance.gatuadress), "picture", filename])
 
 
 class Property(models.Model):
@@ -26,10 +26,6 @@ class Property(models.Model):
     antal_bostäder = models.CharField(
         max_length=255, null=True, verbose_name="Number of apartments"
     )
-    # CHOICE = (
-    #     ("No", "No"),
-    #     ("Yes", "Yes"),
-    # )
     skyddsrum = models.BooleanField(null=True)
     boarea = models.CharField(
         max_length=255, null=True, verbose_name="Total living area in building"

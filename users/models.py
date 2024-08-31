@@ -70,7 +70,7 @@ class User(AbstractBaseUser):
         max_length=7, choices=SUB_STATUS, default="ACTIVE"
     )
     allow_access_account = models.BooleanField(default=False)
-    username_slug = models.SlugField(blank=True)  # unique=True will add later
+    username_slug = models.SlugField(blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
