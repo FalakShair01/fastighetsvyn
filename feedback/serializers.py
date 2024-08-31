@@ -18,13 +18,6 @@ class TenantSerializer(serializers.ModelSerializer):
         model = Tenant
         fields = ["id", "name", "appartment_no", "email", "phone", "profile"]
 
-
-# class PropertySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Property
-#         fields = ["id", "byggnad", "gatuadress", "picture"]
-
-
 class AdminFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
