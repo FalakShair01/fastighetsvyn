@@ -5,6 +5,7 @@ from property.models import Property
 from services.models import UserMaintenanceServices
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import ServiceProviderSerializer
+from django.db.models import Sum
 
 # Create your views here.
 
@@ -13,22 +14,25 @@ class UserDashboardstatusCount(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        properties_count = Property.objects.filter(user=request.user).count()
+        properties = Property.objects.filter(user=request.user)
 
-        # yta_sum = Property.objects.filter(user=request.user).aggregate(total_yta=Sum('yta'))['total_yta'] or 0
-        # active_services = UserMaintenanceServices.objects.filter(user=request.user, status='Active')
+        # Count the number of buildings
+        building_count = properties.count()
 
-        # Initialize total price
+        # Sum the total number of apartments across all buildings
+        total_apartments = properties.aggregate(
+            total_apartments=Sum('antal_bostäder')
+        )['total_apartments'] or 0
+
+        # Initialize total price for ongoing and fixed maintenance
         ongoing_cost = 0
-
-        # Iterate over active services and sum up their prices
-        # for service in active_services:
-        # ongoing_cost += service.maintenance.price
+        fixed_cost = 0  # Assuming you might want to calculate this in the future
 
         data = {
-            "total_properties": properties_count,
-            "area": 10000,
-            "ongoing_cost": ongoing_cost,
+            "Buildings": building_count,
+            "Appartments": total_apartments,
+            "Active Maintenance": ongoing_cost,
+            "Fixed Maintenance": fixed_cost,
         }
         return Response(data, status=status.HTTP_200_OK)
 
