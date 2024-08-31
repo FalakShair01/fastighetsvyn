@@ -6,24 +6,32 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('property', '0001_initial'),
-        ('economi', '0001_initial'),
+        ("property", "0001_initial"),
+        ("economi", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='expense',
-            name='building',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='building_expenses', to='property.property'),
+            model_name="expense",
+            name="building",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="building_expenses",
+                to="property.property",
+            ),
         ),
         migrations.AddField(
-            model_name='expense',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_expenses', to=settings.AUTH_USER_MODEL),
+            model_name="expense",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="user_expenses",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

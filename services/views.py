@@ -1,14 +1,25 @@
-from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, status
 from rest_framework import permissions
-from .models import Development, UserDevelopmentServices, Maintenance, UserMaintenanceServices
-from .serializers import (DevelopmentSerializer, UserDevelopmentServicesSerializer, MaintainceSerializer, 
-                          UserMaintenanceServicesSerializer,AdminMaintenanceStatusSerializer, AdminDevelopmentStatusSerializer)
+from .models import (
+    Development,
+    UserDevelopmentServices,
+    Maintenance,
+    UserMaintenanceServices,
+)
+from .serializers import (
+    DevelopmentSerializer,
+    UserDevelopmentServicesSerializer,
+    MaintainceSerializer,
+    UserMaintenanceServicesSerializer,
+    AdminMaintenanceStatusSerializer,
+    AdminDevelopmentStatusSerializer,
+)
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
 from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter
 # Create your views here.
+
 
 class DevelopmentViewset(viewsets.ModelViewSet):
     queryset = Development.objects.all()
@@ -21,7 +32,9 @@ class DevelopmentViewset(viewsets.ModelViewSet):
         if instance.image:
             instance.image.delete()
         instance.delete()
-        return Response({"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -29,13 +42,14 @@ class DevelopmentViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         # Check if a new image is provided
-        if 'image' in request.data and instance.image:
+        if "image" in request.data and instance.image:
             # Delete the old image before saving changes
             instance.image.delete()
 
         self.perform_update(serializer)
 
         return Response(serializer.data)
+
 
 class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
@@ -45,7 +59,7 @@ class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return UserDevelopmentServices.objects.filter(user=self.request.user)
-    
+
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
 
@@ -57,20 +71,21 @@ class MaintenanceViewset(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
 
-
     def perform_destroy(self, instance):
         if instance.image:
             instance.image.delete()
         instance.delete()
-        return Response({"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
-    
+        return Response(
+            {"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT
+        )
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         # Check if a new image is provided
-        if 'image' in request.data and instance.image:
+        if "image" in request.data and instance.image:
             # Delete the old image before saving changes
             instance.image.delete()
 
@@ -87,7 +102,7 @@ class UserMaintenanceViewset(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return UserMaintenanceServices.objects.filter(user=self.request.user)
-    
+
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
 
@@ -98,6 +113,7 @@ class AdminDevelopemStatusView(viewsets.ModelViewSet):
     serializer_class = AdminDevelopmentStatusSerializer
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserDevelopmentFilter
+
 
 class AdminMaintenanceStatusView(viewsets.ModelViewSet):
     queryset = UserMaintenanceServices.objects.all()

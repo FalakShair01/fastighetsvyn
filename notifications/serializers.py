@@ -6,27 +6,60 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', "email", "username", "phone", "address", "profile"]
+        fields = ["id", "email", "username", "phone", "address", "profile"]
+
 
 class DevelopmentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
     class Meta:
         model = UserDevelopmentServices
-        fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'development', 'user']
+        fields = [
+            "id",
+            "status",
+            "comment",
+            "started_date",
+            "end_date",
+            "development",
+            "user",
+        ]
+
 
 class MaintenanceSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
     class Meta:
         model = UserMaintenanceServices
-        fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance', 'user']
+        fields = [
+            "id",
+            "status",
+            "comment",
+            "started_date",
+            "end_date",
+            "maintenance",
+            "user",
+        ]
+
 
 class AdminNotificationsSerializer(serializers.ModelSerializer):
     feedback = AdminFeedbackSerializer(read_only=True)
     development = DevelopmentSerializer(read_only=True)
     maintenance = MaintenanceSerializer(read_only=True)
+
     class Meta:
         model = AdminNotifications
-        fields = ['id', 'title', 'description', 'is_read', 'created_at', 'updated_at', 'feedback', 'development', 'maintenance']
+        fields = [
+            "id",
+            "title",
+            "description",
+            "is_read",
+            "created_at",
+            "updated_at",
+            "feedback",
+            "development",
+            "maintenance",
+        ]

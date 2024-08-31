@@ -3,14 +3,18 @@ from django.dispatch import receiver
 from .models import DemoRequests
 from django.contrib.auth import get_user_model
 from .Utils import Utils
+from userweb.models import Homepage
 
 User = get_user_model()
+
 
 @receiver(post_save, sender=DemoRequests)
 def send_demo_notification_to_admin(sender, instance, created, **kwargs):
     if created:
         email = instance.email
-        admins_emails = User.objects.filter(role='ADMIN').values_list('email', flat=True)
+        admins_emails = User.objects.filter(role="ADMIN").values_list(
+            "email", flat=True
+        )
         subject = "Ny Demo-begäran"
         body = """
             <html>
@@ -22,29 +26,19 @@ def send_demo_notification_to_admin(sender, instance, created, **kwargs):
                 </body>
             </html>
         """.format(email)
-        data = {'subject': subject, 'body': body, 'to': list(admins_emails)}
+        data = {"subject": subject, "body": body, "to": list(admins_emails)}
         Utils.send_email(data)
 
 
-# @receiver(post_save, sender=ContactUs)
-# def send_contact_us_notification_to_admin(sender, instance, created, **kwargs):
-#     if created:
-#         email = instance.email
-#         phone = instance.phone  
-#         message = instance.message
-#         admins_emails = User.objects.filter(role='ADMIN').values_list('email', flat=True)
-#         subject = "Ny Kontakta oss-förfrågan"
-#         body = """
-#             <html>
-#                 <body>
-#                     <p>Hej Admin,</p>
-#                     <p>En ny förfrågan har skickats in med följande uppgifter:</p>
-#                     <p><b>E-post:</b> {email}</p>
-#                     <p><b>Telefonnummer:</b> {phone}</p>
-#                     <p><b>Meddelande:</b> {message}</p>
-#                     <p>Vänligen granska och svara enligt behov.</p>
-#                 </body>
-#             </html>
-#         """.format(email=email, phone=phone, message=message)
-#         data = {'subject': subject, 'body': body, 'to': list(admins_emails)}
-#         Utils.send_email(data)
+# Add Dummy data to every Register user if they their role is User
+@receiver(post_save, sender=User)
+def fill_dummy_data(sender, instance, created, **kwargs):
+    if created:
+        if instance.role == "USER" and instance.subscription_type == "TRIAL":
+            Homepage.objects.create(
+                user=instance,  # Assuming there's a ForeignKey to User
+                description="Vi på BRF X strävar efter att skapa en trygg och trivsam boendemiljö för alla våra medlemmar. Här på infosidan hittar du all nödvändig information om våra fastigheter, viktiga meddelanden och kommande aktiviteter. Titta in regelbundet för att hålla dig uppdaterad om allt som rör vår förening och vårt arbete.",
+                sub_title="Ditt hem, vårt ansvar – Vi skapar trygghet och trivsel tillsammans.",
+                title="Välkommen till BRF X!",
+                banner="media/banner.jpg",  # Adjust the path based on where the banner is stored
+            )

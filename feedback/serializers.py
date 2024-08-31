@@ -6,40 +6,68 @@ from property.models import Property
 
 User = get_user_model()
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', "email", "username", "phone", "address", "profile"]
+        fields = ["id", "email", "username", "phone", "address", "profile"]
+
 
 class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ['id', 'name', 'appartment_no', 'email', 'phone', 'profile']
+        fields = ["id", "name", "appartment_no", "email", "phone", "profile"]
 
 
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
-        fields = ['id', 'byggnad', 'fond', 'address', 'picture']
-        
+        fields = ["id", "byggnad", "fond", "address", "picture"]
+
+
 class AdminFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
     class Meta:
         model = AdminFeedback
-        fields = ['id', 'title', 'description', 'image', 'is_done', 'is_archive', 'created_at', 'updated_at', 'user']
+        fields = [
+            "id",
+            "title",
+            "description",
+            "image",
+            "is_done",
+            "is_archive",
+            "created_at",
+            "updated_at",
+            "user",
+        ]
 
 
 class UserFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFeedback
-        fields = '__all__'
+        fields = "__all__"
 
 
 class GetUserFeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     tenant = TenantSerializer(read_only=True)
     property = PropertySerializer(read_only=True)
+
     class Meta:
         model = UserFeedback
-        fields = ['id','full_name', 'email', 'phone', 'comment', 'image', 'is_done', 'is_archive', 'user', 'tenant', 'property', 'created_at', 'updated_at']
-
+        fields = [
+            "id",
+            "full_name",
+            "email",
+            "phone",
+            "comment",
+            "image",
+            "is_done",
+            "is_archive",
+            "user",
+            "tenant",
+            "property",
+            "created_at",
+            "updated_at",
+        ]

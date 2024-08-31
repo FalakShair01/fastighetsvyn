@@ -5,29 +5,43 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('notifications', '0001_initial'),
-        ('services', '0001_initial'),
-        ('feedback', '0002_initial'),
+        ("notifications", "0001_initial"),
+        ("services", "0001_initial"),
+        ("feedback", "0002_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='adminnotifications',
-            name='development',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='services.userdevelopmentservices'),
+            model_name="adminnotifications",
+            name="development",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="services.userdevelopmentservices",
+            ),
         ),
         migrations.AddField(
-            model_name='adminnotifications',
-            name='feedback',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='feedback.adminfeedback'),
+            model_name="adminnotifications",
+            name="feedback",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="feedback.adminfeedback",
+            ),
         ),
         migrations.AddField(
-            model_name='adminnotifications',
-            name='maintenance',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='services.usermaintenanceservices'),
+            model_name="adminnotifications",
+            name="maintenance",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="services.usermaintenanceservices",
+            ),
         ),
     ]

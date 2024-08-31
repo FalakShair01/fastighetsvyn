@@ -4,95 +4,118 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('property', '0002_initial'),
+        ("property", "0002_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='property',
-            name='address',
+            model_name="property",
+            name="address",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='ansvarig_AM',
+            model_name="property",
+            name="ansvarig_AM",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='bta',
+            model_name="property",
+            name="bta",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='epc_tal',
+            model_name="property",
+            name="epc_tal",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='fond',
+            model_name="property",
+            name="fond",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='geo_energi',
+            model_name="property",
+            name="geo_energi",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='installered_effekt',
+            model_name="property",
+            name="installered_effekt",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='loa',
+            model_name="property",
+            name="loa",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='lokal_elproduktion',
+            model_name="property",
+            name="lokal_elproduktion",
         ),
         migrations.RemoveField(
-            model_name='property',
-            name='yta',
+            model_name="property",
+            name="yta",
         ),
         migrations.AddField(
-            model_name='property',
-            name='antal_bostäder',
-            field=models.CharField(max_length=255, null=True, verbose_name='Number of apartments'),
+            model_name="property",
+            name="antal_bostäder",
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Number of apartments"
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='boarea',
-            field=models.CharField(max_length=255, null=True, verbose_name='Total living area in building'),
+            model_name="property",
+            name="boarea",
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Total living area in building"
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='byggår',
-            field=models.CharField(max_length=255, null=True, verbose_name='Construction year'),
+            model_name="property",
+            name="byggår",
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Construction year"
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='fjärrvärme',
-            field=models.CharField(choices=[('No', 'No'), ('Yes', 'Yes')], max_length=3, null=True, verbose_name='Heating'),
+            model_name="property",
+            name="fjärrvärme",
+            field=models.CharField(
+                choices=[("No", "No"), ("Yes", "Yes")],
+                max_length=3,
+                null=True,
+                verbose_name="Heating",
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='gatuadress',
-            field=models.CharField(max_length=255, null=True, verbose_name='Street Address'),
+            model_name="property",
+            name="gatuadress",
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Street Address"
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='postnummer',
-            field=models.CharField(max_length=255, null=True, verbose_name='Postal code'),
+            model_name="property",
+            name="postnummer",
+            field=models.CharField(
+                max_length=255, null=True, verbose_name="Postal code"
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='skyddsrum',
-            field=models.CharField(choices=[('No', 'No'), ('Yes', 'Yes')], max_length=3, null=True, verbose_name='Shelter'),
+            model_name="property",
+            name="skyddsrum",
+            field=models.CharField(
+                choices=[("No", "No"), ("Yes", "Yes")],
+                max_length=3,
+                null=True,
+                verbose_name="Shelter",
+            ),
         ),
         migrations.AddField(
-            model_name='property',
-            name='snittarea_per_bostad',
-            field=models.CharField(max_length=255, null=True, verbose_name='Average living area per apartment'),
+            model_name="property",
+            name="snittarea_per_bostad",
+            field=models.CharField(
+                max_length=255,
+                null=True,
+                verbose_name="Average living area per apartment",
+            ),
         ),
         migrations.AlterField(
-            model_name='property',
-            name='byggnad',
+            model_name="property",
+            name="byggnad",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

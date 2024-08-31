@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class EconomiConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'economi'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "economi"

@@ -4,20 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('property', '0003_remove_property_address_remove_property_ansvarig_am_and_more'),
+        (
+            "property",
+            "0003_remove_property_address_remove_property_ansvarig_am_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='property',
-            name='fjärrvärme',
+            model_name="property",
+            name="fjärrvärme",
             field=models.BooleanField(null=True),
         ),
         migrations.AlterField(
-            model_name='property',
-            name='skyddsrum',
+            model_name="property",
+            name="skyddsrum",
             field=models.BooleanField(null=True),
         ),
     ]

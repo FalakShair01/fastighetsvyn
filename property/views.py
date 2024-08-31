@@ -1,14 +1,16 @@
 import os
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import status, generics, viewsets
 from .models import Property, Document, Folder
-from .serializers import PropertySerializer, DocumentSerializer, ChartSerializer, FolderSerializer
+from .serializers import (
+    PropertySerializer,
+    DocumentSerializer,
+    FolderSerializer,
+)
 from django_filters import rest_framework as filters
-from django.db.models import Count
 from django.http import HttpResponse
 import csv
 from django.utils.decorators import method_decorator
@@ -24,12 +26,12 @@ class PropertyListCreateView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = PropertyFilter
-    
+
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
-    
+
     def get_queryset(self):
-        return Property.objects.filter(user=self.request.user).order_by('-created_at')
+        return Property.objects.filter(user=self.request.user).order_by("-created_at")
 
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -40,7 +42,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Property.objects.filter(user=self.request.user)
-    
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
@@ -53,7 +55,11 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         # Call the superclass's destroy method to delete the database record
         self.perform_destroy(instance)
 
-        return Response({"detail": "Property deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"detail": "Property deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
 
 class FolderViewset(viewsets.ModelViewSet):
     queryset = Folder.objects.all()
@@ -61,13 +67,17 @@ class FolderViewset(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        property = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
+        property = generics.get_object_or_404(
+            Property, id=self.kwargs["property_id"], user=self.request.user
+        )
         return serializer.save(property=property)
-    
+
     def get_queryset(self):
-        property_instance = generics.get_object_or_404(Property, id=self.kwargs['property_id'], user=self.request.user)
+        property_instance = generics.get_object_or_404(
+            Property, id=self.kwargs["property_id"], user=self.request.user
+        )
         return property_instance.folders.all()
-    
+
 
 class PropertyDocumentView(generics.ListCreateAPIView):
     queryset = Document.objects.all()
@@ -76,13 +86,17 @@ class PropertyDocumentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])
+        folder_instance = generics.get_object_or_404(
+            Folder, id=self.kwargs["folder_id"]
+        )
         return serializer.save(folder=folder_instance)
 
     def get_queryset(self):
-        folder_instance = generics.get_object_or_404(Folder, id=self.kwargs['folder_id'])
+        folder_instance = generics.get_object_or_404(
+            Folder, id=self.kwargs["folder_id"]
+        )
         return folder_instance.documents.all()
-    
+
 
 class DeleteDocumentView(generics.DestroyAPIView):
     queryset = Document.objects.all()
@@ -90,11 +104,13 @@ class DeleteDocumentView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        folder_id = self.kwargs['folder_id']
-        document_id = self.kwargs['document_id']
+        folder_id = self.kwargs["folder_id"]
+        document_id = self.kwargs["document_id"]
         folder_instance = generics.get_object_or_404(Folder, id=folder_id)
-        return generics.get_object_or_404(Document, folder=folder_instance, id=document_id)
-    
+        return generics.get_object_or_404(
+            Document, folder=folder_instance, id=document_id
+        )
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
@@ -105,18 +121,22 @@ class DeleteDocumentView(generics.DestroyAPIView):
                 os.remove(file_path)
 
         self.perform_destroy(instance)
-        return Response({"detail": "Document deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"detail": "Document deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
 
 class GetPieChartView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         data = Property.objects.filter(user=request.user)
-        total_fond = data.count()
+        data.count()
 
         # Annotate the queryset with the count for each 'fond'
         # fonds_with_counts = data.values('fond').annotate(count=Count('fond'))
 
-        result = []
 
         # for item in fonds_with_counts:
         #     fond_name = item['fond']
@@ -126,7 +146,7 @@ class GetPieChartView(APIView):
         #     # Append the result as a dictionary
         #     result.append({fond_name: round(percentage, 1)})  # Round to 1 decimal place
 
-        return Response([{'AX01': 30}])
+        return Response([{"AX01": 30}])
 
 
 class PropertyExportAPIView(APIView):
@@ -135,21 +155,37 @@ class PropertyExportAPIView(APIView):
     @method_decorator(csrf_exempt)
     def get(self, request):
         # Apply the same filters as in PropertyFilter
-        property_filter = PropertyFilter(request.GET, queryset=Property.objects.filter(user=request.user))
+        property_filter = PropertyFilter(
+            request.GET, queryset=Property.objects.filter(user=request.user)
+        )
         filtered_properties = property_filter.qs
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="properties_export.csv"'
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="properties_export.csv"'
 
         writer = csv.writer(response)
 
         # Write CSV header excluding created_at and updated_at
-        header_fields = ['byggnad', 'fond', 'ansvarig_AM', 'yta', 'loa', 'bta', 'lokal_elproduktion', 'installered_effekt', 'geo_energi', 'epc_tal', 'address']
+        header_fields = [
+            "byggnad",
+            "fond",
+            "ansvarig_AM",
+            "yta",
+            "loa",
+            "bta",
+            "lokal_elproduktion",
+            "installered_effekt",
+            "geo_energi",
+            "epc_tal",
+            "address",
+        ]
         writer.writerow(header_fields)
 
         # Write data rows
         for property in filtered_properties:
-            data_row = [self.get_field_value(property, field) for field in header_fields]
+            data_row = [
+                self.get_field_value(property, field) for field in header_fields
+            ]
             writer.writerow(data_row)
 
         return response
@@ -157,10 +193,10 @@ class PropertyExportAPIView(APIView):
     def get_field_value(self, instance, field_name):
         field = Property._meta.get_field(field_name)
         value = getattr(instance, field_name)
-        
+
         if isinstance(field, models.BigAutoField):
-            return ''  # Exclude BigAutoField from CSV export
+            return ""  # Exclude BigAutoField from CSV export
         elif isinstance(field, models.DateTimeField):
-            return value.strftime('%Y-%m-%d %H:%M:%S') if value else ''
+            return value.strftime("%Y-%m-%d %H:%M:%S") if value else ""
         else:
             return str(value)

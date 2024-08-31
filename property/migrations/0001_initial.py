@@ -5,51 +5,83 @@ import property.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Document',
+            name="Document",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(blank=True, null=True, upload_to=property.models.document_upload)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        blank=True, null=True, upload_to=property.models.document_upload
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Folder',
+            name="Folder",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Property',
+            name="Property",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('byggnad', models.CharField(max_length=255)),
-                ('fond', models.CharField(max_length=255)),
-                ('ansvarig_AM', models.CharField(max_length=255)),
-                ('yta', models.IntegerField()),
-                ('loa', models.IntegerField()),
-                ('bta', models.IntegerField()),
-                ('lokal_elproduktion', models.BooleanField()),
-                ('installered_effekt', models.IntegerField()),
-                ('geo_energi', models.BooleanField()),
-                ('epc_tal', models.IntegerField()),
-                ('address', models.CharField(max_length=255)),
-                ('picture', models.ImageField(blank=True, null=True, upload_to=property.models.picture_upload)),
-                ('longitude', models.CharField(blank=True, max_length=150, null=True)),
-                ('latitude', models.CharField(blank=True, max_length=150, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("byggnad", models.CharField(max_length=255)),
+                ("fond", models.CharField(max_length=255)),
+                ("ansvarig_AM", models.CharField(max_length=255)),
+                ("yta", models.IntegerField()),
+                ("loa", models.IntegerField()),
+                ("bta", models.IntegerField()),
+                ("lokal_elproduktion", models.BooleanField()),
+                ("installered_effekt", models.IntegerField()),
+                ("geo_energi", models.BooleanField()),
+                ("epc_tal", models.IntegerField()),
+                ("address", models.CharField(max_length=255)),
+                (
+                    "picture",
+                    models.ImageField(
+                        blank=True, null=True, upload_to=property.models.picture_upload
+                    ),
+                ),
+                ("longitude", models.CharField(blank=True, max_length=150, null=True)),
+                ("latitude", models.CharField(blank=True, max_length=150, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

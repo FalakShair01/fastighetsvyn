@@ -7,83 +7,209 @@ import services.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('property', '0002_initial'),
+        ("property", "0002_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Development',
+            name="Development",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=9)),
-                ('image', models.ImageField(blank=True, null=True, upload_to=services.models.service_images)),
-                ('type', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                ("price", models.DecimalField(decimal_places=2, max_digits=9)),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True, null=True, upload_to=services.models.service_images
+                    ),
+                ),
+                ("type", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Maintenance',
+            name="Maintenance",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('price', models.DecimalField(decimal_places=2, max_digits=9)),
-                ('image', models.ImageField(blank=True, null=True, upload_to=services.models.service_images)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                ("price", models.DecimalField(decimal_places=2, max_digits=9)),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True, null=True, upload_to=services.models.service_images
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UserMaintenanceServices',
+            name="UserMaintenanceServices",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('comment', models.TextField(blank=True, max_length=255, null=True)),
-                ('status', models.CharField(choices=[('Active', 'Active'), ('Pending', 'Pending'), ('Completed', 'Completed')], max_length=10)),
-                ('iteration', models.CharField(blank=True, choices=[('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Other', 'Other')], max_length=7, null=True)),
-                ('day', models.TextField(blank=True, null=True)),
-                ('date', models.TextField(blank=True, null=True)),
-                ('time', models.TextField(blank=True, null=True)),
-                ('frequency', models.TextField(blank=True, null=True)),
-                ('started_date', models.DateTimeField(blank=True, null=True)),
-                ('end_date', models.DateTimeField(blank=True, null=True)),
-                ('maintenance', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='maintenance_services', to='services.maintenance')),
-                ('properties', models.ManyToManyField(blank=True, related_name='maintenance_services', to='property.property')),
-                ('service_provider', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='maintenance_service_provider', to='users.serviceprovider')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_maintenance', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("comment", models.TextField(blank=True, max_length=255, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("Active", "Active"),
+                            ("Pending", "Pending"),
+                            ("Completed", "Completed"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "iteration",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("Daily", "Daily"),
+                            ("Weekly", "Weekly"),
+                            ("Other", "Other"),
+                        ],
+                        max_length=7,
+                        null=True,
+                    ),
+                ),
+                ("day", models.TextField(blank=True, null=True)),
+                ("date", models.TextField(blank=True, null=True)),
+                ("time", models.TextField(blank=True, null=True)),
+                ("frequency", models.TextField(blank=True, null=True)),
+                ("started_date", models.DateTimeField(blank=True, null=True)),
+                ("end_date", models.DateTimeField(blank=True, null=True)),
+                (
+                    "maintenance",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="maintenance_services",
+                        to="services.maintenance",
+                    ),
+                ),
+                (
+                    "properties",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="maintenance_services",
+                        to="property.property",
+                    ),
+                ),
+                (
+                    "service_provider",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="maintenance_service_provider",
+                        to="users.serviceprovider",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_maintenance",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-pk'],
+                "ordering": ["-pk"],
             },
         ),
         migrations.CreateModel(
-            name='UserDevelopmentServices',
+            name="UserDevelopmentServices",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('comment', models.TextField(blank=True, max_length=255, null=True)),
-                ('status', models.CharField(choices=[('Pending', 'Pending'), ('Active', 'Active'), ('Completed', 'Completed')], max_length=10)),
-                ('started_date', models.DateTimeField(blank=True, null=True)),
-                ('end_date', models.DateTimeField(blank=True, null=True)),
-                ('development', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='development_services', to='services.development')),
-                ('property', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='development_property', to='property.property')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_development', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("comment", models.TextField(blank=True, max_length=255, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("Pending", "Pending"),
+                            ("Active", "Active"),
+                            ("Completed", "Completed"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("started_date", models.DateTimeField(blank=True, null=True)),
+                ("end_date", models.DateTimeField(blank=True, null=True)),
+                (
+                    "development",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="development_services",
+                        to="services.development",
+                    ),
+                ),
+                (
+                    "property",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="development_property",
+                        to="property.property",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_development",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-pk'],
+                "ordering": ["-pk"],
             },
         ),
     ]

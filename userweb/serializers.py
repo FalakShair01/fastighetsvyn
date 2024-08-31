@@ -6,24 +6,25 @@ from property.models import Property
 class PropertDetailPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
-        fields = ['id', 'byggnad']
+        fields = ["id", "byggnad"]
+
 
 class HomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Homepage
-        fields = '__all__'
+        fields = "__all__"
 
 
 class DocumentPageDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentPageDetail
-        fields = '__all__'
+        fields = "__all__"
 
 
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Documents
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ContactUsFormSerializer(serializers.Serializer):
@@ -32,12 +33,14 @@ class ContactUsFormSerializer(serializers.Serializer):
     email = serializers.EmailField()
     message = serializers.CharField()
 
+
 class ContactPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactPerson
-        fields = '__all__'
+        fields = "__all__"
+
 
 class FormLinksSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormLinks
-        fields = '__all__'
+        fields = "__all__"

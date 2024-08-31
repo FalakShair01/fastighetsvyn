@@ -5,25 +5,43 @@ import economi.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Expense',
+            name="Expense",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type_of_transaction', models.CharField(max_length=255)),
-                ('type_of_cost_or_revenue', models.CharField(max_length=255)),
-                ('date_of_transaction', models.DateField(null=True)),
-                ('total_sum', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('value_added_tax', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
-                ('account', models.TextField(null=True)),
-                ('comment', models.TextField(blank=True, null=True)),
-                ('attachment', models.FileField(blank=True, null=True, upload_to=economi.models.expense_file_upload)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("type_of_transaction", models.CharField(max_length=255)),
+                ("type_of_cost_or_revenue", models.CharField(max_length=255)),
+                ("date_of_transaction", models.DateField(null=True)),
+                ("total_sum", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "value_added_tax",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=10, null=True
+                    ),
+                ),
+                ("account", models.TextField(null=True)),
+                ("comment", models.TextField(blank=True, null=True)),
+                (
+                    "attachment",
+                    models.FileField(
+                        blank=True,
+                        null=True,
+                        upload_to=economi.models.expense_file_upload,
+                    ),
+                ),
             ],
         ),
     ]

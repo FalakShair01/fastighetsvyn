@@ -1,6 +1,7 @@
 # permissions.py
 from rest_framework import permissions
 
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         # Allow read access to all users
@@ -8,5 +9,4 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
 
         # Allow write access only to admins
-        return request.user.is_authenticated and request.user.role == 'ADMIN'
-
+        return request.user.is_authenticated and request.user.role == "ADMIN"

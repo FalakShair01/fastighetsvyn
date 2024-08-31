@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Development, UserDevelopmentServices, Maintenance, UserMaintenanceServices
+from .models import (
+    Development,
+    UserDevelopmentServices,
+    Maintenance,
+    UserMaintenanceServices,
+)
 
 # Register your models here.
 admin.site.register(UserDevelopmentServices)

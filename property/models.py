@@ -1,38 +1,49 @@
-import requests
-import urllib.parse
 from django.db import models
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 # Create your models here.
 def document_upload(instance, filename):
-    return '/'.join(['property', str(instance.folder.name), 'documents', filename])
+    return "/".join(["property", str(instance.folder.name), "documents", filename])
+
 
 def picture_upload(instance, filename):
-    return '/'.join(['property', str(instance.byggnad), 'picture', filename])
+    return "/".join(["property", str(instance.byggnad), "picture", filename])
+
 
 class Property(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="properties")
     byggnad = models.CharField(max_length=255, null=True, blank=True)
-    gatuadress = models.CharField(max_length=255, null=True, verbose_name="Street Address")
+    gatuadress = models.CharField(
+        max_length=255, null=True, verbose_name="Street Address"
+    )
     postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
-    byggår = models.CharField(max_length=255, null=True, verbose_name="Construction year")
-    antal_bostäder = models.CharField(max_length=255, null=True, verbose_name="Number of apartments")
+    byggår = models.CharField(
+        max_length=255, null=True, verbose_name="Construction year"
+    )
+    antal_bostäder = models.CharField(
+        max_length=255, null=True, verbose_name="Number of apartments"
+    )
     # CHOICE = (
     #     ("No", "No"),
     #     ("Yes", "Yes"),
     # )
     skyddsrum = models.BooleanField(null=True)
-    boarea = models.CharField(max_length=255, null=True, verbose_name="Total living area in building")
-    snittarea_per_bostad = models.CharField(max_length=255, null=True, verbose_name="Average living area per apartment")
+    boarea = models.CharField(
+        max_length=255, null=True, verbose_name="Total living area in building"
+    )
+    snittarea_per_bostad = models.CharField(
+        max_length=255, null=True, verbose_name="Average living area per apartment"
+    )
     fjärrvärme = models.BooleanField(null=True)
     picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
     longitude = models.CharField(max_length=150, blank=True, null=True)
     latitude = models.CharField(max_length=150, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.byggnad
 
@@ -40,7 +51,7 @@ class Property(models.Model):
         if not self.byggnad:
             self.byggnad = self.gatuadress
         super(Property, self).save(*args, **kwargs)
-    
+
     # def save(self, *args, **kwargs):
     #     if not self.latitude or not self.longitude or self.address != self._original_address:
     #         # If latitude or longitude is not set, or if the address has changed, fetch them from the new address
@@ -69,14 +80,20 @@ class Property(models.Model):
     #     super(Property, self).__init__(*args, **kwargs)
     #     self._original_address = self.address
 
+
 class Folder(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='folders', null=True)
+    property = models.ForeignKey(
+        Property, on_delete=models.CASCADE, related_name="folders", null=True
+    )
     name = models.CharField(max_length=50, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
 class Document(models.Model):
-    folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name='documents', null=True)
+    folder = models.ForeignKey(
+        Folder, on_delete=models.CASCADE, related_name="documents", null=True
+    )
     file = models.FileField(upload_to=document_upload, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

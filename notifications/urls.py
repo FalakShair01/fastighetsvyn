@@ -3,8 +3,6 @@ from .views import AdminNotificationsViewset
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'notify/admin', AdminNotificationsViewset)
+router.register(r"notify/admin", AdminNotificationsViewset)
 
-urlpatterns = [
-    path('', include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]

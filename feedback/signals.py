@@ -4,22 +4,25 @@ from notifications.models import AdminNotifications
 from django.db.models.signals import post_save
 from users.Utils import Utils
 
+
 @receiver(post_save, sender=AdminFeedback)
 def notify_feedback_to_admin(sender, instance, created, **kwargs):
     if created:
         # Notification to admin
         title = "Ny feedback"
         description = f"En användare, {instance.user.username}, har gett feedback. Kolla in det nu."
-        AdminNotifications.objects.create(feedback=instance, title=title, description=description)
+        AdminNotifications.objects.create(
+            feedback=instance, title=title, description=description
+        )
 
         # Email to user
         email_body = f"""
                 <p>Hej {instance.user.username}, Tack för din feedback!. Vi återkommer till dig mycket snart!</p>
             """
         data = {
-            'subject': 'Tack för din feedback',
-            'body': email_body,
-            'to': instance.user.email
+            "subject": "Tack för din feedback",
+            "body": email_body,
+            "to": instance.user.email,
         }
 
         Utils.send_email(data)
@@ -32,10 +35,8 @@ def notify_feedback_to_admin(sender, instance, created, **kwargs):
                 <p>Tack för din feedback!</p>
             """
         data = {
-            'subject': 'Ditt ärende har blivit löst',
-            'body': email_body,
-            'to': instance.user.email
+            "subject": "Ditt ärende har blivit löst",
+            "body": email_body,
+            "to": instance.user.email,
         }
         Utils.send_email(data)
-
-        
