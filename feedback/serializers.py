@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import AdminFeedback, UserFeedback
 from django.contrib.auth import get_user_model
 from users.models import Tenant
-from property.models import Property
+from property.serializers import PropertySerializer
 
 User = get_user_model()
 
@@ -19,10 +19,10 @@ class TenantSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "appartment_no", "email", "phone", "profile"]
 
 
-class PropertySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Property
-        fields = ["id", "byggnad", "fond", "address", "picture"]
+# class PropertySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Property
+#         fields = ["id", "byggnad", "gatuadress", "picture"]
 
 
 class AdminFeedbackSerializer(serializers.ModelSerializer):
