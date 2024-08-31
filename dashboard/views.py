@@ -29,10 +29,10 @@ class UserDashboardstatusCount(APIView):
         fixed_cost = 0  # Assuming you might want to calculate this in the future
 
         data = {
-            "Buildings": building_count,
-            "Appartments": total_apartments,
-            "Active Maintenance": ongoing_cost,
-            "Fixed Maintenance": fixed_cost,
+            "buildings": building_count,
+            "appartments": total_apartments,
+            "active_maintenance": ongoing_cost,
+            "fixed_maintenance": fixed_cost,
         }
         return Response(data, status=status.HTTP_200_OK)
 
