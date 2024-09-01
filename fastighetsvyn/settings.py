@@ -197,3 +197,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 # FRONTEND_DOMAIN = 'http://localhost:3000'
 # FRONTEND_DOMAIN = 'https://fastighetsvyn.se'
 FRONTEND_DOMAIN = "https://fastvyn.se"
+
+
+# STRIPE
+STRIPE_TEST_PUBLIC_KEY = 'your-public-key'
+STRIPE_TEST_SECRET_KEY = 'your-secret-key'
+STRIPE_WEBHOOK_SECRET = 'your-webhook-secret'
