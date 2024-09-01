@@ -6,6 +6,7 @@ from services.models import UserMaintenanceServices
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import ServiceProviderSerializer
 from django.db.models import Sum
+from services.models import UserMaintenanceServices
 
 # Create your views here.
 
@@ -15,7 +16,7 @@ class UserDashboardstatusCount(APIView):
 
     def get(self, request):
         properties = Property.objects.filter(user=request.user)
-
+        
         # Count the number of buildings
         building_count = properties.count()
 
@@ -24,14 +25,23 @@ class UserDashboardstatusCount(APIView):
             total_apartments=Sum('antal_bostäder')
         )['total_apartments'] or 0
 
-        # Initialize total price for ongoing and fixed maintenance
-        ongoing_cost = 0
-        fixed_cost = 0  # Assuming you might want to calculate this in the future
+        # Filter active maintenance services
+        active_maintenance_services = UserMaintenanceServices.objects.filter(
+            user=request.user, status="Active"
+        )
+
+        # Count active maintenance services
+        active_maintenance_count = active_maintenance_services.count()
+
+        # Calculate the fixed maintenance cost (sum of prices of active services)
+        fixed_cost = active_maintenance_services.aggregate(
+            total_cost=Sum('maintenance__price')
+        )['total_cost'] or 0
 
         data = {
             "buildings": building_count,
             "appartments": total_apartments,
-            "active_maintenance": ongoing_cost,
+            "active_maintenance": active_maintenance_count,
             "fixed_maintenance": fixed_cost,
         }
         return Response(data, status=status.HTTP_200_OK)
@@ -55,3 +65,7 @@ class UserDashboardServiceProvider(APIView):
         serializer = ServiceProviderSerializer(unique_service_providers, many=True)
 
         return Response(serializer.data)
+
+class DashboardTable(APIView):
+    def get(self, request):
+        pass
