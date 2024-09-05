@@ -194,26 +194,30 @@ class DashboardStatsTable(APIView):
 
         blogs_difference = calculate_percentage_difference(recent_blogs, blogs_avg_per_month)
 
-        data = {
-            "revenue": {
+        data = [
+            {
+                "name": "Revenue",
                 "past_30_days": revenue_last_30_days,
                 "avg_total_per_month": revenue_avg_per_month,
                 "difference": revenue_difference
             },
-            "expenses_or_cost": {
+            {
+                "name": "Expenses_or_cost",
                 "past_30_days": expenses_last_30_days,
                 "avg_total_per_month": expenses_avg_per_month,
                 "difference": expenses_difference
             },
-            "feedbacks": {
+            {
+                "name": "Feedbacks & Ideas",
                 "past_30_days": feedbacks_last_30_days,
                 "avg_total_per_month": feedbacks_avg_per_month,
                 "difference": feedbacks_difference
             },
-            "blogs_publications": {
+            {
+                "name": "Publications",
                 "past_30_days": blogs_last_30_days,
                 "avg_total_per_month": blogs_avg_per_month,
                 "difference": blogs_difference
             }
-        }
+        ]
         return Response(data, status=status.HTTP_200_OK)
