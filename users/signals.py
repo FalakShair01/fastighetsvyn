@@ -40,5 +40,5 @@ def fill_dummy_data(sender, instance, created, **kwargs):
                 description="Vi på BRF X strävar efter att skapa en trygg och trivsam boendemiljö för alla våra medlemmar. Här på infosidan hittar du all nödvändig information om våra fastigheter, viktiga meddelanden och kommande aktiviteter. Titta in regelbundet för att hålla dig uppdaterad om allt som rör vår förening och vårt arbete.",
                 sub_title="Ditt hem, vårt ansvar – Vi skapar trygghet och trivsel tillsammans.",
                 title="Välkommen till BRF X!",
-                banner="media/banner.jpg",  # Adjust the path based on where the banner is stored
+                banner='mini-web-common-banner.jpeg'
             )

@@ -135,6 +135,16 @@ class CreateDocumentView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+class UpdateDocumentView(APIView, UserMixin):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, username_slug, pk):
+        user = self.get_user(username_slug)
+        instance = get_object_or_404(Documents, user=user, id=pk)
+        serializer = DocumentSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class DeleteDocumentView(APIView, UserMixin):
     permission_classes = [IsAuthenticated]

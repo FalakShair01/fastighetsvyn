@@ -10,6 +10,7 @@ from .views import (
     UpdateDocumentPageDetailView,
     CreateDocumentView,
     ListDocumentView,
+    UpdateDocumentView,
     DeleteDocumentView,
     ContactPageView,
     ListContactPerson,
@@ -69,6 +70,11 @@ urlpatterns = [
         "document/delete/<slug:username_slug>/<pk>/",
         DeleteDocumentView.as_view(),
         name="del-doc",
+    ),
+    path(
+        "document/update/<slug:username_slug>/<pk>/",
+        UpdateDocumentView.as_view(),
+        name="update-doc",
     ),
     path(
         "contact-us/<slug:username_slug>/", ContactPageView.as_view(), name="contact-us"

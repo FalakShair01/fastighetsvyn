@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "role",
             "is_active",
+            "is_verified",
             "subscription_type",
             "subscription_status",
             "allow_access_account",

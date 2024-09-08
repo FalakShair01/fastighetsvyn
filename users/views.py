@@ -40,11 +40,16 @@ class UserViewset(viewsets.ModelViewSet):
         return User.objects.exclude(id=self.request.user.id)
 
     def create(self, request, *args, **kwargs):
+        """This is Used by Super admin to admin users"""
         # Generate a random password for the user
         generated_password = User.objects.make_random_password()
 
         # Set the generated password in the request data
         request.data["password"] = generated_password
+
+        # # add this true because user is added by admin
+        # request.data["is_active"] = True
+        # request.data["is_verified"] = True
 
         # Use the serializer to create the user
         serializer = self.get_serializer(data=request.data)
@@ -101,17 +106,27 @@ class UserRegisterView(APIView):
         current_site = get_current_site(request).domain
 
         relativeUrl = reverse("email-verify")
-        "http://" + current_site + relativeUrl + "?token=" + str(token)
+        absUrl = "http://" + current_site + relativeUrl + "?token=" + str(token)
 
         try:
-            # email_body = render_to_string(
-            #     'emails/verify_email.html', {'title': 'Account Verification','username': user.username, 'absUrl': absUrl, 'message': 'Thank you for registering with Fastighetsvyn. To complete your registration, please click the following link to verify your email address:', 'endingMessage':"If you did not register on Fastighetsvyn, please disregard this email.", 'btn': 'Verify Email'})
+            email_body = f"""
+                <html>
+                    <body>
+                        <h2>Välkommen till vår tjänst!</h2>
+                        <p>Ditt konto har skapats framgångsrikt.</p>
+                        <p>Klicka på länken nedan för att verifiera ditt konto:</p>
+                        <p><a href="{absUrl}">Verifiera ditt konto</a></p>
+                        <p>Om du inte registrerade dig på vår webbplats, vänligen ignorera detta meddelande.</p>
+                    </body>
+                </html>
+            """
 
             data = {
-                "body": "Your Account is created",
+                "body": email_body,
                 "subject": "Account Verification",
                 "to": user.email,
             }
+            print(data)
 
             Utils.send_email(data)
             return Response(

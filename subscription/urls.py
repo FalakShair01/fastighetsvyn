@@ -1,10 +1,7 @@
 from django.urls import path
-from .views import SubscriptionStatusView
+from .views import StripeWebhookView
 
 urlpatterns = [
-    path(
-        "subscription-status/",
-        SubscriptionStatusView.as_view(),
-        name="subscription-status",
-    ),
+    path('stripe-webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
+
 ]

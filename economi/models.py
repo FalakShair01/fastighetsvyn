@@ -21,7 +21,7 @@ class Expense(models.Model):
     )
     account = models.TextField(null=True)
     building = models.ForeignKey(
-        Property, on_delete=models.SET_NULL, related_name="building_expenses", null=True
+        Property, on_delete=models.SET_NULL, related_name="building_expenses", null=True, blank=True
     )
     comment = models.TextField(blank=True, null=True)
     attachment = models.FileField(upload_to=expense_file_upload, blank=True, null=True)
