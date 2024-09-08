@@ -5,7 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .serializers import SubscriptionStatusSerializer
 from django.views.decorators.csrf import csrf_exempt
+from users.models import User
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 import stripe
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
@@ -40,3 +42,11 @@ class StripeWebhookView(APIView):
 
 
         return JsonResponse({'status': 'success'})
+
+
+class CheckSubscriptionStatus(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+       serializer = SubscriptionStatusSerializer(request.user)
+       return Response(serializer.data, status=status.HTTP_200_OK)
