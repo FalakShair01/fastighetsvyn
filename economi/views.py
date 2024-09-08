@@ -43,19 +43,11 @@ class ExpenseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 class BalanceIllustrationView(APIView):
     def get(self, request):
-        # Retrieve the year from the query parameters, default to the current year
-        year = request.query_params.get("year", timezone.now().year)
+        # Get the current date and calculate the date for 30 days ago
+        end_date = timezone.now()
+        start_date = end_date - timezone.timedelta(days=30)
 
-        try:
-            year = int(year)
-        except ValueError:
-            return Response({"error": "Invalid year"}, status=400)
-
-        # Filter expenses by the specified year using timezone-aware dates
-        start_date = timezone.make_aware(timezone.datetime(year, 1, 1))
-        end_date = timezone.make_aware(timezone.datetime(year + 1, 1, 1))
-
-        # Aggregate the total cost with case-insensitive filtering and year filter
+        # Aggregate the total cost for the last 30 days (case-insensitive filtering)
         total_cost = (
             Expense.objects.filter(
                 type_of_transaction__iexact="cost",
@@ -64,7 +56,7 @@ class BalanceIllustrationView(APIView):
             or 0
         )
 
-        # Aggregate the total revenue with case-insensitive filtering and year filter
+        # Aggregate the total revenue for the last 30 days (case-insensitive filtering)
         total_revenue = (
             Expense.objects.filter(
                 type_of_transaction__iexact="revenue",
@@ -73,9 +65,15 @@ class BalanceIllustrationView(APIView):
             or 0
         )
 
-        # Return the results as a JSON response
-        return Response({"total_cost": total_cost, "total_revenue": total_revenue})
+        # Calculate the difference between total revenue and total cost
+        balance = total_revenue - total_cost
 
+        # Return the results as a JSON response
+        return Response({
+            "total_cost": total_cost,
+            "total_revenue": total_revenue,
+            "balance": balance
+        })
 
 # class YearlyExpenseView(APIView):
 #     def get(self, request):
