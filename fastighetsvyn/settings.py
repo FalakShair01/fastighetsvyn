@@ -188,7 +188,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://fastighetsvyn.se',
     'https://fastvyn.se'
 ]
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "content-type",
     "Authorization",
