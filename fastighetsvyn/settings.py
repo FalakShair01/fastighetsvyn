@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "economi",
     "userweb",
     "subscription",
+    'django_cleanup.apps.CleanupConfig',
+
 ]
 
 MIDDLEWARE = [
