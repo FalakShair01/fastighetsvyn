@@ -66,13 +66,13 @@ class BalanceIllustrationView(APIView):
         )
 
         # Calculate the difference between total revenue and total cost
-        balance = total_revenue - total_cost
+        # balance = total_revenue - total_cost
 
         # Return the results as a JSON response
         return Response({
             "total_cost": total_cost,
-            "total_revenue": total_revenue,
-            "balance": balance
+            "total_revenue": total_revenue
+            # "balance": balance
         })
 
 # class YearlyExpenseView(APIView):
