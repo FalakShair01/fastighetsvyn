@@ -189,10 +189,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://fastvyn.se'
 ]
 # CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [
-    "content-type",
-    "Authorization",
-]
+# CORS_ALLOW_HEADERS = [
+#     "content-type",
+#     "Authorization",
+# ]
 # CORS_ALLOW_ALL_ORIGINS = True
 
 # Set this Domain to generate read blog link
