@@ -42,6 +42,7 @@ class ExpenseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class BalanceIllustrationView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get the current date and calculate the date for 30 days ago
         end_date = timezone.now()
@@ -50,6 +51,7 @@ class BalanceIllustrationView(APIView):
         # Aggregate the total cost for the last 30 days (case-insensitive filtering)
         total_cost = (
             Expense.objects.filter(
+                user=request.user,
                 type_of_transaction__iexact="cost",
                 date_of_transaction__range=(start_date, end_date),
             ).aggregate(Sum("total_sum"))["total_sum__sum"]
@@ -59,6 +61,7 @@ class BalanceIllustrationView(APIView):
         # Aggregate the total revenue for the last 30 days (case-insensitive filtering)
         total_revenue = (
             Expense.objects.filter(
+                user=request.user,
                 type_of_transaction__iexact="revenue",
                 date_of_transaction__range=(start_date, end_date),
             ).aggregate(Sum("total_sum"))["total_sum__sum"]
