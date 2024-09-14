@@ -75,48 +75,6 @@ class BalanceIllustrationView(APIView):
             # "balance": balance
         })
 
-# class YearlyExpenseView(APIView):
-#     def get(self, request):
-#         # Get current year or specify the year if needed
-#         year = request.query_params.get('year', timezone.now().year)
-
-#         # List of types to include in the response
-#         # types_of_interest = ['Energy', 'Water', 'Rent', 'Maintenance']
-#         types_of_interest = ['Energi', 'Vatten', 'Totala utgifter', 'Intäkter']
-
-#         # Filter and aggregate data
-#         data = (
-#             Expense.objects
-#             .filter(date_of_transaction__year=year, type_of_cost_or_revenue__in=types_of_interest)
-#             .annotate(month=TruncMonth('date_of_transaction'))
-#             .values('month', 'type_of_cost_or_revenue')
-#             .annotate(total_amount=Sum('total_sum'))
-#             .order_by('month', 'type_of_cost_or_revenue')
-#         )
-
-#         # Prepare data for chart
-#         monthly_data = {}
-#         for item in data:
-#             month = item['month'].strftime('%Y-%m')  # Format month as 'YYYY-MM'
-#             if month not in monthly_data:
-#                 monthly_data[month] = {type_name: 0 for type_name in types_of_interest}
-
-#             monthly_data[month][item['type_of_cost_or_revenue']] = item['total_amount']
-
-#         # Convert to lists for charting
-#         labels = sorted(monthly_data.keys())
-#         series_data = [
-#             {
-#                 'name': type_name,
-#                 'data': [monthly_data.get(month, {}).get(type_name, 0) for month in labels]
-#             }
-#             for type_name in types_of_interest
-#         ]
-
-#         return Response({
-#             'labels': labels,
-#             'series': series_data
-#         })
 
 
 class YearlyExpenseView(APIView):

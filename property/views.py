@@ -43,24 +43,6 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Property.objects.filter(user=self.request.user)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        if instance.picture:
-            # Delete the associated picture file from the directory
-            picture_path = instance.picture.path
-            if picture_path and os.path.exists(picture_path):
-                os.remove(picture_path)
-
-        # Call the superclass's destroy method to delete the database record
-        self.perform_destroy(instance)
-
-        return Response(
-            {"detail": "Property deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT,
-        )
-
-
 class FolderViewset(viewsets.ModelViewSet):
     queryset = Folder.objects.all()
     serializer_class = FolderSerializer
@@ -102,29 +84,6 @@ class DeleteDocumentView(generics.DestroyAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        folder_id = self.kwargs["folder_id"]
-        document_id = self.kwargs["document_id"]
-        folder_instance = generics.get_object_or_404(Folder, id=folder_id)
-        return generics.get_object_or_404(
-            Document, folder=folder_instance, id=document_id
-        )
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        # Delete the associated file from the directory
-        if instance.file:
-            file_path = instance.file.path
-            if os.path.exists(file_path):
-                os.remove(file_path)
-
-        self.perform_destroy(instance)
-        return Response(
-            {"detail": "Document deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT,
-        )
 
 
 class GetPieChartView(APIView):

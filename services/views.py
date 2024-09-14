@@ -28,28 +28,6 @@ class DevelopmentViewset(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
     filterset_class = DevelopmentFilter
 
-    def perform_destroy(self, instance):
-        if instance.image:
-            instance.image.delete()
-        instance.delete()
-        return Response(
-            {"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT
-        )
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        # Check if a new image is provided
-        if "image" in request.data and instance.image:
-            # Delete the old image before saving changes
-            instance.image.delete()
-
-        self.perform_update(serializer)
-
-        return Response(serializer.data)
-
 
 class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
@@ -70,28 +48,6 @@ class MaintenanceViewset(viewsets.ModelViewSet):
     serializer_class = MaintainceSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
-
-    def perform_destroy(self, instance):
-        if instance.image:
-            instance.image.delete()
-        instance.delete()
-        return Response(
-            {"Msg": "Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT
-        )
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        # Check if a new image is provided
-        if "image" in request.data and instance.image:
-            # Delete the old image before saving changes
-            instance.image.delete()
-
-        self.perform_update(serializer)
-
-        return Response(serializer.data)
 
 
 class UserMaintenanceViewset(viewsets.ModelViewSet):
