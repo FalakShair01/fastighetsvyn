@@ -78,6 +78,7 @@ class BalanceIllustrationView(APIView):
 
 
 class YearlyExpenseView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         year = request.query_params.get("year", timezone.now().year)
         try:
@@ -95,6 +96,7 @@ class YearlyExpenseView(APIView):
         # Filter and aggregate data
         data = (
             Expense.objects.filter(
+                user= request.user,
                 date_of_transaction__year=year,
                 type_of_cost_or_revenue__in=types_of_interest,
             )
