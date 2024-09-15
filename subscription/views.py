@@ -61,11 +61,38 @@ class CreateCheckoutSessionView(APIView):
                 customer_email=email,  # Pre-fill the customer's email
             )
 
-            return Response({'sessionId': session.id}, status=status.HTTP_200_OK)
+            print(session)
+
+            return Response({'sessionId': session.id, 'url': session.url}, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+class ListPricesView(APIView):
+    def get(self, request):
+        try:
+            # Fetch all products from Stripe
+            products = stripe.Product.list(active=True)
+
+            product_price_data = []
+            for product in products.data:
+                # Fetch all prices for each product
+                prices = stripe.Price.list(product=product.id)
+
+                for price in prices.data:
+                    product_price_data.append({
+                        'product_name': product.name,
+                        'price_id': price.id,
+                        'price': price.unit_amount / 100,  # Price in actual amount (Stripe stores in cents)
+                        'currency': price.currency,
+                        'interval': price.recurring['interval'] if price.recurring else None,
+                        'type': 'recurring' if price.recurring else 'one-time',
+                    })
+
+            return Response(product_price_data, status=status.HTTP_200_OK)
+
+        except stripe.error.StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class CheckSubscriptionStatus(APIView):
     permission_classes = [IsAuthenticated]
