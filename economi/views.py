@@ -5,12 +5,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from .models import Expense
 from .serializers import ExpenseSerializer
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from property.models import Property
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
@@ -41,44 +41,94 @@ class ExpenseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
+# class BalanceIllustrationView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def get(self, request):
+#         # Get the current date and calculate the date for 30 days ago
+#         end_date = timezone.now()
+#         start_date = end_date - timezone.timedelta(days=30)
+
+#         # Aggregate the total cost for the last 30 days (case-insensitive filtering)
+#         total_cost = (
+#             Expense.objects.filter(
+#                 user=request.user,
+#                 type_of_transaction__iexact="cost",
+#                 date_of_transaction__range=(start_date, end_date),
+#             ).aggregate(Sum("total_sum"))["total_sum__sum"]
+#             or 0
+#         )
+
+#         # Aggregate the total revenue for the last 30 days (case-insensitive filtering)
+#         total_revenue = (
+#             Expense.objects.filter(
+#                 user=request.user,
+#                 type_of_transaction__iexact="revenue",
+#                 date_of_transaction__range=(start_date, end_date),
+#             ).aggregate(Sum("total_sum"))["total_sum__sum"]
+#             or 0
+#         )
+
+#         # Calculate the difference between total revenue and total cost
+#         # balance = total_revenue - total_cost
+
+#         # Return the results as a JSON response
+#         return Response({
+#             "total_cost": total_cost,
+#             "total_revenue": total_revenue
+#             # "balance": balance
+#         })
+
 class BalanceIllustrationView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        # Get the current date and calculate the date for 30 days ago
-        end_date = timezone.now()
-        start_date = end_date - timezone.timedelta(days=30)
+        user = request.user
+        today = timezone.now().date()
+        start_date = today - timedelta(days=30)
 
-        # Aggregate the total cost for the last 30 days (case-insensitive filtering)
-        total_cost = (
-            Expense.objects.filter(
-                user=request.user,
-                type_of_transaction__iexact="cost",
-                date_of_transaction__range=(start_date, end_date),
-            ).aggregate(Sum("total_sum"))["total_sum__sum"]
-            or 0
-        )
+        # Calculate total expenses and revenues for the past 30 days
+        expenses_last_30_days = Expense.objects.filter(
+            user=user,
+            date_of_transaction__gte=start_date,
+            type_of_cost_or_revenue__iexact="Cost"
+        ).aggregate(total=Sum('total_sum'))['total'] or 0
 
-        # Aggregate the total revenue for the last 30 days (case-insensitive filtering)
-        total_revenue = (
-            Expense.objects.filter(
-                user=request.user,
-                type_of_transaction__iexact="revenue",
-                date_of_transaction__range=(start_date, end_date),
-            ).aggregate(Sum("total_sum"))["total_sum__sum"]
-            or 0
-        )
+        revenue_last_30_days = Expense.objects.filter(
+            user=user,
+            date_of_transaction__gte=start_date,
+            type_of_cost_or_revenue__iexact="Revenue"
+        ).aggregate(total=Sum('total_sum'))['total'] or 0
 
-        # Calculate the difference between total revenue and total cost
-        # balance = total_revenue - total_cost
+        # Helper function to calculate average per month
+        def calculate_avg_per_month(expense_type):
+            year_start = today.replace(month=1, day=1)
+            monthly_totals = Expense.objects.filter(
+                user=user,
+                type_of_cost_or_revenue__iexact=expense_type,
+                date_of_transaction__gte=year_start
+            ).annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(total=Sum('total_sum')).values('total')
+            
+            avg_total_per_month = monthly_totals.aggregate(avg_total=Avg('total'))['avg_total'] or 0
+            return avg_total_per_month
 
-        # Return the results as a JSON response
-        return Response({
-            "total_cost": total_cost,
-            "total_revenue": total_revenue
-            # "balance": balance
-        })
+        expenses_avg_per_month = calculate_avg_per_month("Cost")
+        revenue_avg_per_month = calculate_avg_per_month("Revenue")
 
+        # Helper function to calculate percentage change
+        def calculate_percentage_change(current_value, average_value):
+            if average_value == 0:
+                return 0  # Avoid division by zero
+            return ((current_value - average_value) / average_value) * 100
 
+        expenses_percentage_change = calculate_percentage_change(expenses_last_30_days, expenses_avg_per_month)
+        revenue_percentage_change = calculate_percentage_change(revenue_last_30_days, revenue_avg_per_month)
+
+        # Prepare the response data
+        data = {
+            'total_cost': expenses_percentage_change,
+            'total_revenue': revenue_percentage_change,
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
 class YearlyExpenseView(APIView):
     permission_classes = [IsAuthenticated]
