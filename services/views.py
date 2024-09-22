@@ -17,7 +17,7 @@ from .serializers import (
 )
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
-from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter
+from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintenanceFilter
 # Create your views here.
 
 
@@ -48,6 +48,7 @@ class MaintenanceViewset(viewsets.ModelViewSet):
     serializer_class = MaintainceSerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
+    filterset_class = MaintenanceFilter
 
 
 class UserMaintenanceViewset(viewsets.ModelViewSet):

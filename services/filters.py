@@ -3,6 +3,7 @@ from .models import (
     UserDevelopmentServices,
     UserMaintenanceServices,
     Development,
+    Maintenance
 )
 from property.models import Property
 
@@ -12,6 +13,10 @@ class UserDevelopmentFilter(filters.FilterSet):
         model = UserDevelopmentServices
         fields = {"status": ["exact"]}
 
+class MaintenanceFilter(filters.FilterSet):
+    class Meta:
+        model = Maintenance
+        fields = {"is_admin": ["exact"]}
 
 class UserMaintenanceFilter(filters.FilterSet):
     properties = filters.ModelMultipleChoiceFilter(
