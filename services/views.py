@@ -24,7 +24,7 @@ from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFi
 class DevelopmentViewset(viewsets.ModelViewSet):
     queryset = Development.objects.all()
     serializer_class = DevelopmentSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     filterset_class = DevelopmentFilter
 
@@ -46,7 +46,7 @@ class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
 class MaintenanceViewset(viewsets.ModelViewSet):
     queryset = Maintenance.objects.all()
     serializer_class = MaintainceSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     filterset_class = MaintenanceFilter
 
