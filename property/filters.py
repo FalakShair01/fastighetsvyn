@@ -7,12 +7,17 @@ class PropertyFilter(filters.FilterSet):
         model = Property
         fields = {
             "byggnad": ["in", "exact"],
-            "gatuadress": ["in", "exact"],
-            "postnummer": ["in", "exact"],
             "byggår": ["in", "exact"],
-            "antal_bostäder": ["in", "exact"],
-            "skyddsrum": ["in", "exact"],
             "boarea": ["in", "exact"],
-            "snittarea_per_bostad": ["in", "exact"],
-            "fjärrvärme": ["in", "exact"],
+            "fastighetsbeteckning": ["in", "exact"],
+            "hiss": ["exact"],
+            "skyddsrum": ["exact"],
+            "antal_våningar": ["in", "exact"],
+            "antal_bostäder": ["in", "exact"],
+            "fjärrvärme": ["exact"],
+            "solpaneler": ["exact"],
+            "ventilationssystem": ["in", "exact"],
+            "uppvärmningssystem": ["in", "exact"],
+            "postnummer": ["in", "exact"],
+            "gatuadress": ["in", "exact"],
         }

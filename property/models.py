@@ -16,24 +16,27 @@ def picture_upload(instance, filename):
 class Property(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="properties")
     byggnad = models.CharField(max_length=255, null=True, blank=True)
-    gatuadress = models.CharField(
-        max_length=255, null=True, verbose_name="Street Address"
-    )
-    postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
     byggår = models.CharField(
         max_length=255, null=True, verbose_name="Construction year"
+    )
+    boarea = models.CharField(
+        max_length=255, null=True, verbose_name="Total living area in building"
+    )
+    fastighetsbeteckning = models.TextField(null=True)
+    hiss = models.BooleanField(null=True)
+    skyddsrum = models.BooleanField(null=True)
+    antal_våningar = models.CharField(
+        max_length=255, null=True, verbose_name="Number of apartments"
     )
     antal_bostäder = models.CharField(
         max_length=255, null=True, verbose_name="Number of apartments"
     )
-    skyddsrum = models.BooleanField(null=True)
-    boarea = models.CharField(
-        max_length=255, null=True, verbose_name="Total living area in building"
-    )
-    snittarea_per_bostad = models.CharField(
-        max_length=255, null=True, verbose_name="Average living area per apartment"
-    )
-    fjärrvärme = models.BooleanField(null=True)
+    fjärrvärme = models.BooleanField(default=True)
+    solpaneler = models.BooleanField(default=True)
+    ventilationssystem = models.TextField(null=True)
+    uppvärmningssystem = models.TextField(null=True)
+    postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
+    gatuadress = models.CharField(max_length=255, null=True, verbose_name="Street Address")
     picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
     longitude = models.CharField(max_length=150, blank=True, null=True)
     latitude = models.CharField(max_length=150, blank=True, null=True)
