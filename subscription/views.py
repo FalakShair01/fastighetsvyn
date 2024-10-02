@@ -16,17 +16,22 @@ stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = 'your-webhook-secret'
-    
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    print("Payload:", payload)
+    print("Signature Header:", sig_header)
+    print("endpoint_secret:", endpoint_secret)
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
+            payload, sig_header, "we_1PuF7pDeQrfo0jRqVkuROglQ"
         )
     except ValueError as e:
+        print(str(e))
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
+        print(f"Signature=> {str(e)}")
         return HttpResponse(status=400)
-
+    
+    print(event)
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         # Fulfill the purchase or update payment status in your database

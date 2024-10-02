@@ -17,26 +17,26 @@ class Property(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="properties")
     byggnad = models.CharField(max_length=255, null=True, blank=True)
     byggår = models.CharField(
-        max_length=255, null=True, verbose_name="Construction year"
+        max_length=255, null=True, blank=True, verbose_name="Construction year"
     )
     boarea = models.CharField(
-        max_length=255, null=True, verbose_name="Total living area in building"
+        max_length=255, null=True, blank=True, verbose_name="Total living area in building"
     )
-    fastighetsbeteckning = models.TextField(null=True)
-    hiss = models.BooleanField(null=True)
-    skyddsrum = models.BooleanField(null=True)
+    fastighetsbeteckning = models.TextField(null=True, blank=True)
+    hiss = models.BooleanField(null=True, blank=True)
+    skyddsrum = models.BooleanField(blank=True, null=True)
     antal_våningar = models.CharField(
-        max_length=255, null=True, verbose_name="Number of apartments"
+        max_length=255, null=True, blank=True, verbose_name="Number of apartments"
     )
     antal_bostäder = models.CharField(
-        max_length=255, null=True, verbose_name="Number of apartments"
+        max_length=255, null=True, blank=True, verbose_name="Number of apartments"
     )
-    fjärrvärme = models.BooleanField(default=True)
-    solpaneler = models.BooleanField(default=True)
-    ventilationssystem = models.TextField(null=True)
-    uppvärmningssystem = models.TextField(null=True)
-    postnummer = models.CharField(max_length=255, null=True, verbose_name="Postal code")
-    gatuadress = models.CharField(max_length=255, null=True, verbose_name="Street Address")
+    fjärrvärme = models.BooleanField(blank=True, null=True, default=True)
+    solpaneler = models.BooleanField(blank=True, null=True, default=True)
+    ventilationssystem = models.TextField(blank=True, null=True)
+    uppvärmningssystem = models.TextField(blank=True, null=True)
+    postnummer = models.CharField(max_length=255, null=True, blank=True, verbose_name="Postal code")
+    gatuadress = models.CharField(max_length=255, null=True, blank=True, verbose_name="Street Address")
     picture = models.ImageField(upload_to=picture_upload, null=True, blank=True)
     longitude = models.CharField(max_length=150, blank=True, null=True)
     latitude = models.CharField(max_length=150, blank=True, null=True)
