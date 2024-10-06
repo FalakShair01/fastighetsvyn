@@ -11,20 +11,21 @@ from django.utils import timezone
 from property.models import Property
 import pandas as pd
 from datetime import datetime, timedelta
-
+from .filters import ExpenseFilter
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["account", "building", "type_of_transaction"]
+    filterset_class = ExpenseFilter
 
     def get_queryset(self):
         user = self.request.user
         queryset = Expense.objects.filter(user=user)
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
+
         if start_date and end_date:
             queryset = queryset.filter(
                 date_of_transaction__range=[start_date, end_date]
