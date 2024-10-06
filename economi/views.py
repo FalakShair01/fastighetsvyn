@@ -160,7 +160,7 @@ class YearlyExpenseView(APIView):
         energy_water_data = base_queryset.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
 
         # Separate filtering for "Cost" and "Revenue" (to map to "Totala utgifter" and "Intäkter")
-        cost_revenue_data = base_queryset.filter(type_of_cost_or_revenue__in=["Cost", "Revenue"])
+        cost_revenue_data = base_queryset.filter(type_of_transaction__in=["Cost", "Revenue"])
 
         # Initialize data for each type and month
         monthly_data = {
