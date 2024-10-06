@@ -148,26 +148,22 @@ class YearlyExpenseView(APIView):
             datetime(year, month, 1).strftime("%b '%y") for month in range(1, 13)
         ]
 
-        # Handle filtering differently for "Totala utgifter" and "Intäkter"
-        # Separate filter queries for Cost/Revenue and other types
-        data = (
-            Expense.objects.filter(
-                user=request.user,
-                date_of_transaction__year=year,
-                # Query for "Cost" or "Revenue" based on type_of_cost_or_revenue
-            ).annotate(
-                month=TruncMonth("date_of_transaction")
-            )
+        # Base queryset for filtering expenses in the specified year
+        base_queryset = Expense.objects.filter(
+            user=request.user,
+            date_of_transaction__year=year
+        ).annotate(
+            month=TruncMonth("date_of_transaction")
         )
 
         # Filter for "Energi" and "Vatten" directly
-        energy_water_data = data.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
+        energy_water_data = base_queryset.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
 
         # Filter for "Totala utgifter" (mapped to Cost) and "Intäkter" (mapped to Revenue)
-        cost_revenue_data = data.filter(type_of_cost_or_revenue__in=["Cost", "Revenue"])
+        cost_revenue_data = base_queryset.filter(type_of_cost_or_revenue__in=["Cost", "Revenue"])
 
-        # Combine the queries for charting
-        final_data = energy_water_data.union(cost_revenue_data)
+        # Combine the queries and convert to values
+        final_data = energy_water_data.union(cost_revenue_data).values("month", "type_of_cost_or_revenue").annotate(total_amount=Sum("total_sum"))
 
         # Initialize data for each type and month
         monthly_data = {
@@ -177,7 +173,7 @@ class YearlyExpenseView(APIView):
 
         # Populate data from the query
         for item in final_data:
-            month = item["month"].strftime("%b '%y")
+            month = item["month"].strftime("%b '%y")  # Access 'month' field from annotated data
             type_name = item["type_of_cost_or_revenue"]
 
             # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
