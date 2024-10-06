@@ -29,6 +29,8 @@ from .serializers import (
 from .token_utils import get_tokens_for_user
 from .permissions import IsAdminOrSelf
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
+from .filters import TenantFilter
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -349,6 +351,8 @@ class TenantView(viewsets.ModelViewSet):
     serializer_class = TenantSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = TenantFilter
 
     def get_queryset(self):
         return Tenant.objects.filter(user=self.request.user)
