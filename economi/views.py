@@ -132,12 +132,14 @@ class BalanceIllustrationView(APIView):
 
 class YearlyExpenseView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         year = request.query_params.get("year", timezone.now().year)
         try:
             year = int(year)  # Ensure year is an integer
         except ValueError:
             year = timezone.now().year
+
         # List of types to include in the response
         types_of_interest = ["Energi", "Vatten", "Totala utgifter", "Intäkter"]
 
@@ -146,18 +148,26 @@ class YearlyExpenseView(APIView):
             datetime(year, month, 1).strftime("%b '%y") for month in range(1, 13)
         ]
 
-        # Filter and aggregate data
+        # Handle filtering differently for "Totala utgifter" and "Intäkter"
+        # Separate filter queries for Cost/Revenue and other types
         data = (
             Expense.objects.filter(
-                user= request.user,
+                user=request.user,
                 date_of_transaction__year=year,
-                type_of_cost_or_revenue__in=types_of_interest,
+                # Query for "Cost" or "Revenue" based on type_of_cost_or_revenue
+            ).annotate(
+                month=TruncMonth("date_of_transaction")
             )
-            .annotate(month=TruncMonth("date_of_transaction"))
-            .values("month", "type_of_cost_or_revenue")
-            .annotate(total_amount=Sum("total_sum"))
-            .order_by("month", "type_of_cost_or_revenue")
         )
+
+        # Filter for "Energi" and "Vatten" directly
+        energy_water_data = data.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
+
+        # Filter for "Totala utgifter" (mapped to Cost) and "Intäkter" (mapped to Revenue)
+        cost_revenue_data = data.filter(type_of_cost_or_revenue__in=["Cost", "Revenue"])
+
+        # Combine the queries for charting
+        final_data = energy_water_data.union(cost_revenue_data)
 
         # Initialize data for each type and month
         monthly_data = {
@@ -166,9 +176,17 @@ class YearlyExpenseView(APIView):
         }
 
         # Populate data from the query
-        for item in data:
+        for item in final_data:
             month = item["month"].strftime("%b '%y")
-            monthly_data[month][item["type_of_cost_or_revenue"]] = item["total_amount"]
+            type_name = item["type_of_cost_or_revenue"]
+
+            # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
+            if type_name == "Cost":
+                type_name = "Totala utgifter"
+            elif type_name == "Revenue":
+                type_name = "Intäkter"
+
+            monthly_data[month][type_name] = item["total_amount"]
 
         # Convert to lists for charting
         labels = all_months
