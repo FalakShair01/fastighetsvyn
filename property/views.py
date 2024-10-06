@@ -31,7 +31,16 @@ class PropertyListCreateView(generics.ListCreateAPIView):
         return serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Property.objects.filter(user=self.request.user).order_by("-created_at")
+        # Start with the base queryset for the authenticated user
+        queryset = Property.objects.filter(user=self.request.user).order_by("-created_at")
+
+        # Get the byggnad parameter as a list
+        byggnad_params = self.request.query_params.getlist('byggnad')
+        if byggnad_params:
+            # Filter the queryset by the byggnad list
+            queryset = queryset.filter(byggnad__in=byggnad_params)
+
+        return queryset
 
 
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
