@@ -6,9 +6,9 @@ class TenantFilter(filters.FilterSet):
     class Meta:
         model = Tenant
         fields = {
-            "name": ["in", "exact"],
+            "name": ["in"],
             "property": ["in"],
             "email": ["exact"],
-            "phone": ["in", "exact"],
-            "comment": ["in", "exact"],
+            "phone": ["in"],
+            "comment": ["in"],
         }
