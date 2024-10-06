@@ -154,12 +154,12 @@ class YearlyExpenseView(APIView):
             date_of_transaction__year=year
         ).annotate(
             month=TruncMonth("date_of_transaction")
-        ).values("month", "type_of_cost_or_revenue").annotate(total_amount=Sum("total_sum"))
+        ).values("month", "type_of_cost_or_revenue", "type_of_transaction").annotate(total_amount=Sum("total_sum"))
 
-        # Separate filtering for "Energi" and "Vatten"
+        # Filter for "Energi" and "Vatten" in the `type_of_cost_or_revenue` field
         energy_water_data = base_queryset.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
 
-        # Separate filtering for "Cost" and "Revenue" (to map to "Totala utgifter" and "Intäkter")
+        # Filter for "Cost" and "Revenue" in the `type_of_transaction` field
         cost_revenue_data = base_queryset.filter(type_of_transaction__in=["Cost", "Revenue"])
 
         # Initialize data for each type and month
@@ -176,7 +176,7 @@ class YearlyExpenseView(APIView):
         # Populate data for "Cost" and "Revenue" (mapped to "Totala utgifter" and "Intäkter")
         for item in cost_revenue_data:
             month = item["month"].strftime("%b '%y")
-            type_name = item["type_of_cost_or_revenue"]
+            type_name = item["type_of_transaction"]
 
             # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
             if type_name == "Cost":
