@@ -8,11 +8,11 @@ class TenantFilter(filters.FilterSet):
     class Meta:
         model = Tenant
         fields = {
-            "name": ["in", "exact"],
+            "name": ["in", "icontains" ,"exact"],
             "property": ["exact"],  # Use exact for single property filtering.
             "email": ["exact"],
-            "phone": ["in", "exact"],
-            "comment": ["in", "exact"],
+            "phone": ["in", "icontains", "exact"],
+            "comment": ["icontains"],
         }
 
     def filter_by_emails(self, queryset, name, value):
