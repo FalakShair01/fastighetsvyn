@@ -6,7 +6,7 @@ class PropertyFilter(filters.FilterSet):
     class Meta:
         model = Property
         fields = {
-            "byggnad": ["in", "exact"],
+            "byggnad": ["exact"],
             "byggår": ["in", "exact"],
             "boarea": ["in", "exact"],
             "fastighetsbeteckning": ["in", "exact"],
