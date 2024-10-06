@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .serializers import SubscriptionStatusSerializer, CreateCheckoutSessionSerializer
+from .models import Subscription
 from django.views.decorators.csrf import csrf_exempt
 from users.models import User
 from django.conf import settings
@@ -16,7 +17,8 @@ stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    # endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    endpoint_secret = 'whsec_d1e093c14f703db2ee8d875ad860c329ce3605bc3b1ee0ce23b7f1cae2de8bd2'
     print("Payload:", payload)
     print("Signature Header:", sig_header)
     print("endpoint_secret:", endpoint_secret)
@@ -34,6 +36,8 @@ def stripe_webhook(request):
     print(event)
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
+        amount  = payment_intent.get('email')
+        amount  = payment_intent.get('amount')
         # Fulfill the purchase or update payment status in your database
         print('Payment succeeded:', payment_intent.id)
     
@@ -65,9 +69,6 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=cancel_url,
                 customer_email=email,  # Pre-fill the customer's email
             )
-
-            print(session)
-
             return Response({'sessionId': session.id, 'url': session.url}, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
