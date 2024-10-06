@@ -6,18 +6,18 @@ class PropertyFilter(filters.FilterSet):
     class Meta:
         model = Property
         fields = {
-            "byggnad": ["icontains"],
-            "byggår": ["icontains"],
-            "boarea": ["icontains"],
-            "fastighetsbeteckning": ["icontains"],
+            "byggnad": ["in", "exact"],
+            "byggår": ["in", "exact"],
+            "boarea": ["in", "exact"],
+            "fastighetsbeteckning": ["in", "exact"],
             "hiss": ["exact"],
             "skyddsrum": ["exact"],
-            "antal_våningar": ["icontains"],
-            "antal_bostäder": ["icontains"],
+            "antal_våningar": ["in", "exact"],
+            "antal_bostäder": ["in", "exact"],
             "fjärrvärme": ["exact"],
             "solpaneler": ["exact"],
-            "ventilationssystem": ["icontains"],
-            "uppvärmningssystem": ["icontains"],
-            "postnummer": ["icontains"],
-            "gatuadress": ["icontains"],
+            "ventilationssystem": ["in", "exact"],
+            "uppvärmningssystem": ["in", "exact"],
+            "postnummer": ["in", "exact"],
+            "gatuadress": ["in", "exact"],
         }
