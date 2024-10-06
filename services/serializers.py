@@ -4,6 +4,10 @@ from .models import (
     UserDevelopmentServices,
     Maintenance,
     UserMaintenanceServices,
+    ExternalSelfServices,
+    SelfServiceProvider,
+    ServiceDocumentFolder,
+    ServiceDocument
 )
 from django.contrib.auth import get_user_model
 from property.serializers import PropertySerializer
@@ -183,3 +187,54 @@ class AdminDevelopmentStatusSerializer(serializers.ModelSerializer):
             "property",
             "user",
         ]
+
+class SelfServiceProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SelfServiceProvider
+        fields = '__all__'
+
+class ServiceDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceDocument
+        fields = '__all__'
+
+class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
+    documents = ServiceDocumentSerializer(many=True)
+
+    class Meta:
+        model = ServiceDocumentFolder
+        fields = ['name', 'documents']  # Folder name and related documents
+
+    def create(self, validated_data):
+        documents_data = validated_data.pop('documents')
+        folder = ServiceDocumentFolder.objects.create(**validated_data)
+        for document_data in documents_data:
+            ServiceDocument.objects.create(folder=folder, **document_data)
+        return folder
+
+class ExternalSelfServicesSerializer(serializers.ModelSerializer):
+    kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
+    relevanta_dokument = ServiceDocumentFolderSerializer()
+
+    class Meta:
+        model = ExternalSelfServices
+        fields = '__all__'
+
+    def create(self, validated_data):
+        # Extract nested data
+        provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
+        document_folder_data = validated_data.pop('relevanta_dokument')
+
+        # Create SelfServiceProvider
+        provider = SelfServiceProvider.objects.create(**provider_data)
+
+        # Create ServiceDocumentFolder and its associated documents
+        document_folder = ServiceDocumentFolderSerializer().create(document_folder_data)
+
+        # Create ExternalSelfServices with related provider and document folder
+        external_self_service = ExternalSelfServices.objects.create(
+            kontaktuppgifter_till_ansvarig_leverantor=provider,
+            relevanta_dokument=document_folder,
+            **validated_data
+        )
+        return external_self_service

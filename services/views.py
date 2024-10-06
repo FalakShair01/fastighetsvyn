@@ -1,11 +1,15 @@
 from rest_framework.response import Response
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
+from rest_framework.views import APIView
 from rest_framework import permissions
 from .models import (
     Development,
     UserDevelopmentServices,
     Maintenance,
     UserMaintenanceServices,
+    ExternalSelfServices,
+    ServiceDocument,
+    ServiceDocumentFolder
 )
 from .serializers import (
     DevelopmentSerializer,
@@ -14,6 +18,10 @@ from .serializers import (
     UserMaintenanceServicesSerializer,
     AdminMaintenanceStatusSerializer,
     AdminDevelopmentStatusSerializer,
+    ExternalSelfServicesSerializer,
+    ServiceDocumentFolderSerializer,
+    ServiceDocumentSerializer,
+    SelfServiceProviderSerializer
 )
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
@@ -27,7 +35,6 @@ class DevelopmentViewset(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     filterset_class = DevelopmentFilter
-
 
 class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
@@ -77,3 +84,53 @@ class AdminMaintenanceStatusView(viewsets.ModelViewSet):
     serializer_class = AdminMaintenanceStatusSerializer
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserMaintenanceFilter
+
+class ServiceDocumentFolderViewset(viewsets.ModelViewSet):
+    queryset = ServiceDocumentFolder.objects.all()
+    serializer_class = ServiceDocumentFolderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ServiceDocumentViewset(viewsets.ModelViewSet):
+    queryset = ServiceDocument.objects.all()
+    serializer_class = ServiceDocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ExternalSelfServiceView(generics.ListCreateAPIView):
+    queryset = ExternalSelfServices.objects.all()
+    serializer_class = ExternalSelfServicesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ExternalSelfServiceDetailView(generics.RetrieveDestroyAPIView):
+    queryset = ExternalSelfServices.objects.all()
+    serializer_class = ExternalSelfServicesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ExternalSelfServiceDetailUpdate(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            external_self_service = ExternalSelfServices.objects.get(pk=pk)
+        except ExternalSelfServices.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ExternalSelfServicesSerializer(external_self_service, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            # Check for nested updates
+            if 'kontaktuppgifter_till_ansvarig_leverantor' in request.data:
+                provider_data = request.data.pop('kontaktuppgifter_till_ansvarig_leverantor')
+                provider_serializer = SelfServiceProviderSerializer(
+                    external_self_service.kontaktuppgifter_till_ansvarig_leverantor,
+                    data=provider_data,
+                    partial=True
+                )
+                if provider_serializer.is_valid():
+                    provider_serializer.save()
+                else:
+                    return Response(provider_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            # Now update the main ExternalSelfServices instance
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
