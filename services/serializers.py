@@ -205,9 +205,9 @@ class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
         model = ServiceDocumentFolder
         fields = ['id', 'name', 'documents']
 
-    def get_documents(self, obj):
-        # Use the related_name to retrieve documents for the folder
-        return ServiceDocumentSerializer(obj.documents.all(), many=True).data
+    # def get_documents(self, obj):
+    #     # Use the related_name to retrieve documents for the folder
+    #     return ServiceDocumentSerializer(obj.documents.all(), many=True).data
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
