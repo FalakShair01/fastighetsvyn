@@ -144,6 +144,7 @@ class ServiceProvider(models.Model):
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=150, null=True)
     service_name = models.CharField(max_length=255)
+    email = models.EmailField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
