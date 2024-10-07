@@ -215,30 +215,48 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Extract nested SelfServiceProvider data
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
+        byggnader_data = validated_data.pop('vilka_byggnader_omfattas')
+
+        # Create the SelfServiceProvider
         provider = SelfServiceProvider.objects.create(**provider_data)
 
-        # Create ExternalSelfServices with the newly created provider
+        # Create ExternalSelfServices instance
         external_service = ExternalSelfServices.objects.create(
             kontaktuppgifter_till_ansvarig_leverantor=provider,
             **validated_data
         )
+
+        # Set Many-to-Many field
+        external_service.vilka_byggnader_omfattas.set(byggnader_data)
+
         return external_service
 
     def update(self, instance, validated_data):
-        # Update provider data if present
+        # Handle the nested update for SelfServiceProvider
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor', None)
-        
-        if provider_data:
-            provider = instance.kontaktuppgifter_till_ansvarig_leverantor
-            for attr, value in provider_data.items():
-                setattr(provider, attr, value)
-            provider.save()
+        byggnader_data = validated_data.pop('vilka_byggnader_omfattas', None)
 
-        # Update ExternalSelfServices instance
+        # Update many-to-many relationship if present
+        if byggnader_data is not None:
+            instance.vilka_byggnader_omfattas.set(byggnader_data)
+
+        # Update the SelfServiceProvider details if provided
+        if provider_data:
+            provider_instance = instance.kontaktuppgifter_till_ansvarig_leverantor
+            if provider_instance:
+                # Update the existing provider instance
+                for attr, value in provider_data.items():
+                    setattr(provider_instance, attr, value)
+                provider_instance.save()
+            else:
+                # Create a new provider if one doesn't exist
+                new_provider = SelfServiceProvider.objects.create(**provider_data)
+                instance.kontaktuppgifter_till_ansvarig_leverantor = new_provider
+
+        # Update the rest of the fields in ExternalSelfServices
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
+
         instance.save()
         return instance
