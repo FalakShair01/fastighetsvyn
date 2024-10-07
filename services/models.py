@@ -146,26 +146,6 @@ class SelfServiceProvider(models.Model):
     def __str__(self):
         return f"{self.namn} ({self.foretag})"
 
-
-class ServiceDocumentFolder(models.Model):
-    name = models.CharField(max_length=50, default='Dokument')  # Folder name
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-class ServiceDocument(models.Model):
-    folder = models.ForeignKey(
-        ServiceDocumentFolder, on_delete=models.CASCADE, related_name="documents", null=True
-    )
-    file = models.FileField(upload_to=service_document, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Document in {self.folder.name}"
-
 class ExternalSelfServices(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='self_services', null=True)
     benamning_av_tjanst = models.CharField(max_length=255)  # Service name
@@ -180,11 +160,31 @@ class ExternalSelfServices(models.Model):
         SelfServiceProvider, on_delete=models.SET_NULL, null=True, related_name="self_service_provider"
     )  # Service provider
     anteckningar = models.TextField(null=True, blank=True)  # Notes
-    relevanta_dokument = models.ForeignKey(
-        ServiceDocumentFolder, on_delete=models.SET_NULL, null=True, blank=True, related_name='relevanta_dokument'
-    )  # Relevant documents
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)    
 
     def __str__(self):
         return self.benamning_av_tjanst
+
+class ServiceDocumentFolder(models.Model):
+    manual_service = models.ForeignKey(
+        ExternalSelfServices, on_delete=models.CASCADE, related_name="documents_folder", null=True
+    )  
+    name = models.CharField(max_length=50, default='Dokument')  # Folder name
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class ServiceDocument(models.Model):
+    folder = models.ForeignKey(
+        ServiceDocumentFolder, on_delete=models.CASCADE, related_name="documents", null=True
+    )  
+    file = models.FileField(upload_to=service_document, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Document in {self.folder.name}"
+    

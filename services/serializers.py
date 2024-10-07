@@ -191,50 +191,52 @@ class AdminDevelopmentStatusSerializer(serializers.ModelSerializer):
 class SelfServiceProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = SelfServiceProvider
-        fields = '__all__'
+        fields = ['id', 'foretag', 'namn', 'telefon', 'e_post']
 
 class ServiceDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceDocument
-        fields = '__all__'
+        fields = ['id', 'file']
 
 class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
-    documents = ServiceDocumentSerializer(many=True)
-
+    documents = ServiceDocumentSerializer(many=True, required=False)
+    
     class Meta:
         model = ServiceDocumentFolder
-        fields = ['name', 'documents']  # Folder name and related documents
-
-    def create(self, validated_data):
-        documents_data = validated_data.pop('documents')
-        folder = ServiceDocumentFolder.objects.create(**validated_data)
-        for document_data in documents_data:
-            ServiceDocument.objects.create(folder=folder, **document_data)
-        return folder
+        fields = ['id', 'name', 'documents']
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
-    relevanta_dokument = ServiceDocumentFolderSerializer()
+    documents_folder = ServiceDocumentFolderSerializer()
 
     class Meta:
         model = ExternalSelfServices
-        fields = '__all__'
+        fields = [
+            'id', 'benamning_av_tjanst', 'kostnad_per_manad', 'vilka_byggnader_omfattas',
+            'beskrivning', 'startdatum_for_underhallstjanst', 'hur_ofta_utfor_denna_tjanst',
+            'fortydligande_av_tjanstens_frekvens', 'access', 'kontaktuppgifter_till_ansvarig_leverantor', 
+            'documents_folder', 'anteckningar'
+        ]
 
     def create(self, validated_data):
-        # Extract nested data
+        # Extract provider data and folder data
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
-        document_folder_data = validated_data.pop('relevanta_dokument')
+        folder_data = validated_data.pop('documents_folder')
 
-        # Create SelfServiceProvider
+        # Create the provider instance
         provider = SelfServiceProvider.objects.create(**provider_data)
-
-        # Create ServiceDocumentFolder and its associated documents
-        document_folder = ServiceDocumentFolderSerializer().create(document_folder_data)
-
-        # Create ExternalSelfServices with related provider and document folder
-        external_self_service = ExternalSelfServices.objects.create(
-            kontaktuppgifter_till_ansvarig_leverantor=provider,
-            relevanta_dokument=document_folder,
-            **validated_data
+        
+        # Create the service with the provider
+        service = ExternalSelfServices.objects.create(
+            kontaktuppgifter_till_ansvarig_leverantor=provider, **validated_data
         )
-        return external_self_service
+        
+        # Handle document folder creation
+        documents_data = folder_data.pop('documents', [])
+        folder = ServiceDocumentFolder.objects.create(manual_service=service, **folder_data)
+        
+        # Handle document creation
+        for document_data in documents_data:
+            ServiceDocument.objects.create(folder=folder, **document_data)
+
+        return service
