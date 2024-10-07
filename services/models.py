@@ -187,4 +187,3 @@ class ServiceDocument(models.Model):
 
     def __str__(self):
         return f"Document in {self.folder.name}"
-    

@@ -199,47 +199,46 @@ class ServiceDocumentSerializer(serializers.ModelSerializer):
         fields = ['id', 'file']
 
 class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ServiceDocumentFolder
         fields = ['id', 'name']
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
-    documents_folder = ServiceDocumentFolderSerializer()
 
     class Meta:
         model = ExternalSelfServices
         fields = [
             'id', 'benamning_av_tjanst', 'kostnad_per_manad', 'vilka_byggnader_omfattas',
             'beskrivning', 'startdatum_for_underhallstjanst', 'hur_ofta_utfor_denna_tjanst',
-            'fortydligande_av_tjanstens_frekvens', 'access', 'kontaktuppgifter_till_ansvarig_leverantor', 
-            'documents_folder', 'anteckningar'
+            'fortydligande_av_tjanstens_frekvens', 'access', 'kontaktuppgifter_till_ansvarig_leverantor', 'anteckningar'
         ]
 
     def create(self, validated_data):
-        # Extract provider data, folder data, and buildings data
+        # Extract nested SelfServiceProvider data
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
-        folder_data = validated_data.pop('documents_folder')
-        buildings_data = validated_data.pop('vilka_byggnader_omfattas', [])
-        
-        # Create the provider instance
         provider = SelfServiceProvider.objects.create(**provider_data)
-        
-        # Create the service with the provider
-        service = ExternalSelfServices.objects.create(
-            kontaktuppgifter_till_ansvarig_leverantor=provider, **validated_data
-        )
-        
-        # Handle document folder creation
-        documents_data = folder_data.pop('documents', [])
-        folder = ServiceDocumentFolder.objects.create(manual_service=service, **folder_data)
-        
-        # Handle document creation
-        for document_data in documents_data:
-            ServiceDocument.objects.create(folder=folder, **document_data)
-        
-        # Associate buildings with the service
-        service.vilka_byggnader_omfattas.set(buildings_data)
 
-        return service
+        # Create ExternalSelfServices with the newly created provider
+        external_service = ExternalSelfServices.objects.create(
+            kontaktuppgifter_till_ansvarig_leverantor=provider,
+            **validated_data
+        )
+        return external_service
+
+    def update(self, instance, validated_data):
+        # Update provider data if present
+        provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor', None)
+        
+        if provider_data:
+            provider = instance.kontaktuppgifter_till_ansvarig_leverantor
+            for attr, value in provider_data.items():
+                setattr(provider, attr, value)
+            provider.save()
+
+        # Update ExternalSelfServices instance
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
