@@ -86,62 +86,18 @@ class AdminMaintenanceStatusView(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserMaintenanceFilter
 
-class ExternalSelfServiceView(generics.ListCreateAPIView):
+class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     queryset = ExternalSelfServices.objects.all()
     serializer_class = ExternalSelfServicesSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
-    
     def get_queryset(self):
+        # Only return services belonging to the authenticated user
         return ExternalSelfServices.objects.filter(user=self.request.user)
 
-class ExternalSelfServiceDetailView(generics.RetrieveDestroyAPIView):
-    queryset = ExternalSelfServices.objects.all()
-    serializer_class = ExternalSelfServicesSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-class ExternalSelfServiceDetailUpdate(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def patch(self, request, pk):
-        try:
-            external_self_service = ExternalSelfServices.objects.get(pk=pk)
-        except ExternalSelfServices.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ExternalSelfServicesSerializer(external_self_service, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            # Handle updates to the many-to-many field
-            if 'vilka_byggnader_omfattas' in request.data:
-                buildings_data = request.data.pop('vilka_byggnader_omfattas')
-                # Use set to update many-to-many relationship
-                external_self_service.vilka_byggnader_omfattas.set(buildings_data)
-
-            # Check for nested updates
-            if 'kontaktuppgifter_till_ansvarig_leverantor' in request.data:
-                provider_data = request.data.pop('kontaktuppgifter_till_ansvarig_leverantor')
-                
-                if external_self_service.kontaktuppgifter_till_ansvarig_leverantor:
-                    provider_serializer = SelfServiceProviderSerializer(
-                        external_self_service.kontaktuppgifter_till_ansvarig_leverantor,
-                        data=provider_data,
-                        partial=True
-                    )
-                else:
-                    provider_serializer = SelfServiceProviderSerializer(data=provider_data)
-                    
-                if provider_serializer.is_valid():
-                    provider_serializer.save()
-                else:
-                    return Response(provider_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-            # Now update the main ExternalSelfServices instance
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        # Automatically assign the user when creating a new service
+        serializer.save(user=self.request.user)
 
 class DocumentFolderCreateAPIView(generics.CreateAPIView):
     queryset = ServiceDocumentFolder.objects.all()
