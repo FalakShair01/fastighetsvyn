@@ -206,7 +206,7 @@ class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'documents']
 
     def get_documents(self, obj):
-        # Access the documents via the related_name from ServiceDocument
+        # Use the related_name to retrieve documents for the folder
         return ServiceDocumentSerializer(obj.documents.all(), many=True).data
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
@@ -223,13 +223,15 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        # Extract provider data, folder data, and buildings data
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
         folder_data = validated_data.pop('documents_folder')
-
-        # Create the service provider instance
+        buildings_data = validated_data.pop('vilka_byggnader_omfattas', [])
+        
+        # Create the provider instance
         provider = SelfServiceProvider.objects.create(**provider_data)
-
-        # Create the ExternalSelfServices instance
+        
+        # Create the service with the provider
         service = ExternalSelfServices.objects.create(
             kontaktuppgifter_till_ansvarig_leverantor=provider, **validated_data
         )
@@ -237,9 +239,12 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         # Handle document folder creation
         documents_data = folder_data.pop('documents', [])
         folder = ServiceDocumentFolder.objects.create(manual_service=service, **folder_data)
-
+        
         # Handle document creation
         for document_data in documents_data:
             ServiceDocument.objects.create(folder=folder, **document_data)
+        
+        # Associate buildings with the service
+        service.vilka_byggnader_omfattas.set(buildings_data)
 
         return service
