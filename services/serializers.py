@@ -200,10 +200,15 @@ class ServiceDocumentSerializer(serializers.ModelSerializer):
 
 class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
     documents = ServiceDocumentSerializer(many=True, required=False)
-    
+
     class Meta:
         model = ServiceDocumentFolder
         fields = ['id', 'name', 'documents']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['documents'] = ServiceDocumentSerializer(instance.documents.all(), many=True).data
+        return representation
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
