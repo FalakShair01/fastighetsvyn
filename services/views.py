@@ -114,6 +114,12 @@ class ExternalSelfServiceDetailUpdate(APIView):
         serializer = ExternalSelfServicesSerializer(external_self_service, data=request.data, partial=True)
 
         if serializer.is_valid():
+            # Handle updates to the many-to-many field
+            if 'vilka_byggnader_omfattas' in request.data:
+                buildings_data = request.data.pop('vilka_byggnader_omfattas')
+                # Use set to update many-to-many relationship
+                external_self_service.vilka_byggnader_omfattas.set(buildings_data)
+
             # Check for nested updates
             if 'kontaktuppgifter_till_ansvarig_leverantor' in request.data:
                 provider_data = request.data.pop('kontaktuppgifter_till_ansvarig_leverantor')

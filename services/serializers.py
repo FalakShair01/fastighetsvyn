@@ -219,10 +219,11 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Extract provider data and folder data
+        # Extract provider data, folder data, and buildings data
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
         folder_data = validated_data.pop('documents_folder')
-
+        buildings_data = validated_data.pop('vilka_byggnader_omfattas', [])
+        
         # Create the provider instance
         provider = SelfServiceProvider.objects.create(**provider_data)
         
@@ -238,5 +239,8 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         # Handle document creation
         for document_data in documents_data:
             ServiceDocument.objects.create(folder=folder, **document_data)
+        
+        # Associate buildings with the service
+        service.vilka_byggnader_omfattas.set(buildings_data)
 
         return service
