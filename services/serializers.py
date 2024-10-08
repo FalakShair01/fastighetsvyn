@@ -7,7 +7,7 @@ from .models import (
     ExternalSelfServices,
     SelfServiceProvider,
     ServiceDocumentFolder,
-    ServiceDocument
+    ServiceFile
 )
 from django.contrib.auth import get_user_model
 from property.serializers import PropertySerializer
@@ -193,9 +193,9 @@ class SelfServiceProviderSerializer(serializers.ModelSerializer):
         model = SelfServiceProvider
         fields = ['id', 'foretag', 'namn', 'telefon', 'e_post']
 
-class ServiceDocumentSerializer(serializers.ModelSerializer):
+class ServiceFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ServiceDocument
+        model = ServiceFile
         fields = ['id', 'folder', 'file']
 
 class ServiceDocumentFolderSerializer(serializers.ModelSerializer):

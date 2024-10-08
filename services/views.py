@@ -9,7 +9,7 @@ from .models import (
     Maintenance,
     UserMaintenanceServices,
     ExternalSelfServices,
-    ServiceDocument,
+    ServiceFile,
     ServiceDocumentFolder
 )
 from .serializers import (
@@ -21,7 +21,7 @@ from .serializers import (
     AdminDevelopmentStatusSerializer,
     ExternalSelfServicesSerializer,
     ServiceDocumentFolderSerializer,
-    ServiceDocumentSerializer,
+    ServiceFileSerializer,
     SelfServiceProviderSerializer,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -105,27 +105,27 @@ class DocumentFolderViewset(viewsets.ModelViewSet):
     serializer_class = ServiceDocumentFolderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class DocumentCreateAPIView(APIView):
+class FileCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        serializer = ServiceDocumentSerializer(data=request.data)
+        serializer = ServiceFileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class DocumentDeleteAPIView(APIView):
+class FileDeleteAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk):
         try:
-            document = ServiceDocument.objects.get(id=pk)
-        except ServiceDocument.DoesNotExist:
-            raise Http404("Document not found.")
-        document.delete()
-        return Response({"msg": "Document Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
+            file = ServiceFile.objects.get(id=pk)
+        except ServiceFile.DoesNotExist:
+            raise Http404("file not found.")
+        file.delete()
+        return Response({"msg": "File Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-class UploadDocumentAPIView(APIView):
+class UploadFileAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -140,7 +140,7 @@ class UploadDocumentAPIView(APIView):
         folder_instance = folder_serializer.save()
 
         for file in files:
-            document_serializer = ServiceDocumentSerializer(data={'folder': folder_instance.id, 'file': file})
+            document_serializer = ServiceFileSerializer(data={'folder': folder_instance.id, 'file': file})
             document_serializer.is_valid(raise_exception=True)
             document_serializer.save()
 

@@ -9,9 +9,9 @@ from .views import (
     AdminMaintenanceStatusView,
     ExternalSelfServiceViewSet,
     DocumentFolderViewset,
-    DocumentCreateAPIView, 
-    DocumentDeleteAPIView, 
-    UploadDocumentAPIView
+    FileCreateAPIView, 
+    FileDeleteAPIView, 
+    UploadFileAPIView
 
 )
 
@@ -33,8 +33,8 @@ router.register(
 router.register(r'service/document-folders', DocumentFolderViewset, basename='document-folder')
 
 urlpatterns = [
-    path('service/documents/create/', DocumentCreateAPIView.as_view(), name='document-create'),
-    path('service/documents/delete/<int:pk>/', DocumentDeleteAPIView.as_view(), name='document-delete'),
-    path('service/documents/upload/', UploadDocumentAPIView.as_view(), name='document-upload'),
+    path('service/file/create/', FileCreateAPIView.as_view(), name='document-create'),
+    path('service/file/delete/<int:pk>/', FileDeleteAPIView.as_view(), name='document-delete'),
+    path('service/file/upload/', UploadFileAPIView.as_view(), name='document-upload'),
     path("", include(router.urls)),
     ]

@@ -177,7 +177,7 @@ class ServiceDocumentFolder(models.Model):
     def __str__(self):
         return self.name
 
-class ServiceDocument(models.Model):
+class ServiceFile(models.Model):
     folder = models.ForeignKey(
         ServiceDocumentFolder, on_delete=models.CASCADE, related_name="documents", null=True
     )  

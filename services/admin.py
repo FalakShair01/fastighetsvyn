@@ -6,7 +6,7 @@ from .models import (
     UserMaintenanceServices,
     ExternalSelfServices,
     SelfServiceProvider,
-    ServiceDocument,
+    ServiceFile,
     ServiceDocumentFolder
 )
 
@@ -18,4 +18,4 @@ admin.site.register(UserMaintenanceServices)
 admin.site.register(ExternalSelfServices)
 admin.site.register(SelfServiceProvider)
 admin.site.register(ServiceDocumentFolder)
-admin.site.register(ServiceDocument)
+admin.site.register(ServiceFile)
