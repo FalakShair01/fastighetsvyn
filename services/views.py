@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework import permissions
 from django.http import Http404
@@ -22,12 +22,11 @@ from .serializers import (
     ExternalSelfServicesSerializer,
     ServiceDocumentFolderSerializer,
     ServiceFileSerializer,
-    SelfServiceProviderSerializer,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
 from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintenanceFilter
-from rest_framework import serializers
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -113,6 +112,15 @@ class FileCreateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class FileRetrieveAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, folder_id):
+        folder = get_object_or_404(ServiceDocumentFolder, id=folder_id)        
+        files = ServiceFile.objects.filter(folder=folder)
+        serializer = ServiceFileSerializer(files, many=True)        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class FileDeleteAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
