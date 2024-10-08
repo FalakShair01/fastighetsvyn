@@ -8,8 +8,10 @@ from .views import (
     AdminDevelopemStatusView,
     AdminMaintenanceStatusView,
     ExternalSelfServiceViewSet,
-    DocumentFolderCreateAPIView,
-    DocumentFolderRetrieveUpdateDestroyAPIView
+    DocumentFolderViewset,
+    DocumentCreateAPIView, 
+    DocumentDeleteAPIView, 
+    UploadDocumentAPIView
 
 )
 
@@ -28,8 +30,11 @@ router.register(
 router.register(
     "external-self-services", ExternalSelfServiceViewSet, basename="admin-maintenance"
 )
+router.register(r'service/document-folders', DocumentFolderViewset, basename='document-folder')
+
 urlpatterns = [
-    path('service/document-folder/create/', DocumentFolderCreateAPIView.as_view(), name='document-folder-create'),
-    path('service/document-folder/<int:pk>/', DocumentFolderRetrieveUpdateDestroyAPIView.as_view(), name='document-folder-detail'),
+    path('service/documents/create/', DocumentCreateAPIView.as_view(), name='document-create'),
+    path('service/documents/delete/<int:pk>/', DocumentDeleteAPIView.as_view(), name='document-delete'),
+    path('service/documents/upload/', UploadDocumentAPIView.as_view(), name='document-upload'),
     path("", include(router.urls)),
     ]

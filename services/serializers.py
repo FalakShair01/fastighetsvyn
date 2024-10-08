@@ -196,12 +196,12 @@ class SelfServiceProviderSerializer(serializers.ModelSerializer):
 class ServiceDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceDocument
-        fields = ['id', 'file']
+        fields = ['id', 'folder', 'file']
 
 class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceDocumentFolder
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'manual_service']
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()

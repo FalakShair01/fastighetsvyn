@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status, generics
 from rest_framework.views import APIView
 from rest_framework import permissions
+from django.http import Http404
 from .models import (
     Development,
     UserDevelopmentServices,
@@ -99,34 +100,48 @@ class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
         # Automatically assign the user when creating a new service
         serializer.save(user=self.request.user)
 
-class DocumentFolderCreateAPIView(generics.CreateAPIView):
+class DocumentFolderViewset(viewsets.ModelViewSet):
     queryset = ServiceDocumentFolder.objects.all()
     serializer_class = ServiceDocumentFolderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
-class DocumentFolderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ServiceDocumentFolder.objects.all()
-    serializer_class = ServiceDocumentFolderSerializer
+class DocumentCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-class DocumentCreateAPIView(generics.CreateAPIView):
-    queryset = ServiceDocument.objects.all()
-    serializer_class = ServiceDocumentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)  # Add parsers to handle multipart data
+    def post(self, request):
+        serializer = ServiceDocumentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, serializer):
-        # Ensure folder exists and attach document to folder
-        folder_id = self.request.data.get('folder_id')
+class DocumentDeleteAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
         try:
-            folder = ServiceDocumentFolder.objects.get(id=folder_id)
-            serializer.save(folder=folder)
-        except ServiceDocumentFolder.DoesNotExist:
-            raise serializers.ValidationError({'folder': 'Folder does not exist.'})
+            document = ServiceDocument.objects.get(id=pk)
+        except ServiceDocument.DoesNotExist:
+            raise Http404("Document not found.")
+        document.delete()
+        return Response({"msg": "Document Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-
-class DocumentRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
-    queryset = ServiceDocument.objects.all()
-    serializer_class = ServiceDocumentSerializer
+class UploadDocumentAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        manual_service = request.data.get('manual_service')
+        files = request.FILES.getlist('file')
+
+        if not files:
+            return Response({'error': 'No files uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+
+        folder_serializer = ServiceDocumentFolderSerializer(data={'manual_service': manual_service, "name": "Dokument"})
+        folder_serializer.is_valid(raise_exception=True)
+        folder_instance = folder_serializer.save()
+
+        for file in files:
+            document_serializer = ServiceDocumentSerializer(data={'folder': folder_instance.id, 'file': file})
+            document_serializer.is_valid(raise_exception=True)
+            document_serializer.save()
+
+        return Response({'msg': 'Files Uploaded Successfully'}, status=status.HTTP_201_CREATED)

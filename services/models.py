@@ -169,8 +169,8 @@ class ExternalSelfServices(models.Model):
 class ServiceDocumentFolder(models.Model):
     manual_service = models.ForeignKey(
         ExternalSelfServices, on_delete=models.CASCADE, related_name="documents_folder", null=True
-    )  
-    name = models.CharField(max_length=50, default='Dokument')  # Folder name
+    )
+    name = models.CharField(max_length=50, default='Dokument')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
