@@ -27,7 +27,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
 from .filters import UserMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintenanceFilter
 from django.shortcuts import get_object_or_404
-
+from property.serializers import PropertySerializer
 # Create your views here.
 
 
@@ -98,6 +98,19 @@ class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Automatically assign the user when creating a new service
         serializer.save(user=self.request.user)
+
+class ServicePropertiesView(APIView):
+    def get(self, request, service_id, *args, **kwargs):
+        try:
+            # Get the service by ID
+            service = ExternalSelfServices.objects.get(id=service_id)
+            # Fetch all related properties
+            properties = service.vilka_byggnader_omfattas.all()
+            # Serialize the properties
+            serializer = PropertySerializer(properties, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ExternalSelfServices.DoesNotExist:
+            return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class DocumentFolderViewset(viewsets.ModelViewSet):
     queryset = ServiceDocumentFolder.objects.all()

@@ -12,7 +12,8 @@ from .views import (
     FileCreateAPIView, 
     FileDeleteAPIView, 
     UploadFileAPIView,
-    FileRetrieveAPIView
+    FileRetrieveAPIView,
+    ServicePropertiesView
 
 )
 
@@ -38,5 +39,6 @@ urlpatterns = [
     path('service/file/list/<int:folder_id>/', FileRetrieveAPIView.as_view(), name='document-create'),
     path('service/file/delete/<int:pk>/', FileDeleteAPIView.as_view(), name='document-delete'),
     path('service/file/upload/', UploadFileAPIView.as_view(), name='document-upload'),
+    path('external-services/<int:service_id>/properties/', ServicePropertiesView.as_view(), name='service-properties'),
     path("", include(router.urls)),
     ]
