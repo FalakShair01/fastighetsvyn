@@ -23,13 +23,13 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = Expense.objects.filter(user=user)
-        start_date = self.request.query_params.get("start_date")
-        end_date = self.request.query_params.get("end_date")
+        # start_date = self.request.query_params.get("start_date")
+        # end_date = self.request.query_params.get("end_date")
 
-        if start_date and end_date:
-            queryset = queryset.filter(
-                date_of_transaction__range=[start_date, end_date]
-            )
+        # if start_date and end_date:
+        #     queryset = queryset.filter(
+        #         date_of_transaction__range=[start_date, end_date]
+        #     )
         return queryset
 
     def perform_create(self, serializer):
