@@ -25,7 +25,6 @@ class ExpenseFilter(filters.FilterSet):
             'total_sum',
             'value_added_tax',
             'comment',
-            'attachment',
         ]
 
 
