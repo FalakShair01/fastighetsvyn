@@ -208,7 +208,9 @@ class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
-    vilka_byggnader_omfattas = PropertySerializer(many=True)  # Include associated properties
+    vilka_byggnader_omfattas = serializers.PrimaryKeyRelatedField(
+        queryset=Property.objects.all(), many=True  # Accept a list of property IDs
+    )
     total_property_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -221,23 +223,20 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         ]
     
     def get_total_property_count(self, obj):
-        # Return the count of properties associated with the user
-        return obj.vilka_byggnader_omfattas.count()  # Count the properties related to the service
+        user = self.context['request'].user
+        return Property.objects.filter(user=user).count()
 
     def create(self, validated_data):
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
         byggnader_data = validated_data.pop('vilka_byggnader_omfattas')
 
-        # Create the SelfServiceProvider
         provider = SelfServiceProvider.objects.create(**provider_data)
 
-        # Create ExternalSelfServices instance
         external_service = ExternalSelfServices.objects.create(
             kontaktuppgifter_till_ansvarig_leverantor=provider,
             **validated_data
         )
 
-        # Set Many-to-Many field
         external_service.vilka_byggnader_omfattas.set(byggnader_data)
 
         return external_service
