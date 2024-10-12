@@ -102,19 +102,6 @@ class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
         # Automatically assign the user when creating a new service
         serializer.save(user=self.request.user)
 
-class ServicePropertiesView(APIView):
-    def get(self, request, service_id, *args, **kwargs):
-        try:
-            # Get the service by ID
-            service = ExternalSelfServices.objects.get(id=service_id)
-            # Fetch all related properties
-            properties = service.vilka_byggnader_omfattas.all()
-            # Serialize the properties
-            serializer = PropertySerializer(properties, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except ExternalSelfServices.DoesNotExist:
-            return Response({"error": "Service not found."}, status=status.HTTP_404_NOT_FOUND)
-
 class ListDocumentFolderView(APIView):
     def get(self, request, manual_service):
         try:

@@ -208,6 +208,7 @@ class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
+    vilka_byggnader_omfattas = PropertySerializer(many=True)  # Include associated properties
     total_property_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -220,9 +221,8 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
         ]
     
     def get_total_property_count(self, obj):
-        # Return the count of properties associated with the current user (self.request.user)
-        user = self.context['request'].user
-        return Property.objects.filter(user=user).count()
+        # Return the count of properties associated with the user
+        return obj.vilka_byggnader_omfattas.count()  # Count the properties related to the service
 
     def create(self, validated_data):
         provider_data = validated_data.pop('kontaktuppgifter_till_ansvarig_leverantor')
