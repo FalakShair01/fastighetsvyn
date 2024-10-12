@@ -96,7 +96,7 @@ class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Only return services belonging to the authenticated user
-        return ExternalSelfServices.objects.filter(user=self.request.user)
+        return ExternalSelfServices.objects.filter(user=self.request.user).order_by('-created_at')
 
     def perform_create(self, serializer):
         # Automatically assign the user when creating a new service
