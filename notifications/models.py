@@ -13,7 +13,7 @@ class AdminNotifications(models.Model):
         blank=True,
     )
     maintenance = models.ForeignKey(
-        to="services.UserMaintenanceServices",
+        to="services.OrderMaintenanceServices",
         on_delete=models.CASCADE,
         null=True,
         blank=True,

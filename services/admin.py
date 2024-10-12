@@ -3,7 +3,7 @@ from .models import (
     Development,
     UserDevelopmentServices,
     Maintenance,
-    UserMaintenanceServices,
+    OrderMaintenanceServices,
     ExternalSelfServices,
     SelfServiceProvider,
     ServiceFile,
@@ -14,7 +14,7 @@ from .models import (
 admin.site.register(UserDevelopmentServices)
 admin.site.register(Development)
 admin.site.register(Maintenance)
-admin.site.register(UserMaintenanceServices)
+admin.site.register(OrderMaintenanceServices)
 admin.site.register(ExternalSelfServices)
 admin.site.register(SelfServiceProvider)
 admin.site.register(ServiceDocumentFolder)

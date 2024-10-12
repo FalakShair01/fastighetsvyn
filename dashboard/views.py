@@ -2,11 +2,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from property.models import Property
-from services.models import UserMaintenanceServices
+from services.models import OrderMaintenanceServices
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import ServiceProviderSerializer
 from django.db.models import Sum, Avg, Count
-from services.models import UserMaintenanceServices
 from economi.models import Expense
 from datetime import timedelta
 from django.utils import timezone
@@ -31,7 +30,7 @@ class UserDashboardstatusCount(APIView):
         )['total_apartments'] or 0
 
         # Filter active maintenance services
-        active_maintenance_services = UserMaintenanceServices.objects.filter(
+        active_maintenance_services = OrderMaintenanceServices.objects.filter(
             user=request.user, status="Active"
         )
 
@@ -54,8 +53,8 @@ class UserDashboardstatusCount(APIView):
 
 class UserDashboardServiceProvider(APIView):
     def get(self, request):
-        # Query UserMaintenanceServices to get active services for the current user
-        active_services = UserMaintenanceServices.objects.filter(
+        # Query OrderMaintenanceServices to get active services for the current user
+        active_services = OrderMaintenanceServices.objects.filter(
             user=request.user,
             status="Active",
             service_provider__isnull=False,  # Exclude instances where service_provider is null

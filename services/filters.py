@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from .models import (
     UserDevelopmentServices,
-    UserMaintenanceServices,
+    OrderMaintenanceServices,
     Development,
     Maintenance
 )
@@ -18,7 +18,7 @@ class MaintenanceFilter(filters.FilterSet):
         model = Maintenance
         fields = {"is_admin": ["exact"]}
 
-class UserMaintenanceFilter(filters.FilterSet):
+class OrderMaintenanceFilter(filters.FilterSet):
     properties = filters.ModelMultipleChoiceFilter(
         field_name="properties",
         queryset=Property.objects.all(),
@@ -26,7 +26,7 @@ class UserMaintenanceFilter(filters.FilterSet):
     )
 
     class Meta:
-        model = UserMaintenanceServices
+        model = OrderMaintenanceServices
         fields = {
             "status": ["exact"],
             "properties": ["exact"],

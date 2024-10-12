@@ -3,7 +3,7 @@ from .models import (
     Development,
     UserDevelopmentServices,
     Maintenance,
-    UserMaintenanceServices,
+    OrderMaintenanceServices,
     ExternalSelfServices,
     SelfServiceProvider,
     ServiceDocumentFolder,
@@ -72,13 +72,16 @@ class MaintainceSerializer(serializers.ModelSerializer):
         model = Maintenance
         fields = "__all__"
 
+# class OrderMaintenanceServiceSerializer(serializers.ModelSerializer):
+#     class Meta:
 
-class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
+
+class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
     maintenance = MaintainceSerializer(read_only=True)
     properties = PropertySerializer(many=True, read_only=True)
 
     class Meta:
-        model = UserMaintenanceServices
+        model = OrderMaintenanceServices
         fields = [
             "id",
             "status",
@@ -100,7 +103,7 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
         properties_ids = self.initial_data.get("properties", [])
         maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
         properties = Property.objects.filter(id__in=properties_ids)
-        user_dev_service = UserMaintenanceServices.objects.create(
+        user_dev_service = OrderMaintenanceServices.objects.create(
             maintenance=maintenance, **validated_data
         )
         user_dev_service.properties.set(properties)
@@ -114,12 +117,12 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
         return representation
 
 
-# class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
+# class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
 #     maintenance = MaintainceSerializer(read_only=True)
 #     property = PropertySerializer(read_only=True)
 
 #     class Meta:
-#         model = UserMaintenanceServices
+#         model = OrderMaintenanceServices
 #         fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
 
 #     def create(self, validated_data):
@@ -127,7 +130,7 @@ class UserMaintenanceServicesSerializer(serializers.ModelSerializer):
 #         property_id = self.initial_data.get('property')
 #         maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
 #         property = get_object_or_404(Property, pk=property_id)
-#         user_dev_service = UserMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
+#         user_dev_service = OrderMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
 #         return user_dev_service
 
 #     def to_representation(self, instance):
@@ -143,7 +146,7 @@ class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
 
     # service_provider = ServiceProviderSerializer(read_only=True)
     class Meta:
-        model = UserMaintenanceServices
+        model = OrderMaintenanceServices
         fields = [
             "id",
             "status",

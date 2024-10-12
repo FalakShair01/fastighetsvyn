@@ -85,7 +85,7 @@ class Maintenance(models.Model):
         ordering = ["-created_at"]
 
 
-class UserMaintenanceServices(models.Model):
+class OrderMaintenanceServices(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user_maintenance"
     )
@@ -103,7 +103,7 @@ class UserMaintenanceServices(models.Model):
         null=True,
         related_name="maintenance_service_provider",
     )
-    comment = models.TextField(max_length=255, null=True, blank=True)
+    frequency_clarification = models.TextField(null=True, blank=True)
     STATUS = (
         ("Active", "Active"),
         ("Pending", "Pending"),
@@ -111,25 +111,24 @@ class UserMaintenanceServices(models.Model):
     )
 
     status = models.CharField(choices=STATUS, max_length=10)
-    ITERATIVE = (
+    FREQUENCY = (
         ("Daily", "Daily"),
         ("Weekly", "Weekly"),
         ("Other", "Other"),
     )
-    iteration = models.CharField(choices=ITERATIVE, max_length=7, null=True, blank=True)
+    frequency = models.CharField(choices=FREQUENCY, max_length=7, null=True, blank=True)
+    access_details = models.TextField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
     day = models.TextField(null=True, blank=True)
     date = models.TextField(null=True, blank=True)
     time = models.TextField(null=True, blank=True)
     frequency = models.TextField(null=True, blank=True)
-    started_date = models.DateTimeField(null=True, blank=True)
-    end_date = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.status == "Completed" and not self.end_date:
-            self.end_date = timezone.now()
-        if self.status == "Active":
-            self.started_date = timezone.now()
-
+            self.end_date = timezone.now().date()
         super().save(*args, **kwargs)
 
     class Meta:

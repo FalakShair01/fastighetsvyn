@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import AdminNotifications
 from feedback.serializers import AdminFeedbackSerializer
-from services.models import UserDevelopmentServices, UserMaintenanceServices
+from services.models import UserDevelopmentServices, OrderMaintenanceServices
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -33,16 +33,8 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
     class Meta:
-        model = UserMaintenanceServices
-        fields = [
-            "id",
-            "status",
-            "comment",
-            "started_date",
-            "end_date",
-            "maintenance",
-            "user",
-        ]
+        model = OrderMaintenanceServices
+        fields = '__all__'
 
 
 class AdminNotificationsSerializer(serializers.ModelSerializer):
