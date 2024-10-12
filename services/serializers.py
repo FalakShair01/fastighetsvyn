@@ -208,9 +208,7 @@ class ServiceDocumentFolderSerializer(serializers.ModelSerializer):
 
 class ExternalSelfServicesSerializer(serializers.ModelSerializer):
     kontaktuppgifter_till_ansvarig_leverantor = SelfServiceProviderSerializer()
-    vilka_byggnader_omfattas = serializers.PrimaryKeyRelatedField(
-        queryset=Property.objects.all(), many=True  # Accept a list of property IDs
-    )
+    property_details = PropertySerializer(source='vilka_byggnader_omfattas', many=True, read_only=True)
     total_property_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -219,7 +217,7 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
             'id', 'benamning_av_tjanst', 'kostnad_per_manad', 'vilka_byggnader_omfattas',
             'beskrivning', 'startdatum_for_underhallstjanst', 'hur_ofta_utfor_denna_tjanst',
             'fortydligande_av_tjanstens_frekvens', 'access', 'kontaktuppgifter_till_ansvarig_leverantor', 
-            'anteckningar', 'total_property_count'
+            'anteckningar', 'total_property_count', 'property_details'
         ]
     
     def get_total_property_count(self, obj):
