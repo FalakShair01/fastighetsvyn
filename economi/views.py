@@ -126,8 +126,10 @@ class BalanceIllustrationView(APIView):
 
         # Prepare the response data
         data = {
-            'total_cost': expenses_percentage_change,
-            'total_revenue': revenue_percentage_change,
+            # 'total_cost': expenses_percentage_change,
+            'total_cost': 50,
+            'total_revenue': 30,
+            # 'total_revenue': revenue_percentage_change,
         }
         return Response(data, status=status.HTTP_200_OK)
 
