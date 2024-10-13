@@ -91,8 +91,9 @@ class CreateOrderMaintenanceAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class ListOrderMaintenanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        status_filter = request.query_params.get('status', 'Pending') 
+        status_filter = request.query_params.get('status', 'Pending')
         if request.user.role == "ADMIN":
             order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
         else:
@@ -131,6 +132,7 @@ class ListOrderMaintenanceAPIView(APIView):
 
 
 class UpdateOrderMaintenanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def patch(self, request, pk):
         order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)        
         serializer = OrderMaintenanceServicesSerializer(order_service, data=request.data, partial=True)
@@ -139,22 +141,60 @@ class UpdateOrderMaintenanceAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 class DeleteOrderMaintenanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def delete(self, request, pk):
         order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)
         order_service.delete()
         return Response({'message': 'service deleted'},status=status.HTTP_204_NO_CONTENT)
 
-class ListOrderDocumentFolderView(APIView):
+class ListOrderServiceFolderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, order_service):
+        folders = get_object_or_404(OrderServiceDocumentFolder, order_service=order_service)
+        serializer = OrderServiceDocumentFolderSerializer(folders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CreateOrderServiceFolderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        serializer = OrderServiceDocumentFolderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class UpdateOrderServiceFolderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def patch(self, request, id):
+        folder = get_object_or_404(OrderServiceDocumentFolder, id=id)
+        serializer = OrderServiceDocumentFolderSerializer(folder, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DeleteOrderServiceFolderView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def delete(self, request, id):
+        folder = get_object_or_404(OrderServiceDocumentFolder, id=id)
+        folder.delete()
+        return Response({'message': 'Folder deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+class CreateOrderServiceFileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        serializer = OrderServiceFileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class DeleteOrderServiceFileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def delete(self, request, pk):
         try:
-            documents = OrderServiceDocumentFolder.objects.filter(order_service=order_service)
-            if not documents.exists():
-                return Response({"detail": "No documents found."}, status=status.HTTP_404_NOT_FOUND)
-            serializer = OrderServiceDocumentFolderSerializer(documents, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        except OrderServiceDocumentFolder.DoesNotExist:
-            return Response({"error": "service not found."}, status=status.HTTP_404_NOT_FOUND)
+            file = OrderServiceFile.objects.get(id=pk)
+        except OrderServiceFile.DoesNotExist:
+            raise Http404("file not found.")
+        file.delete()
+        return Response({"msg": "File Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     queryset = ExternalSelfServices.objects.all()
