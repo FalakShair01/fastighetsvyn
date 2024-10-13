@@ -31,6 +31,8 @@ from .permissions import IsAdminOrReadOnly
 from .filters import OrderMaintenanceFilter, UserDevelopmentFilter, DevelopmentFilter, MaintenanceFilter
 from django.shortcuts import get_object_or_404
 from property.serializers import PropertySerializer
+from property.models import Property
+
 # Create your views here.
 
 
@@ -91,8 +93,10 @@ class ListOrderMaintenanceAPIView(APIView):
         if request.user.role == "ADMIN":
             order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
         else:
-            order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter)
+            order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter, context={'request': request})
         serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
+        total_property_count = Property.objects.filter(user=request.user).count()
+        serializer.data['total_property_count'] = total_property_count
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class UpdateOrderMaintenanceAPIView(APIView):
