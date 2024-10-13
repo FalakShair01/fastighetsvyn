@@ -150,7 +150,7 @@ class DeleteOrderMaintenanceAPIView(APIView):
 class ListOrderServiceFolderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, order_service):
-        folders = get_object_or_404(OrderServiceDocumentFolder, order_service=order_service)
+        folders = OrderServiceDocumentFolder.objects.filter(order_service=order_service)
         serializer = OrderServiceDocumentFolderSerializer(folders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
