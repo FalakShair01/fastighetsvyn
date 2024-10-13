@@ -41,44 +41,6 @@ class ExpenseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
 
-
-# class BalanceIllustrationView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     def get(self, request):
-#         # Get the current date and calculate the date for 30 days ago
-#         end_date = timezone.now()
-#         start_date = end_date - timezone.timedelta(days=30)
-
-#         # Aggregate the total cost for the last 30 days (case-insensitive filtering)
-#         total_cost = (
-#             Expense.objects.filter(
-#                 user=request.user,
-#                 type_of_transaction__iexact="cost",
-#                 date_of_transaction__range=(start_date, end_date),
-#             ).aggregate(Sum("total_sum"))["total_sum__sum"]
-#             or 0
-#         )
-
-#         # Aggregate the total revenue for the last 30 days (case-insensitive filtering)
-#         total_revenue = (
-#             Expense.objects.filter(
-#                 user=request.user,
-#                 type_of_transaction__iexact="revenue",
-#                 date_of_transaction__range=(start_date, end_date),
-#             ).aggregate(Sum("total_sum"))["total_sum__sum"]
-#             or 0
-#         )
-
-#         # Calculate the difference between total revenue and total cost
-#         # balance = total_revenue - total_cost
-
-#         # Return the results as a JSON response
-#         return Response({
-#             "total_cost": total_cost,
-#             "total_revenue": total_revenue
-#             # "balance": balance
-#         })
-
 class BalanceIllustrationView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -87,51 +49,36 @@ class BalanceIllustrationView(APIView):
         today = timezone.now().date()
         start_date = today - timedelta(days=30)
 
-        # Calculate total expenses and revenues for the past 30 days
-        expenses_last_30_days = Expense.objects.filter(
+        # Calculate total cost for the last 30 days
+        total_cost = Expense.objects.filter(
             user=user,
             date_of_transaction__gte=start_date,
             type_of_cost_or_revenue__iexact="Cost"
         ).aggregate(total=Sum('total_sum'))['total'] or 0
 
-        revenue_last_30_days = Expense.objects.filter(
+        # Calculate total revenue for the last 30 days
+        total_revenue = Expense.objects.filter(
             user=user,
             date_of_transaction__gte=start_date,
             type_of_cost_or_revenue__iexact="Revenue"
         ).aggregate(total=Sum('total_sum'))['total'] or 0
 
-        # Helper function to calculate average per month
-        def calculate_avg_per_month(expense_type):
-            year_start = today.replace(month=1, day=1)
-            monthly_totals = Expense.objects.filter(
-                user=user,
-                type_of_cost_or_revenue__iexact=expense_type,
-                date_of_transaction__gte=year_start
-            ).annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(total=Sum('total_sum')).values('total')
-            
-            avg_total_per_month = monthly_totals.aggregate(avg_total=Avg('total'))['avg_total'] or 0
-            return avg_total_per_month
+        # Calculate total of both cost and revenue
+        total_transactions = total_cost + total_revenue
 
-        expenses_avg_per_month = calculate_avg_per_month("Cost")
-        revenue_avg_per_month = calculate_avg_per_month("Revenue")
+        # Calculate percentages
+        if total_transactions > 0:
+            cost_percentage = (total_cost / total_transactions) * 100
+            revenue_percentage = (total_revenue / total_transactions) * 100
+        else:
+            cost_percentage = 0
+            revenue_percentage = 0
 
-        # Helper function to calculate percentage change
-        def calculate_percentage_change(current_value, average_value):
-            if average_value == 0:
-                return 0  # Avoid division by zero
-            return ((current_value - average_value) / average_value) * 100
-
-        expenses_percentage_change = calculate_percentage_change(expenses_last_30_days, expenses_avg_per_month)
-        revenue_percentage_change = calculate_percentage_change(revenue_last_30_days, revenue_avg_per_month)
-
-        # Prepare the response data
-        data = {
-            # 'total_cost': expenses_percentage_change,
-            'total_cost': 50,
-            'total_revenue': 30,
-            # 'total_revenue': revenue_percentage_change,
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        # Return the result as a JSON response
+        return Response({
+            'total_cost': round(cost_percentage, 2),
+            'total_revenue': round(revenue_percentage, 2)
+        })
 
 class YearlyExpenseView(APIView):
     permission_classes = [IsAuthenticated]
