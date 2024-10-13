@@ -108,10 +108,12 @@ class ListOrderMaintenanceAPIView(APIView):
         result = []
         maintenance_dict = {maintenance.id: MaintainceSerializer(maintenance).data for maintenance in maintenance_objects}
         property_dict = {property.id: PropertySerializer(property).data for property in property_objects}
+        total_property_count = Property.objects.filter(user=request.user).count()
 
         for data in serializer.data:
             data['maintenance'] = maintenance_dict.get(data['maintenance'], None)
             data['properties'] = [property_dict.get(prop_id) for prop_id in data['properties']]
+            data['total_property_count'] = total_property_count
             result.append(data)
 
         return Response(result, status=status.HTTP_200_OK)
