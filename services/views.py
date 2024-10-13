@@ -130,6 +130,42 @@ class ListOrderMaintenanceAPIView(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+class RetrieveOrderMaintenanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        # Retrieve the order maintenance service by its primary key (ID)
+        order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)
+
+        # Check if the user is allowed to retrieve this service
+        if request.user.role != "ADMIN" and order_service.user != request.user:
+            return Response({"detail": "Not authorized to view this service."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Serialize the service data
+        serializer = OrderMaintenanceServicesSerializer(order_service)
+
+        # Prefetch related data
+        maintenance_obj = order_service.maintenance
+        maintenance_data = MaintainceSerializer(maintenance_obj).data if maintenance_obj else None
+
+        properties_objs = order_service.properties.all()
+        properties_data = [PropertySerializer(prop).data for prop in properties_objs]
+
+        service_provider_obj = order_service.service_provider
+        service_provider_data = ServiceProviderSerializer(service_provider_obj).data if service_provider_obj else None
+
+        # Get total property count for the user
+        total_property_count = Property.objects.filter(user=request.user).count()
+
+        # Build the result response
+        result = serializer.data
+        result['maintenance'] = maintenance_data
+        result['properties'] = properties_data
+        result['service_provider'] = service_provider_data
+        result['total_property_count'] = total_property_count
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 class UpdateOrderMaintenanceAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
