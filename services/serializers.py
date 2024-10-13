@@ -83,8 +83,8 @@ class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
                   "access_details", "service_provider", "status", "comment", "total_property_count", "property_details"]
     
     def get_total_property_count(self, obj):
-        user = self.context['request'].user
-        return Property.objects.filter(user=user).count()
+        return obj.properties.count()
+
 
 class OrderServiceFileSerializer(serializers.ModelSerializer):
     class Meta:
