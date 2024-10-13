@@ -77,7 +77,7 @@ class CreateOrderMaintenanceAPIView(APIView):
 
     def post(self, request):
         files = request.FILES.getlist('file')
-        serializer = OrderMaintenanceServicesSerializer(data=request.data, context={'request': request})
+        serializer = OrderMaintenanceServicesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order_instance = serializer.save(user=request.user)
         folder_instance = OrderServiceDocumentFolder.objects.create(name="Dokument", order_service=order_instance)
@@ -95,8 +95,27 @@ class ListOrderMaintenanceAPIView(APIView):
             order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
         else:
             order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter)
-        serializer = OrderMaintenanceServicesSerializer(order_service, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
+        
+        maintenance_ids = [data['maintenance'] for data in serializer.data]
+        property_ids = [prop.id for data in serializer.data for prop in Property.objects.filter(id__in=data['properties'])]
+
+        # Prefetch Maintenance and Properties
+        maintenance_objects = Maintenance.objects.filter(id__in=maintenance_ids)
+        property_objects = Property.objects.filter(id__in=property_ids)
+
+        result = []
+        maintenance_dict = {maintenance.id: MaintainceSerializer(maintenance).data for maintenance in maintenance_objects}
+        property_dict = {property.id: PropertySerializer(property).data for property in property_objects}
+
+        for data in serializer.data:
+            data['maintenance'] = maintenance_dict.get(data['maintenance'], None)
+            data['properties'] = [property_dict.get(prop_id) for prop_id in data['properties']]
+            result.append(data)
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 class UpdateOrderMaintenanceAPIView(APIView):
     def patch(self, request, pk):
