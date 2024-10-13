@@ -7,7 +7,9 @@ from .models import (
     ExternalSelfServices,
     SelfServiceProvider,
     ServiceDocumentFolder,
-    ServiceFile
+    ServiceFile,
+    OrderServiceDocumentFolder,
+    OrderServiceFile
 )
 from django.contrib.auth import get_user_model
 from property.serializers import PropertySerializer
@@ -72,106 +74,21 @@ class MaintainceSerializer(serializers.ModelSerializer):
         model = Maintenance
         fields = "__all__"
 
-# class OrderMaintenanceServiceSerializer(serializers.ModelSerializer):
-#     class Meta:
-
-
 class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
-    maintenance = MaintainceSerializer(read_only=True)
-    properties = PropertySerializer(many=True, read_only=True)
-
     class Meta:
         model = OrderMaintenanceServices
-        fields = [
-            "id",
-            "status",
-            "comment",
-            "iteration",
-            "day",
-            "date",
-            "time",
-            "frequency",
-            "started_date",
-            "end_date",
-            "maintenance",
-            "properties",
-            "service_provider",
-        ]
+        fields = ["maintenance", "properties", "start_date", "frequency", "frequency_clarification", 
+                  "access_details", "service_provider", "status", "comment"]
 
-    def create(self, validated_data):
-        maintenance_id = self.initial_data.get("maintenance")
-        properties_ids = self.initial_data.get("properties", [])
-        maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
-        properties = Property.objects.filter(id__in=properties_ids)
-        user_dev_service = OrderMaintenanceServices.objects.create(
-            maintenance=maintenance, **validated_data
-        )
-        user_dev_service.properties.set(properties)
-        return user_dev_service
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["service_provider"] = ServiceProviderSerializer(
-            instance.service_provider
-        ).data
-        return representation
-
-
-# class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
-#     maintenance = MaintainceSerializer(read_only=True)
-#     property = PropertySerializer(read_only=True)
-
-#     class Meta:
-#         model = OrderMaintenanceServices
-#         fields = ['id','status', 'comment','iteration', 'day', 'date', 'time', 'frequency', 'started_date', 'end_date', 'maintenance', 'property', 'service_provider']
-
-#     def create(self, validated_data):
-#         maintenance_id = self.initial_data.get('maintenance')
-#         property_id = self.initial_data.get('property')
-#         maintenance = get_object_or_404(Maintenance, pk=maintenance_id)
-#         property = get_object_or_404(Property, pk=property_id)
-#         user_dev_service = OrderMaintenanceServices.objects.create(property=property, maintenance=maintenance, **validated_data)
-#         return user_dev_service
-
-#     def to_representation(self, instance):
-#         representation = super().to_representation(instance)
-#         representation['service_provider'] = ServiceProviderSerializer(instance.service_provider).data
-#         return representation
-
-
-class AdminMaintenanceStatusSerializer(serializers.ModelSerializer):
-    maintenance = MaintainceSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
-    property = PropertySerializer(read_only=True)
-
-    # service_provider = ServiceProviderSerializer(read_only=True)
+class OrderServiceFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OrderMaintenanceServices
-        fields = [
-            "id",
-            "status",
-            "comment",
-            "iteration",
-            "day",
-            "date",
-            "time",
-            "frequency",
-            "started_date",
-            "end_date",
-            "maintenance",
-            "property",
-            "user",
-            "service_provider",
-        ]
-        # fields = ['id', 'status', 'comment', 'started_date', 'end_date', 'maintenance', 'property', 'user']
+        model = OrderServiceFile
+        fields = ['id', 'folder', 'file']
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["service_provider"] = ServiceProviderSerializer(
-            instance.service_provider
-        ).data
-        return representation
-
+class OrderServiceDocumentFolderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderServiceDocumentFolder
+        fields = ['id', 'name', 'order_service']
 
 class AdminDevelopmentStatusSerializer(serializers.ModelSerializer):
     development = DevelopmentSerializer(read_only=True)

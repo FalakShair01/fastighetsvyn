@@ -10,18 +10,21 @@ from .models import (
     OrderMaintenanceServices,
     ExternalSelfServices,
     ServiceFile,
-    ServiceDocumentFolder
+    ServiceDocumentFolder,
+    OrderServiceDocumentFolder,
+    OrderServiceFile
 )
 from .serializers import (
     DevelopmentSerializer,
     UserDevelopmentServicesSerializer,
     MaintainceSerializer,
-    OrderMaintenanceServicesSerializer,
-    AdminMaintenanceStatusSerializer,
     AdminDevelopmentStatusSerializer,
     ExternalSelfServicesSerializer,
     ServiceDocumentFolderSerializer,
     ServiceFileSerializer,
+    OrderMaintenanceServicesSerializer,
+    OrderServiceDocumentFolderSerializer,
+    OrderServiceFileSerializer
 )
 from rest_framework.parsers import MultiPartParser, FormParser
 from .permissions import IsAdminOrReadOnly
@@ -50,32 +53,6 @@ class UserDevelopmentServicesViewset(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
 
-
-# Maintenance Service
-class MaintenanceViewset(viewsets.ModelViewSet):
-    queryset = Maintenance.objects.all()
-    serializer_class = MaintainceSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
-    filterset_class = MaintenanceFilter
-
-class OrderMaintenanceAPIView(APIView):
-    def post(self, request):
-        pass
-
-class OrderMaintenanceViewset(viewsets.ModelViewSet):
-    queryset = OrderMaintenanceServices.objects.all()
-    serializer_class = OrderMaintenanceServicesSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    filterset_class = OrderMaintenanceFilter
-
-    def get_queryset(self):
-        return OrderMaintenanceServices.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
-
-
 # Admin See All Pending, Active ,Completed
 class AdminDevelopemStatusView(viewsets.ModelViewSet):
     queryset = UserDevelopmentServices.objects.all()
@@ -83,11 +60,68 @@ class AdminDevelopemStatusView(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = UserDevelopmentFilter
 
-class AdminMaintenanceStatusView(viewsets.ModelViewSet):
-    queryset = OrderMaintenanceServices.objects.all()
-    serializer_class = AdminMaintenanceStatusSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    filterset_class = OrderMaintenanceFilter
+# Maintenance Service
+class MaintenanceViewset(viewsets.ModelViewSet):
+    """This Viewset is used by admin to create service"""
+    queryset = Maintenance.objects.all()
+    serializer_class = MaintainceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    filterset_class = MaintenanceFilter
+
+class CreateOrderMaintenanceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    def post(self, request):
+        files = request.FILES.getlist('file')
+        properties_data = request.data.get('properties', [])
+        serializer = OrderMaintenanceServicesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order_instance = serializer.save(user=request.user)
+        # order_instance.properties.set(properties_data)  
+        folder_instance = OrderServiceDocumentFolder.objects.create(name="Dokument", order_service=order_instance)
+        if files:
+            for file in files:  # Iterate through uploaded files
+                image_serializer = OrderServiceFileSerializer(data={"folder": folder_instance.id, "file": file})
+                image_serializer.is_valid(raise_exception=True)
+                image_serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ListOrderMaintenanceAPIView(APIView):
+    def get(self, request):
+        status_filter = request.query_params.get('status', 'Pending') 
+        if request.user.role == "ADMIN":
+            order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
+        else:
+            order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter)
+        serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UpdateOrderMaintenanceAPIView(APIView):
+    def patch(self, request, pk):
+        order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)        
+        serializer = OrderMaintenanceServicesSerializer(order_service, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+class DeleteOrderMaintenanceAPIView(APIView):
+    def delete(self, request, pk):
+        order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)
+        order_service.delete()
+        return Response({'message': 'service deleted'},status=status.HTTP_204_NO_CONTENT)
+
+class ListOrderDocumentFolderView(APIView):
+    def get(self, request, order_service):
+        try:
+            documents = OrderServiceDocumentFolder.objects.filter(order_service=order_service)
+            if not documents.exists():
+                return Response({"detail": "No documents found."}, status=status.HTTP_404_NOT_FOUND)
+            serializer = OrderServiceDocumentFolderSerializer(documents, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except OrderServiceDocumentFolder.DoesNotExist:
+            return Response({"error": "service not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     queryset = ExternalSelfServices.objects.all()

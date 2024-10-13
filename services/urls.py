@@ -4,9 +4,7 @@ from .views import (
     DevelopmentViewset,
     UserDevelopmentServicesViewset,
     MaintenanceViewset,
-    OrderMaintenanceViewset,
     AdminDevelopemStatusView,
-    AdminMaintenanceStatusView,
     ExternalSelfServiceViewSet,
     DocumentFolderDetailView,
     CreateDocumentFolderView,
@@ -15,6 +13,10 @@ from .views import (
     FileDeleteAPIView, 
     UploadFileAPIView,
     FileRetrieveAPIView,
+    ListOrderMaintenanceAPIView,
+    CreateOrderMaintenanceAPIView,
+    UpdateOrderMaintenanceAPIView,
+    DeleteOrderMaintenanceAPIView
 )
 
 router = DefaultRouter()
@@ -22,19 +24,19 @@ router = DefaultRouter()
 (router.register("development", DevelopmentViewset, basename="development-service"),)
 router.register("maintenance", MaintenanceViewset, basename="maintenance-service")
 (router.register("user/development", UserDevelopmentServicesViewset),)
-# router.register("user/maintenance", OrderMaintenanceViewset, basename="user-maintenance")
 router.register(
     "admin/development", AdminDevelopemStatusView, basename="admin-development"
-)
-router.register(
-    "admin/maintenance", AdminMaintenanceStatusView, basename="admin-maintenance"
 )
 router.register(
     "external-self-services", ExternalSelfServiceViewSet, basename="admin-maintenance"
 )
 
 urlpatterns = [
-    path('service/document-folders/<int:manual_service>/', ListDocumentFolderView.as_view(), name='document-folders'),
+    path('service/orders/list/', ListOrderMaintenanceAPIView.as_view(), name='order-list'),
+    path('service/orders/create/', CreateOrderMaintenanceAPIView.as_view(), name='order-create'),
+    path('service/orders/<int:pk>/update/', UpdateOrderMaintenanceAPIView.as_view(), name='order-update'),
+    path('service/orders/<int:pk>/delete/', DeleteOrderMaintenanceAPIView.as_view(), name='order-delete'),
+    path('service/document-folders/<int:manual_service>/list/', ListDocumentFolderView.as_view(), name='document-folders'),
     path('service/document-folders/', CreateDocumentFolderView.as_view(), name='document-folder-create'),
     path('service/document-folders/<int:pk>/', DocumentFolderDetailView.as_view(), name='document-folder-detail'),
     path('service/file/create/', FileCreateAPIView.as_view(), name='document-create'),

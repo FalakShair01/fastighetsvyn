@@ -86,44 +86,21 @@ class Maintenance(models.Model):
 
 
 class OrderMaintenanceServices(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="user_maintenance"
-    )
-    maintenance = models.ForeignKey(
-        Maintenance, on_delete=models.CASCADE, related_name="maintenance_services"
-    )
-    # property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name='maintaince_property')
-    properties = models.ManyToManyField(
-        Property, related_name="admin_services_properties", blank=True
-    )  # Changed to ManyToManyField
-    service_provider = models.ForeignKey(
-        ServiceProvider,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name="maintenance_service_provider",
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_maintenance")
+    maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, related_name="maintenance_services")
+    properties = models.ManyToManyField(Property, related_name="admin_services_properties", blank=True)  # Changed to ManyToManyField
+    start_date = models.DateField(null=True, blank=True)
+    frequency = models.CharField(max_length=255, null=True, blank=True)
     frequency_clarification = models.TextField(null=True, blank=True)
+    access_details = models.TextField(null=True, blank=True)
+    service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, blank=True, null=True, related_name="maintenance_service_provider",)
     STATUS = (
         ("Active", "Active"),
         ("Pending", "Pending"),
         ("Completed", "Completed"),
     )
-
     status = models.CharField(choices=STATUS, max_length=10)
-    FREQUENCY = (
-        ("Daily", "Daily"),
-        ("Weekly", "Weekly"),
-        ("Other", "Other"),
-    )
-    frequency = models.CharField(choices=FREQUENCY, max_length=7, null=True, blank=True)
-    access_details = models.TextField(null=True, blank=True)
-    notes = models.TextField(null=True, blank=True)
-    day = models.TextField(null=True, blank=True)
-    date = models.TextField(null=True, blank=True)
-    time = models.TextField(null=True, blank=True)
-    frequency = models.TextField(null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -133,6 +110,29 @@ class OrderMaintenanceServices(models.Model):
 
     class Meta:
         ordering = ["-pk"]
+
+
+class OrderServiceDocumentFolder(models.Model):
+    order_service = models.ForeignKey(
+        OrderMaintenanceServices, on_delete=models.CASCADE, related_name="documents_folder", null=True
+    )
+    name = models.CharField(max_length=50, default='Dokument')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class OrderServiceFile(models.Model):
+    folder = models.ForeignKey(
+        OrderServiceDocumentFolder, on_delete=models.CASCADE, related_name="documents", null=True
+    )  
+    file = models.FileField(upload_to=service_document, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Document in {self.folder.name}"
 
 class SelfServiceProvider(models.Model):
     foretag = models.TextField()  # Company
