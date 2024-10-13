@@ -93,12 +93,10 @@ class ListOrderMaintenanceAPIView(APIView):
         if request.user.role == "ADMIN":
             order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
         else:
-            order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter, context={'request': request})
-        serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
-        total_property_count = Property.objects.filter(user=request.user).count()
-        serializer.data['total_property_count'] = total_property_count
+            order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter)
+        serializer = OrderMaintenanceServicesSerializer(order_service, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 class UpdateOrderMaintenanceAPIView(APIView):
     def patch(self, request, pk):
         order_service = get_object_or_404(OrderMaintenanceServices, pk=pk)        
