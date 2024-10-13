@@ -32,6 +32,8 @@ from .filters import OrderMaintenanceFilter, UserDevelopmentFilter, DevelopmentF
 from django.shortcuts import get_object_or_404
 from property.serializers import PropertySerializer
 from property.models import Property
+from users.models import ServiceProvider
+from users.serializers import ServiceProviderSerializer
 
 # Create your views here.
 
@@ -114,6 +116,15 @@ class ListOrderMaintenanceAPIView(APIView):
             data['maintenance'] = maintenance_dict.get(data['maintenance'], None)
             data['properties'] = [property_dict.get(prop_id) for prop_id in data['properties']]
             data['total_property_count'] = total_property_count
+            if data['service_provider']:
+                service_provider = ServiceProvider.objects.filter(id=data['service_provider']).first()
+                if service_provider:
+                    data['service_provider'] = ServiceProviderSerializer(service_provider).data
+                else:
+                    data['service_provider'] = None
+            else:
+                data['service_provider'] = None
+
             result.append(data)
 
         return Response(result, status=status.HTTP_200_OK)
