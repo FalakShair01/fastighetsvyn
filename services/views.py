@@ -74,19 +74,20 @@ class MaintenanceViewset(viewsets.ModelViewSet):
 class CreateOrderMaintenanceAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request):
         files = request.FILES.getlist('file')
-        serializer = OrderMaintenanceServicesSerializer(data=request.data)
+        serializer = OrderMaintenanceServicesSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         order_instance = serializer.save(user=request.user)
         folder_instance = OrderServiceDocumentFolder.objects.create(name="Dokument", order_service=order_instance)
         if files:
-            for file in files:  # Iterate through uploaded files
+            for file in files:
                 image_serializer = OrderServiceFileSerializer(data={"folder": folder_instance.id, "file": file})
                 image_serializer.is_valid(raise_exception=True)
-                image_serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+                image_serializer.save()    
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
 class ListOrderMaintenanceAPIView(APIView):
     def get(self, request):
         status_filter = request.query_params.get('status', 'Pending') 
