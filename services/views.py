@@ -74,11 +74,9 @@ class CreateOrderMaintenanceAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     def post(self, request):
         files = request.FILES.getlist('file')
-        properties_data = request.data.get('properties', [])
         serializer = OrderMaintenanceServicesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order_instance = serializer.save(user=request.user)
-        # order_instance.properties.set(properties_data)  
         folder_instance = OrderServiceDocumentFolder.objects.create(name="Dokument", order_service=order_instance)
         if files:
             for file in files:  # Iterate through uploaded files

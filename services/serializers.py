@@ -75,10 +75,16 @@ class MaintainceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class OrderMaintenanceServicesSerializer(serializers.ModelSerializer):
+    property_details = PropertySerializer(source='properties', many=True, read_only=True)
+    total_property_count = serializers.SerializerMethodField()
     class Meta:
         model = OrderMaintenanceServices
-        fields = ["maintenance", "properties", "start_date", "frequency", "frequency_clarification", 
-                  "access_details", "service_provider", "status", "comment"]
+        fields = ["id", "maintenance", "properties", "start_date", "frequency", "frequency_clarification", 
+                  "access_details", "service_provider", "status", "comment", "total_property_count", "property_details"]
+    
+    def get_total_property_count(self, obj):
+        user = self.context['request'].user
+        return Property.objects.filter(user=user).count()
 
 class OrderServiceFileSerializer(serializers.ModelSerializer):
     class Meta:
