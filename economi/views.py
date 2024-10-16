@@ -10,7 +10,7 @@ from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from property.models import Property
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from .filters import ExpenseFilter
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
@@ -132,96 +132,28 @@ class BalanceIllustrationView(APIView):
         # })
 
 
-# class YearlyExpenseView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         year = request.query_params.get("year", timezone.now().year)
-#         try:
-#             year = int(year)  # Ensure year is an integer
-#         except ValueError:
-#             year = timezone.now().year
-
-#         # List of types to include in the response
-#         types_of_interest = ["Energi", "Vatten", "Totala utgifter", "Intäkter"]
-
-#         # Generate a list of all months in the year with custom formatting
-#         all_months = [
-#             datetime(year, month, 1).strftime("%b '%y") for month in range(1, 13)
-#         ]
-
-#         # Base queryset for filtering expenses in the specified year
-#         base_queryset = Expense.objects.filter(
-#             user=request.user,
-#             date_of_transaction__year=year
-#         ).annotate(
-#             month=TruncMonth("date_of_transaction")
-#         ).values("month", "type_of_cost_or_revenue", "type_of_transaction").annotate(total_amount=Sum("total_sum"))
-
-#         # Filter for "Energi" and "Vatten" in the `type_of_cost_or_revenue` field
-#         energy_water_data = base_queryset.filter(type_of_cost_or_revenue__in=["Energi", "Vatten"])
-
-#         # Filter for "Cost" and "Revenue" in the `type_of_transaction` field
-#         cost_revenue_data = base_queryset.filter(type_of_transaction__in=["Cost", "Revenue"])
-
-#         # Initialize data for each type and month
-#         monthly_data = {
-#             month: {type_name: 0 for type_name in types_of_interest}
-#             for month in all_months
-#         }
-
-#         # Populate data for "Energi" and "Vatten"
-#         for item in energy_water_data:
-#             month = item["month"].strftime("%b '%y")
-#             monthly_data[month][item["type_of_cost_or_revenue"]] = item["total_amount"]
-
-#         # Populate data for "Cost" and "Revenue" (mapped to "Totala utgifter" and "Intäkter")
-#         for item in cost_revenue_data:
-#             month = item["month"].strftime("%b '%y")
-#             type_name = item["type_of_transaction"]
-
-#             # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
-#             if type_name == "Cost":
-#                 type_name = "Totala utgifter"
-#             elif type_name == "Revenue":
-#                 type_name = "Intäkter"
-
-#             monthly_data[month][type_name] = item["total_amount"]
-
-#         # Convert to lists for charting
-#         labels = all_months
-#         series_data = [
-#             {
-#                 "name": type_name,
-#                 "data": [monthly_data[month].get(type_name, 0) for month in labels],
-#             }
-#             for type_name in types_of_interest
-#         ]
-
-#         return Response({"labels": labels, "series": series_data})
-
 class YearlyExpenseView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        year = request.query_params.get("year", timezone.now().year)
-        try:
-            year = int(year)  # Ensure year is an integer
-        except ValueError:
-            year = timezone.now().year
+        # Get the current date
+        current_date = timezone.now()
+        # Calculate the start date for the last 12 months
+        start_date = current_date - timedelta(days=365)  # Approximately 12 months
 
         # List of types to include in the response
         types_of_interest = ["Energi", "Vatten", "Totala utgifter", "Intäkter"]
 
-        # Generate a list of all months in the year with custom formatting
+        # Generate labels for the past 12 months
         all_months = [
-            datetime(year, month, 1).strftime("%b '%y") for month in range(1, 13)
-        ]
+            (current_date - timedelta(days=i * 30)).strftime("%b '%y") 
+            for i in range(12)
+        ][::-1]  # Reverse to have the latest month first
 
-        # Base queryset for filtering expenses in the specified year
+        # Base queryset for filtering expenses in the last 12 months
         base_queryset = Expense.objects.filter(
             user=request.user,
-            date_of_transaction__year=year
+            date_of_transaction__range=[start_date, current_date]
         ).annotate(
             month=TruncMonth("date_of_transaction")
         ).values("month", "type_of_cost_or_revenue", "type_of_transaction").annotate(total_amount=Sum("total_sum"))
@@ -238,27 +170,28 @@ class YearlyExpenseView(APIView):
             type_of_cost_or_revenue = item["type_of_cost_or_revenue"]
             type_of_transaction = item["type_of_transaction"]
 
-            # Check for "Energi" and "Vatten"
-            if type_of_cost_or_revenue in ["Energi", "Vatten"]:
-                monthly_data[month][type_of_cost_or_revenue] += item["total_amount"]
+            # Check if the month exists in monthly_data before updating
+            if month in monthly_data:
+                # Check for "Energi" and "Vatten"
+                if type_of_cost_or_revenue in ["Energi", "Vatten"]:
+                    monthly_data[month][type_of_cost_or_revenue] += item["total_amount"]
 
-            # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
-            if type_of_transaction == "Cost":
-                monthly_data[month]["Totala utgifter"] += item["total_amount"]
-            elif type_of_transaction == "Revenue":
-                monthly_data[month]["Intäkter"] += item["total_amount"]
+                # Map "Cost" to "Totala utgifter" and "Revenue" to "Intäkter"
+                if type_of_transaction == "Cost":
+                    monthly_data[month]["Totala utgifter"] += item["total_amount"]
+                elif type_of_transaction == "Revenue":
+                    monthly_data[month]["Intäkter"] += item["total_amount"]
 
         # Convert to lists for charting
-        labels = all_months
         series_data = [
             {
                 "name": type_name,
-                "data": [monthly_data[month].get(type_name, 0) for month in labels],
+                "data": [monthly_data[month].get(type_name, 0) for month in all_months],
             }
             for type_name in types_of_interest
         ]
 
-        return Response({"labels": labels, "series": series_data})
+        return Response({"labels": all_months, "series": series_data})
 
 class ImportExpensesView(APIView):
     permission_classes = [IsAuthenticated]
