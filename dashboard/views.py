@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.serializers import ServiceProviderSerializer
 from django.db.models import Sum, Avg, Count
 from economi.models import Expense
-from datetime import timedelta
+from datetime import timedelta, date
 from django.utils import timezone
 from django.db.models.functions import TruncMonth
 from blog.models import Blog
@@ -75,148 +75,136 @@ class DashboardStatsTable(APIView):
 
     def get(self, request):
         user = request.user
+
+        # Get the current date and the date 30 days ago (timezone-aware)
         today = timezone.now().date()
-        start_date = today - timedelta(days=30)
+        past_30_days = timezone.now() - timedelta(days=30)
 
-        # Filter expenses and revenues for the past 30 days
-        expenses_last_30_days = Expense.objects.filter(
-            user=user,
-            date_of_transaction__gte=start_date,
-            type_of_cost_or_revenue__iexact="Cost"
-        ).aggregate(total=Sum('total_sum'))['total'] or 0
+        # Get all distinct months where the user has any transaction
+        months_with_data = Expense.objects.filter(user=user).annotate(
+            month=TruncMonth('date_of_transaction')
+        ).values('month').distinct().count()
 
-        revenue_last_30_days = Expense.objects.filter(
-            user=user,
-            date_of_transaction__gte=start_date,
-            type_of_cost_or_revenue__iexact="Revenue"
-        ).aggregate(total=Sum('total_sum'))['total'] or 0
+        # Current month (timezone-aware)
+        current_month = timezone.now().replace(day=1)
 
-        # Calculate average per month for the current year, excluding months with no data
-        def calculate_avg_per_month(expense_type):
-            year_start = today.replace(month=1, day=1)
-            monthly_totals = Expense.objects.filter(
-                user=user,
-                type_of_cost_or_revenue__iexact=expense_type,
-                date_of_transaction__gte=year_start
-            ).annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(total=Sum('total_sum')).values('total')
-            
-            # Filter out months with no data
-            total_months = monthly_totals.count()
-            if total_months > 0:
-                avg_total_per_month = monthly_totals.aggregate(avg_total=Avg('total'))['avg_total'] or 0
-            else:
-                avg_total_per_month = 0
-            
-            return avg_total_per_month
+        # ---------------------------- Cost Calculations ---------------------------- #
+        # Sum up total cost for the past 30 days
+        past_30_days_cost = Expense.objects.filter(
+            user=user, type_of_transaction='Cost', date_of_transaction__gte=past_30_days
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
 
-        expenses_avg_per_month = calculate_avg_per_month("Cost")
-        revenue_avg_per_month = calculate_avg_per_month("Revenue")
+        # Calculate monthly average for 'Cost'
+        cost_expenses = Expense.objects.filter(user=user, type_of_transaction='Cost')
+        cost_monthly_data = cost_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
+            total_sum=Sum('total_sum')
+        ).order_by('month')
 
-        # Calculate the percentage difference between past 30 days and average per month
-        def calculate_percentage_difference(past_30_days, avg_per_month):
-            if avg_per_month == 0:
-                return 0
-            return ((past_30_days - avg_per_month) / avg_per_month) * 100
+        total_cost_sum = cost_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
+        cost_monthly_average = total_cost_sum / months_with_data if months_with_data > 0 else 0
 
-        expenses_difference = calculate_percentage_difference(expenses_last_30_days, expenses_avg_per_month)
-        revenue_difference = calculate_percentage_difference(revenue_last_30_days, revenue_avg_per_month)
+        # Get current month's total for Cost (timezone-aware)
+        current_month_cost = cost_expenses.filter(
+            date_of_transaction__month=current_month.month
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
 
-        # Calculate feedback metrics
-        feedbacks_last_30_days = UserFeedback.objects.filter(
-            user=user,
-            created_at__gte=start_date
+        # Calculate the percentage difference for Cost
+        cost_difference = (current_month_cost / cost_monthly_average) * 100 if cost_monthly_average > 0 else 0
+        cost_difference = min(cost_difference, 100)  # Cap at 100%
+
+        # ---------------------------- Revenue Calculations ---------------------------- #
+        # Sum up total revenue for the past 30 days
+        past_30_days_revenue = Expense.objects.filter(
+            user=user, type_of_transaction='Revenue', date_of_transaction__gte=past_30_days
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+
+        # Calculate monthly average for 'Revenue'
+        revenue_expenses = Expense.objects.filter(user=user, type_of_transaction='Revenue')
+        revenue_monthly_data = revenue_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
+            total_sum=Sum('total_sum')
+        ).order_by('month')
+
+        total_revenue_sum = revenue_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
+        revenue_monthly_average = total_revenue_sum / months_with_data if months_with_data > 0 else 0
+
+        # Get current month's total for Revenue (timezone-aware)
+        current_month_revenue = revenue_expenses.filter(
+            date_of_transaction__month=current_month.month
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+
+        # Calculate the percentage difference for Revenue
+        revenue_difference = (current_month_revenue / revenue_monthly_average) * 100 if revenue_monthly_average > 0 else 0
+        revenue_difference = min(revenue_difference, 100)  # Cap at 100%
+
+        # ---------------------------- Blog Calculations ---------------------------- #
+        # Get all distinct months where the user has created any blog post
+        months_with_blogs = Blog.objects.filter(user=user).annotate(
+            month=TruncMonth('created_at')
+        ).values('month').distinct().count()
+
+        # Count blogs from the past 30 days (timezone-aware)
+        past_30_days_blogs = Blog.objects.filter(user=user, created_at__gte=past_30_days).count()
+
+        # Calculate monthly average for Blogs
+        total_blogs = Blog.objects.filter(user=user).count()
+        blogs_avg_per_month = total_blogs / months_with_blogs if months_with_blogs > 0 else 0
+
+        # Count current month's blogs (timezone-aware)
+        current_month_blogs = Blog.objects.filter(
+            user=user, created_at__month=current_month.month
         ).count()
 
-        def calculate_feedbacks_avg_per_month():
-            year_start = today.replace(month=1, day=1)
-            monthly_totals = UserFeedback.objects.filter(
-                user=user,
-                created_at__gte=year_start
-            ).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).values('total')
-            
-            # Filter out months with no data
-            total_months = monthly_totals.count()
-            if total_months > 0:
-                avg_total_per_month = monthly_totals.aggregate(avg_total=Avg('total'))['avg_total'] or 0
-            else:
-                avg_total_per_month = 0
-            
-            return avg_total_per_month
+        # Calculate the percentage difference for Blogs
+        blogs_difference = (current_month_blogs / blogs_avg_per_month) * 100 if blogs_avg_per_month > 0 else 0
+        blogs_difference = min(blogs_difference, 100)
 
-        feedbacks_avg_per_month = calculate_feedbacks_avg_per_month()
+        # ---------------------------- Feedback Calculations ---------------------------- #
+        # Get all distinct months where the user received feedback
+        months_with_feedbacks = UserFeedback.objects.filter(user=user).annotate(
+            month=TruncMonth('created_at')
+        ).values('month').distinct().count()
 
-        recent_feedbacks = UserFeedback.objects.filter(
-            user=user,
-            created_at__month=today.month
+        # Count feedbacks from the past 30 days (timezone-aware)
+        past_30_days_feedbacks = UserFeedback.objects.filter(user=user, created_at__gte=past_30_days).count()
+
+        # Calculate monthly average for Feedbacks
+        total_feedbacks = UserFeedback.objects.filter(user=user).count()
+        feedbacks_avg_per_month = total_feedbacks / months_with_feedbacks if months_with_feedbacks > 0 else 0
+
+        # Count current month's feedbacks (timezone-aware)
+        current_month_feedbacks = UserFeedback.objects.filter(
+            user=user, created_at__month=current_month.month
         ).count()
 
-        previous_feedbacks = UserFeedback.objects.filter(
-            user=user,
-            created_at__month=(today - timedelta(days=30)).month
-        ).count()
+        # Calculate the percentage difference for Feedbacks
+        feedbacks_difference = (current_month_feedbacks / feedbacks_avg_per_month) * 100 if feedbacks_avg_per_month > 0 else 0
+        feedbacks_difference = min(feedbacks_difference, 100)
 
-        feedbacks_difference = calculate_percentage_difference(recent_feedbacks, feedbacks_avg_per_month)
-
-        # Calculate blog metrics
-        blogs_last_30_days = Blog.objects.filter(
-            user=user,
-            created_at__gte=start_date
-        ).count()
-
-        def calculate_blogs_avg_per_month():
-            year_start = today.replace(month=1, day=1)
-            monthly_totals = Blog.objects.filter(
-                user=user,
-                created_at__gte=year_start
-            ).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).values('total')
-            
-            # Filter out months with no data
-            total_months = monthly_totals.count()
-            if total_months > 0:
-                avg_total_per_month = monthly_totals.aggregate(avg_total=Avg('total'))['avg_total'] or 0
-            else:
-                avg_total_per_month = 0
-            
-            return avg_total_per_month
-
-        blogs_avg_per_month = calculate_blogs_avg_per_month()
-
-        recent_blogs = Blog.objects.filter(
-            user=user,
-            created_at__month=today.month
-        ).count()
-
-        previous_blogs = Blog.objects.filter(
-            user=user,
-            created_at__month=(today - timedelta(days=30)).month
-        ).count()
-
-        blogs_difference = calculate_percentage_difference(recent_blogs, blogs_avg_per_month)
-
+        # ---------------------------- Response Data ---------------------------- #
         data = [
             {
                 "name": "Intäkter", # Revenue
-                "past_30_days": revenue_last_30_days,
-                "avg_total_per_month": revenue_avg_per_month,
-                "difference": revenue_difference
+                "past_30_days": round(past_30_days_revenue, 2),
+                "avg_total_per_month": round(revenue_monthly_average, 2),
+                "difference": round(revenue_difference, 2)
             },
             {
                 "name": "Utgifter", # Costs/Expenses
-                "past_30_days": expenses_last_30_days,
-                "avg_total_per_month": expenses_avg_per_month,
-                "difference": expenses_difference
+                "past_30_days": round(past_30_days_cost, 2),
+                "avg_total_per_month": round(cost_monthly_average, 2),
+                "difference": round(cost_difference, 2)
             },
             {
                 "name": "Feedback & idéer",
-                "past_30_days": feedbacks_last_30_days,
-                "avg_total_per_month": feedbacks_avg_per_month,
-                "difference": feedbacks_difference
+                "past_30_days": past_30_days_blogs,
+                "avg_total_per_month": round(blogs_avg_per_month, 2),
+                "difference": round(blogs_difference, 2)
             },
             {
                 "name": "Publicerade Nyhetsbrev",
-                "past_30_days": blogs_last_30_days,
-                "avg_total_per_month": blogs_avg_per_month,
-                "difference": blogs_difference
+                "past_30_days": past_30_days_feedbacks,
+                "avg_total_per_month": round(feedbacks_avg_per_month, 2),
+                "difference": round(feedbacks_difference, 2)
             }
         ]
         return Response(data, status=status.HTTP_200_OK)
