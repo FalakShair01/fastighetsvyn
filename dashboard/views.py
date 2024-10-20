@@ -196,15 +196,15 @@ class DashboardStatsTable(APIView):
             },
             {
                 "name": "Feedback & idéer",
-                "past_30_days": past_30_days_blogs,
-                "avg_total_per_month": round(blogs_avg_per_month, 2),
-                "difference": round(blogs_difference, 2)
-            },
-            {
-                "name": "Publicerade Nyhetsbrev",
                 "past_30_days": past_30_days_feedbacks,
                 "avg_total_per_month": round(feedbacks_avg_per_month, 2),
                 "difference": round(feedbacks_difference, 2)
+            },
+            {
+                "name": "Publicerade Nyhetsbrev",
+                "past_30_days": past_30_days_blogs,
+                "avg_total_per_month": round(blogs_avg_per_month, 2),
+                "difference": round(blogs_difference, 2)
             }
         ]
         return Response(data, status=status.HTTP_200_OK)
