@@ -14,7 +14,7 @@ from datetime import datetime, date, timedelta
 from .filters import ExpenseFilter
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
-    queryset = Expense.objects.all().order_by('-date_of_transaction')  
+    queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -22,7 +22,7 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Expense.objects.filter(user=user)
+        queryset = Expense.objects.filter(user=user).order_by('-date_of_transaction')  
         # start_date = self.request.query_params.get("start_date")
         # end_date = self.request.query_params.get("end_date")
 
