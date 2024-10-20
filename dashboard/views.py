@@ -85,6 +85,8 @@ class DashboardStatsTable(APIView):
             month=TruncMonth('date_of_transaction')
         ).values('month').distinct().count()
 
+        print(f"Month with data: {months_with_data}")
+
         # Current month (timezone-aware)
         current_month = timezone.now().replace(day=1)
 
@@ -125,6 +127,7 @@ class DashboardStatsTable(APIView):
         ).order_by('month')
 
         total_revenue_sum = revenue_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
+        print(f"Total Revenue: {total_revenue_sum}")
         revenue_monthly_average = total_revenue_sum / months_with_data if months_with_data > 0 else 0
 
         # Get current month's total for Revenue (timezone-aware)
