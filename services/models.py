@@ -93,6 +93,10 @@ class OrderMaintenanceServices(models.Model):
     frequency = models.CharField(max_length=255, null=True, blank=True)
     frequency_clarification = models.TextField(null=True, blank=True)
     access_details = models.TextField(null=True, blank=True)
+    contact_person_name = models.CharField(max_length=255, null=True, blank=True)
+    contact_person_telephone = models.CharField(max_length=255, null=True, blank=True)
+    contact_person_email = models.EmailField(null=True, blank=True)
+    communication_type = models.CharField(max_length=255, null=True, blank=True)
     service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, blank=True, null=True, related_name="maintenance_service_provider",)
     STATUS = (
         ("Active", "Active"),
