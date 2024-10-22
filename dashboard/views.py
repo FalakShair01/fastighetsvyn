@@ -176,26 +176,25 @@ class DashboardStatsTable(APIView):
                 "name": "Intäkter",  # Revenue
                 "past_30_days": round(past_30_days_revenue, 2),
                 "avg_total_per_month": round(revenue_monthly_average),  # No decimals
-                "difference": f"{'+' if revenue_difference > 0 else ''}{round(revenue_difference, 2)}%"
+                "difference": round(revenue_difference, 2)
             },
             {
                 "name": "Utgifter",  # Costs/Expenses
                 "past_30_days": round(past_30_days_cost, 2),
                 "avg_total_per_month": round(cost_monthly_average),  # No decimals
-                "difference": f"{'+' if cost_difference > 0 else ''}{round(cost_difference, 2)}%"
+                "difference": round(cost_difference, 2)
             },
             {
                 "name": "Feedback & idéer",
                 "past_30_days": past_30_days_feedbacks,
                 "avg_total_per_month": round(feedbacks_avg_per_month, 1),
-                "difference": f"{'+' if feedbacks_difference > 0 else ''}{round(feedbacks_difference, 2)}%"
+                "difference": round(feedbacks_difference, 2)
             },
             {
                 "name": "Publicerade Nyhetsbrev",
                 "past_30_days": past_30_days_blogs,
                 "avg_total_per_month": round(blogs_avg_per_month, 1),
-                "difference": f"{'+' if blogs_difference > 0 else ''}{round(blogs_difference, 2)}%"
+                "difference": round(blogs_difference, 2)
             }
         ]
-
         return Response(data, status=status.HTTP_200_OK)
