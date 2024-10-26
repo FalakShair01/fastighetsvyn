@@ -103,7 +103,7 @@ class OrderMaintenanceServices(models.Model):
         ("Pending", "Pending"),
         ("Completed", "Completed"),
     )
-    status = models.CharField(choices=STATUS, max_length=10)
+    status = models.CharField(choices=STATUS, max_length=10, default="Pending")
     comment = models.TextField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
