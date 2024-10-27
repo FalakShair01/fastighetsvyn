@@ -23,7 +23,8 @@ from .views import (
     DeleteOrderServiceFolderView,
     CreateOrderServiceFileView,
     DeleteOrderServiceFileView,
-    RetrieveOrderMaintenanceAPIView
+    RetrieveOrderMaintenanceAPIView,
+    ListOrderServiceFileView
 )
 
 router = DefaultRouter()
@@ -51,6 +52,7 @@ urlpatterns = [
     path('order-service/folders/<int:id>/delete/', DeleteOrderServiceFolderView.as_view(), name='delete_order_service_folder'),
     path('order-service/files/', CreateOrderServiceFileView.as_view(), name='create_order_service_file'),
     path('order-service/files/<int:pk>/delete/', DeleteOrderServiceFileView.as_view(), name='delete_order_service_file'),
+    path('order-service/files/<int:folder_id>/list/', ListOrderServiceFileView.as_view(), name='list_order_service_file'),
     # --------- manuall maintenance service ----------
     path('service/document-folders/<int:manual_service>/list/', ListDocumentFolderView.as_view(), name='document-folders'),
     path('service/document-folders/', CreateDocumentFolderView.as_view(), name='document-folder-create'),

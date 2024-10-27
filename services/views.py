@@ -232,6 +232,17 @@ class DeleteOrderServiceFileView(APIView):
         file.delete()
         return Response({"msg": "File Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+class ListOrderServiceFileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def delete(self, request, folder_id):
+        try:
+            folder = OrderServiceDocumentFolder.objects.get(id=folder_id)
+            files = OrderServiceFile.objects.filter(folder=folder)
+            serializer = ServiceFileSerializer(files, many=True)        
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except OrderServiceDocumentFolder.DoesNotExist:
+            raise Http404("folder not found.")
+        
 class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     queryset = ExternalSelfServices.objects.all()
     serializer_class = ExternalSelfServicesSerializer
