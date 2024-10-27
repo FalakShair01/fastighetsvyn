@@ -234,7 +234,7 @@ class DeleteOrderServiceFileView(APIView):
 
 class ListOrderServiceFileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    def delete(self, request, folder_id):
+    def get(self, request, folder_id):
         try:
             folder = OrderServiceDocumentFolder.objects.get(id=folder_id)
             files = OrderServiceFile.objects.filter(folder=folder)
