@@ -10,7 +10,9 @@ from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from property.models import Property
 import pandas as pd
+from django.utils.timezone import make_aware, make_naive
 from datetime import datetime, date, timedelta
+from dateutil.relativedelta import relativedelta
 from .filters import ExpenseFilter
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
@@ -129,24 +131,41 @@ class YearlyExpenseView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Get the current date
-        current_date = timezone.now()
-        # Calculate the start date for the last 12 months
-        start_date = current_date - timedelta(days=365)  # Approximately 12 months
+        # Get start_date and end_date from query parameters, if provided
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+
+        # Parse dates or set default values (last 12 months)
+        if start_date_str:
+            start_date = timezone.datetime.fromisoformat(start_date_str)
+            if timezone.is_aware(start_date):
+                start_date = make_naive(start_date)
+        else:
+            start_date = timezone.now() - timedelta(days=365)  # Default to approx. last 12 months
+            start_date = make_naive(start_date)
+
+        if end_date_str:
+            end_date = timezone.datetime.fromisoformat(end_date_str)
+            if timezone.is_aware(end_date):
+                end_date = make_naive(end_date)
+        else:
+            end_date = timezone.now()  # Default to the current date
+            end_date = make_naive(end_date)
+
+        # Generate month labels from start_date to end_date
+        all_months = []
+        current_month = start_date.replace(day=1)
+        while current_month <= end_date.replace(day=1):
+            all_months.append(current_month.strftime("%b '%y"))
+            current_month += relativedelta(months=1)
 
         # List of types to include in the response
         types_of_interest = ["Energi", "Vatten", "Totala utgifter", "Intäkter"]
 
-        # Generate labels for the past 12 months
-        all_months = [
-            (current_date - timedelta(days=i * 30)).strftime("%b '%y") 
-            for i in range(12)
-        ][::-1]  # Reverse to have the latest month first
-
-        # Base queryset for filtering expenses in the last 12 months
+        # Base queryset for filtering expenses within the date range
         base_queryset = Expense.objects.filter(
             user=request.user,
-            date_of_transaction__range=[start_date, current_date]
+            date_of_transaction__range=[start_date, end_date]
         ).annotate(
             month=TruncMonth("date_of_transaction")
         ).values("month", "type_of_cost_or_revenue", "type_of_transaction").annotate(total_amount=Sum("total_sum"))
@@ -157,15 +176,13 @@ class YearlyExpenseView(APIView):
             for month in all_months
         }
 
-        # Populate data for "Energi" and "Vatten"
+        # Populate data for each type and month
         for item in base_queryset:
             month = item["month"].strftime("%b '%y")
             type_of_cost_or_revenue = item["type_of_cost_or_revenue"]
             type_of_transaction = item["type_of_transaction"]
 
-            # Check if the month exists in monthly_data before updating
             if month in monthly_data:
-                # Check for "Energi" and "Vatten"
                 if type_of_cost_or_revenue in ["Energi", "Vatten"]:
                     monthly_data[month][type_of_cost_or_revenue] += item["total_amount"]
 
@@ -175,7 +192,7 @@ class YearlyExpenseView(APIView):
                 elif type_of_transaction == "Revenue":
                     monthly_data[month]["Intäkter"] += item["total_amount"]
 
-        # Convert to lists for charting
+        # Convert data to lists for charting
         series_data = [
             {
                 "name": type_name,
