@@ -133,7 +133,7 @@ class BalanceIllustrationView(APIView):
             revenue_percentage = min(revenue_percentage, 100)  # Cap at 100%
 
             # Subtract 0.1 from the percentage if it is exactly 100
-            if revenue_percentage == 100:
+            if revenue_percentage == cost_percentage:
                 revenue_percentage -= 0.1
         else:
             revenue_percentage = 0
