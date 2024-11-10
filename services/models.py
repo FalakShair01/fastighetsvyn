@@ -14,6 +14,9 @@ def service_images(instance, filename):
 def service_document(instance, filename):
     return "/".join(["services", 'document', filename])
 
+def exeternal_service_images(instance, filename):
+    return "/".join(["services", str(instance.benamning_av_tjanst), filename])
+
 class Development(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -163,6 +166,7 @@ class ExternalSelfServices(models.Model):
         SelfServiceProvider, on_delete=models.SET_NULL, null=True, related_name="self_service_provider"
     )  # Service provider
     anteckningar = models.TextField(null=True, blank=True)  # Notes
+    cover_image = models.ImageField(upload_to=exeternal_service_images, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)    
 

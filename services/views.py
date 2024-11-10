@@ -308,22 +308,36 @@ class FileDeleteAPIView(APIView):
         return Response({"msg": "File Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 class UploadFileAPIView(APIView):
+    """This view is used for upload manual service file and service cover image"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         manual_service = request.data.get('manual_service')
         files = request.FILES.getlist('file')
+        cover_image = request.FILES.get('cover_image', None)
+
+        if not manual_service:
+            return Response({'error': 'Manual service ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not files:
             return Response({'error': 'No files uploaded'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Create folder instance for document
         folder_serializer = ServiceDocumentFolderSerializer(data={'manual_service': manual_service, "name": "Dokument"})
         folder_serializer.is_valid(raise_exception=True)
         folder_instance = folder_serializer.save()
 
+        # Save each file in the folder
         for file in files:
             document_serializer = ServiceFileSerializer(data={'folder': folder_instance.id, 'file': file})
             document_serializer.is_valid(raise_exception=True)
             document_serializer.save()
 
-        return Response({'msg': 'Files Uploaded Successfully'}, status=status.HTTP_201_CREATED)
+        # Update cover image if provided
+        if cover_image:
+            ExternalSelfServices.objects.filter(id=manual_service).update(cover_image=cover_image)
+            message = 'Files and cover image uploaded successfully.'
+        else:
+            message = 'Files uploaded successfully.'
+
+        return Response({'msg': message}, status=status.HTTP_201_CREATED)
