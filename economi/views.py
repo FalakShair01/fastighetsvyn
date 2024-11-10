@@ -178,24 +178,33 @@ class YearlyExpenseView(APIView):
         if start_date_str:
             start_date = timezone.datetime.fromisoformat(start_date_str)
             if timezone.is_aware(start_date):
-                start_date = make_naive(start_date)
+                start_date = timezone.make_naive(start_date)
         else:
             start_date = timezone.now() - timedelta(days=365)  # Default to approx. last 12 months
-            start_date = make_naive(start_date)
+            start_date = timezone.make_naive(start_date)
 
         if end_date_str:
             end_date = timezone.datetime.fromisoformat(end_date_str)
             if timezone.is_aware(end_date):
-                end_date = make_naive(end_date)
+                end_date = timezone.make_naive(end_date)
         else:
             end_date = timezone.now()  # Default to the current date
-            end_date = make_naive(end_date)
+            end_date = timezone.make_naive(end_date)
 
-        # Generate month labels from start_date to end_date
+        # Map of Swedish month names
+        month_map = {
+            "Jan": "Jan", "Feb": "Feb", "Mar": "Mar", "Apr": "Apr", "May": "Maj",
+            "Jun": "Jun", "Jul": "Jul", "Aug": "Aug", "Sep": "Sep", "Oct": "Okt",
+            "Nov": "Nov", "Dec": "Dec"
+        }
+
+        # Generate month labels in Swedish from start_date to end_date
         all_months = []
         current_month = start_date.replace(day=1)
         while current_month <= end_date.replace(day=1):
-            all_months.append(current_month.strftime("%b '%y"))
+            month_abbr = current_month.strftime("%b")
+            swedish_month_label = f"{month_map[month_abbr]} '{current_month.strftime('%y')}"
+            all_months.append(swedish_month_label)
             current_month += relativedelta(months=1)
 
         # List of types to include in the response
@@ -217,7 +226,8 @@ class YearlyExpenseView(APIView):
 
         # Populate data for each type and month
         for item in base_queryset:
-            month = item["month"].strftime("%b '%y")
+            month_abbr = item["month"].strftime("%b")
+            month = f"{month_map[month_abbr]} '{item['month'].strftime('%y')}"
             type_of_cost_or_revenue = item["type_of_cost_or_revenue"]
             type_of_transaction = item["type_of_transaction"]
 
