@@ -85,6 +85,8 @@ class DashboardStatsTable(APIView):
             month=TruncMonth('date_of_transaction')
         ).values('month').distinct().count()
 
+        print(f"months_with_data: {months_with_data}")
+
         # Current month (timezone-aware)
         current_month = timezone.now().replace(day=1)
 
@@ -94,6 +96,8 @@ class DashboardStatsTable(APIView):
             user=user, type_of_transaction='Cost', date_of_transaction__gte=past_30_days
         ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
 
+        # print(f"past_30_days_cost: {past_30_days_cost}")
+
         # Calculate monthly average for 'Cost'
         cost_expenses = Expense.objects.filter(user=user, type_of_transaction='Cost')
         cost_monthly_data = cost_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
@@ -102,21 +106,27 @@ class DashboardStatsTable(APIView):
 
         total_cost_sum = cost_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
         cost_monthly_average = total_cost_sum / months_with_data if months_with_data > 0 else 0
+        # print(f"total_cost_sum: {total_cost_sum}")
+        # print(f"cost_monthly_average: {cost_monthly_average}")
 
         # Get current month's total for Cost (timezone-aware)
         current_month_cost = cost_expenses.filter(
             date_of_transaction__month=current_month.month
         ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+        # print(f"current_month_cost: {current_month_cost}")
 
         # Calculate the percentage difference for Cost
-        cost_difference = ((current_month_cost / cost_monthly_average) * 100 - 100) if cost_monthly_average > 0 else 0
+        # cost_difference = ((current_month_cost / cost_monthly_average) * 100 - 100) if cost_monthly_average > 0 else 0
+        cost_difference = ((past_30_days_cost / cost_monthly_average) * 100 - 100) if cost_monthly_average > 0 else 0
         cost_difference = min(cost_difference, 100)  # Cap at 100%
+        # print(f"cost_difference: {cost_difference}")
 
         # ---------------------------- Revenue Calculations ---------------------------- #
         # Sum up total revenue for the past 30 days
         past_30_days_revenue = Expense.objects.filter(
             user=user, type_of_transaction='Revenue', date_of_transaction__gte=past_30_days
         ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+        print(f"past_30_days_revenue: {past_30_days_revenue}")
 
         # Calculate monthly average for 'Revenue'
         revenue_expenses = Expense.objects.filter(user=user, type_of_transaction='Revenue')
@@ -127,14 +137,20 @@ class DashboardStatsTable(APIView):
         total_revenue_sum = revenue_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
         revenue_monthly_average = total_revenue_sum / months_with_data if months_with_data > 0 else 0
 
+        print(f"total_revenue_sum: {total_revenue_sum}")
+        print(f"revenue_monthly_average: {revenue_monthly_average}")
+
         # Get current month's total for Revenue (timezone-aware)
         current_month_revenue = revenue_expenses.filter(
             date_of_transaction__month=current_month.month
         ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+        print(f"current_month_revenue: {current_month_revenue}")
 
         # Calculate the percentage difference for Revenue
-        revenue_difference = ((current_month_revenue / revenue_monthly_average) * 100 - 100) if revenue_monthly_average > 0 else 0
+        # revenue_difference = ((current_month_revenue / revenue_monthly_average) * 100 - 100) if revenue_monthly_average > 0 else 0
+        revenue_difference = ((past_30_days_revenue / revenue_monthly_average) * 100 - 100) if revenue_monthly_average > 0 else 0
         revenue_difference = min(revenue_difference, 100)  # Cap at 100%
+        print(f"revenue_difference: {revenue_difference}")
 
         # ---------------------------- Blog Calculations ---------------------------- #
         months_with_blogs = Blog.objects.filter(user=user).annotate(
@@ -150,7 +166,8 @@ class DashboardStatsTable(APIView):
             user=user, created_at__month=current_month.month
         ).count()
 
-        blogs_difference = ((current_month_blogs / blogs_avg_per_month) * 100 - 100) if blogs_avg_per_month > 0 else 0
+        # blogs_difference = ((current_month_blogs / blogs_avg_per_month) * 100 - 100) if blogs_avg_per_month > 0 else 0
+        blogs_difference = ((past_30_days_blogs / blogs_avg_per_month) * 100 - 100) if blogs_avg_per_month > 0 else 0
         blogs_difference = min(blogs_difference, 100)
 
         # ---------------------------- Feedback Calculations ---------------------------- #
@@ -167,7 +184,8 @@ class DashboardStatsTable(APIView):
             user=user, created_at__month=current_month.month
         ).count()
 
-        feedbacks_difference = ((current_month_feedbacks / feedbacks_avg_per_month) * 100 - 100) if feedbacks_avg_per_month > 0 else 0
+        # feedbacks_difference = ((current_month_feedbacks / feedbacks_avg_per_month) * 100 - 100) if feedbacks_avg_per_month > 0 else 0
+        feedbacks_difference = ((past_30_days_feedbacks / feedbacks_avg_per_month) * 100 - 100) if feedbacks_avg_per_month > 0 else 0
         feedbacks_difference = min(feedbacks_difference, 100)
 
         # ---------------------------- Response Data ---------------------------- #
