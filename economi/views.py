@@ -46,69 +46,62 @@ class BalanceIllustrationView(APIView):
 
     def get(self, request):
         user = request.user
-        
-        # Get all distinct months where the user has any transaction
-        months_with_data = Expense.objects.filter(user=user).annotate(
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        # Set default date range to the current month if no dates are provided
+        if start_date:
+            start_date = date.fromisoformat(start_date)
+        else:
+            start_date = date.today().replace(day=1)
+
+        if end_date:
+            end_date = date.fromisoformat(end_date)
+
+        # Filter by date range if both dates are provided, otherwise use only start_date
+        date_filter = {'date_of_transaction__gte': start_date}
+        if end_date:
+            date_filter['date_of_transaction__lte'] = end_date
+
+        # Get distinct months in the filtered date range
+        months_with_data = Expense.objects.filter(user=user, **date_filter).annotate(
             month=TruncMonth('date_of_transaction')
         ).values('month').distinct().count()
 
-        # Current month
-        current_month = date.today().replace(day=1)
-
         # Calculate total and monthly average for 'Cost'
-        cost_expenses = Expense.objects.filter(user=user, type_of_transaction='Cost')
+        cost_expenses = Expense.objects.filter(user=user, type_of_transaction='Cost', **date_filter)
         cost_monthly_data = cost_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
             total_sum=Sum('total_sum')
         ).order_by('month')
-        
+
         total_cost_sum = cost_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
-        
-        if months_with_data > 0:
-            cost_monthly_average = total_cost_sum / months_with_data
-        else:
-            cost_monthly_average = 0
+        cost_monthly_average = total_cost_sum / months_with_data if months_with_data > 0 else 0
 
         # Calculate total and monthly average for 'Revenue'
-        revenue_expenses = Expense.objects.filter(user=user, type_of_transaction='Revenue')
+        revenue_expenses = Expense.objects.filter(user=user, type_of_transaction='Revenue', **date_filter)
         revenue_monthly_data = revenue_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
             total_sum=Sum('total_sum')
         ).order_by('month')
-        
+
         total_revenue_sum = revenue_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
-        
-        if months_with_data > 0:
-            revenue_monthly_average = total_revenue_sum / months_with_data
-        else:
-            revenue_monthly_average = 0
+        revenue_monthly_average = total_revenue_sum / months_with_data if months_with_data > 0 else 0
 
-        # Get current month's total for Cost
-        current_month_cost = cost_expenses.filter(date_of_transaction__month=current_month.month).aggregate(
+        # Calculate current month's totals for Cost and Revenue based on date range
+        current_month_cost = cost_expenses.filter(date_of_transaction__month=start_date.month).aggregate(
+            total_sum=Sum('total_sum')
+        )['total_sum'] or 0
+        current_month_revenue = revenue_expenses.filter(date_of_transaction__month=start_date.month).aggregate(
             total_sum=Sum('total_sum')
         )['total_sum'] or 0
 
-        # Get current month's total for Revenue
-        current_month_revenue = revenue_expenses.filter(date_of_transaction__month=current_month.month).aggregate(
-            total_sum=Sum('total_sum')
-        )['total_sum'] or 0
-
-        # Calculate the percentage for Cost
-        if cost_monthly_average > 0:
-            cost_percentage = (current_month_cost / cost_monthly_average) * 100
-            cost_percentage = min(cost_percentage, 100)  # Cap at 100%
-        else:
-            cost_percentage = 0
-
-        # Calculate the percentage for Revenue
-        if revenue_monthly_average > 0:
-            revenue_percentage = (current_month_revenue / revenue_monthly_average) * 100
-            revenue_percentage = min(revenue_percentage, 100)  # Cap at 100%
-        else:
-            revenue_percentage = 0
+        # Calculate percentages
+        cost_percentage = min((current_month_cost / cost_monthly_average) * 100, 100) if cost_monthly_average > 0 else 0
+        revenue_percentage = min((current_month_revenue / revenue_monthly_average) * 100, 100) if revenue_monthly_average > 0 else 0
 
         # Return the result as a JSON response
         return Response({
-            'total_cost': round(cost_percentage, 2), # percentage_of_current_month
-            'total_revenue': round(revenue_percentage, 2),  # percentage_of_current_month
+            'total_cost': round(cost_percentage, 2),  # percentage of current month
+            'total_revenue': round(revenue_percentage, 2),  # percentage of current month
             'cost_monthly_average': round(cost_monthly_average, 2),
             'revenue_monthly_average': round(revenue_monthly_average, 2),
             'total_cost_sum': total_cost_sum,
