@@ -15,6 +15,7 @@ from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 from .filters import ExpenseFilter
 from django.utils.dateparse import parse_date
+from decimal import Decimal
 
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
@@ -134,7 +135,7 @@ class BalanceIllustrationView(APIView):
 
             # Subtract 0.1 from the percentage if it is exactly 100
             if revenue_percentage == cost_percentage:
-                revenue_percentage -= 0.1
+                revenue_percentage -= Decimal('0.1')
         else:
             revenue_percentage = 0
 
