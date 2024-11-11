@@ -148,7 +148,7 @@ class ExternalSelfServicesSerializer(serializers.ModelSerializer):
             'id', 'benamning_av_tjanst', 'kostnad_per_manad', 'vilka_byggnader_omfattas',
             'beskrivning', 'startdatum_for_underhallstjanst', 'hur_ofta_utfor_denna_tjanst',
             'fortydligande_av_tjanstens_frekvens', 'access', 'kontaktuppgifter_till_ansvarig_leverantor', 
-            'anteckningar', 'total_property_count', 'property_details'
+            'anteckningar', 'cover_image', 'total_property_count', 'property_details'
         ]
     
     def get_total_property_count(self, obj):

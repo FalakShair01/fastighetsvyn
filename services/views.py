@@ -319,9 +319,6 @@ class UploadFileAPIView(APIView):
         if not manual_service:
             return Response({'error': 'Manual service ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not files:
-            return Response({'error': 'No files uploaded'}, status=status.HTTP_400_BAD_REQUEST)
-
         # Create folder instance for document
         folder_serializer = ServiceDocumentFolderSerializer(data={'manual_service': manual_service, "name": "Dokument"})
         folder_serializer.is_valid(raise_exception=True)
