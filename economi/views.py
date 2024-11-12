@@ -147,7 +147,7 @@ class BalanceIllustrationView(APIView):
             'revenue_monthly_average': round(revenue_monthly_average, 2),
             'total_cost_sum': current_month_cost,
             'total_revenue_sum': current_month_revenue,
-            'sum': current_month_cost + current_month_revenue
+            'sum': current_month_revenue - current_month_cost
         })
    # return Response({
         #     'cost': {
