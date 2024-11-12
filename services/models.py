@@ -15,7 +15,7 @@ def service_document(instance, filename):
     return "/".join(["services", 'document', filename])
 
 def exeternal_service_images(instance, filename):
-    return "/".join(["services", str(instance.benamning_av_tjanst), filename])
+    return "/".join(["services", "cover", filename])
 
 class Development(models.Model):
     title = models.CharField(max_length=100)

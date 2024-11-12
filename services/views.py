@@ -332,7 +332,10 @@ class UploadFileAPIView(APIView):
 
         # Update cover image if provided
         if cover_image:
-            ExternalSelfServices.objects.filter(id=manual_service).update(cover_image=cover_image)
+            service_instance = ExternalSelfServices.objects.get(id=manual_service)
+            service_instance.cover_image = cover_image
+            service_instance.save()
+
             message = 'Files and cover image uploaded successfully.'
         else:
             message = 'Files uploaded successfully.'
