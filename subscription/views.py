@@ -120,17 +120,18 @@ def handle_payment_action_required(invoice):
         print(f"Action required for subscription: {subscription_id}")
 
 
-class CreateCheckoutSessionView(APIView):
-    permission_classes = [IsAuthenticated]
+class CreateCheckoutSessionView(APIView):    
     def post(self, request):
         serializer = CreateCheckoutSessionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
+        email = serializer.validated_data['email']
         price_id = serializer.validated_data['price_id']
         success_url = serializer.validated_data['success_url']
         cancel_url = serializer.validated_data['cancel_url']
 
         current_date = timezone.now()
+        user = User.objects.filter(email=email).first()
+
         trial_subscription = Subscription.objects.filter(
             user=request.user,
             is_trial=True,
@@ -151,11 +152,11 @@ class CreateCheckoutSessionView(APIView):
                 mode='subscription',
                 success_url=success_url,
                 cancel_url=cancel_url,
-                customer_email=request.user.email,
+                customer_email=email,
             )
 
             Subscription.objects.create(
-                user=request.user,
+                user=user,
                 stripe_subscription_id=session.get('subscription'),
                 stripe_customer_id=session.get('customer'),
                 plan=price_id,
