@@ -33,6 +33,20 @@ def send_demo_notification_to_admin(sender, instance, created, **kwargs):
         data = {"subject": subject, "body": body, "to": list(admins_emails)}
         Utils.send_email(data)
 
+@receiver(post_save, sender=User)
+def create_trial_subscription(sender, instance, created, **kwargs):
+    if created:
+        if instance.role == "USER":
+            # Create a trial subscription for the new user
+            Subscription.objects.create(
+                user=instance,
+                is_trial=True,
+                status='active',
+                start_date=timezone.now(),
+                # end_date=timezone.now() + timedelta(days=settings.TRIAL_DURATION)
+                end_date=timezone.now() + timedelta(minutes=settings.TRIAL_DURATION)
+            )  
+
 
 # Add Dummy data to every Register user if they their role is User
 @receiver(post_save, sender=User)
@@ -46,7 +60,6 @@ def fill_dummy_data(sender, instance, created, **kwargs):
     try: 
         if created:
             if instance.role == "USER":
-
                 # mini website data
                 Homepage.objects.create(
                     user=instance,  # Assuming there's a ForeignKey to User
@@ -55,18 +68,6 @@ def fill_dummy_data(sender, instance, created, **kwargs):
                     title="Välkommen till BRF X!",
                     banner='mini-web-common-banner.jpeg'
                 )
-
-                # subscription data
-                trial_duration_days = settings.TRIAL_DURATION
-                Subscription.objects.create(
-                    user=instance, 
-                    customer=instance.username, 
-                    receipt_email=instance.email,
-                    status="Active",
-                    subscription_expiry=timezone.now() + timedelta(days=trial_duration_days)
-                    # subscription_expiry=timezone.now() + timedelta(days=trial_duration_days)
-                    )
-                
     except Exception as e:
         print(f"error in new register user data creation: {e}")
 

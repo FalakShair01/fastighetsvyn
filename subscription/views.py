@@ -23,7 +23,7 @@ def stripe_webhook(request):
     # endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
     endpoint_secret = settings.STRIPE_TEST_WEBHOOK_SECRET
     # endpoint_secret = 'whsec_d1e093c14f703db2ee8d875ad860c329ce3605bc3b1ee0ce23b7f1cae2de8bd2'
-    sig_header = request.headers['STRIPE_SIGNATURE']
+    # sig_header = request.headers['STRIPE_SIGNATURE']
 
     try:
         event = stripe.Webhook.construct_event(
@@ -36,54 +36,139 @@ def stripe_webhook(request):
         print(f"Signature=> {str(e)}")
         return HttpResponse(status=400)
     
-    if event['type'] == 'payment_intent.succeeded':
-        payment_intent = event['data']['object']
-        data = {
-            "status": "Active",
-            "_id": payment_intent.get('id'),
-            "amount": payment_intent.get('amount'),
-            "amount_received": payment_intent.get('amount_received'),
-            "currency": payment_intent.get('currency'),
-            "customer": payment_intent.get("customer"),
-            "receipt_email": payment_intent.get("receipt_email"),
-            "subscription_expiry": timezone.now() + timedelta(days=31),
-            "subscription_type": "Paid",
-        }
-        serializer = SubscriptionSerializer(data=data)  
-        serializer.is_valid(raise_exception=True) 
-        serializer.save()
-    return HttpResponse(status=200)
+    # Handle specific events
+    if event['type'] == 'invoice.payment_succeeded':
+        invoice = event['data']['object']
+        handle_payment_succeeded(invoice)
+
+    elif event['type'] == 'invoice.payment_failed':
+        invoice = event['data']['object']
+        handle_payment_failed(invoice)
+
+    elif event['type'] == 'customer.subscription.deleted':
+        subscription = event['data']['object']
+        handle_subscription_deleted(subscription)
+
+    elif event['type'] == 'invoice.payment_action_required':
+        invoice = event['data']['object']
+        handle_payment_action_required(invoice)
+    
+    else:
+        print(f"Unhandled event type: {event['type']}")
+
+    return JsonResponse({'status': 'success'}, status=200)
+
+    
+def handle_payment_succeeded(invoice):
+    subscription_id = invoice.get('subscription')
+    amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
+    subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
+
+    for subscription in subscriptions:
+        subscription.last_payment_amount = amount_paid
+        subscription.status = 'active'
+        subscription.end_date = timezone.now() + timedelta(days=31)  # Replace with actual billing period if needed
+        subscription.retry_count = 0
+        subscription.save()
+
+        user = subscription.user
+        user.subscription_status = "ACTIVE"
+        user.subscription_type = subscription.plan
+        user.save(update_fields=["subscription_status", "subscription_type"])
+        print(f"Payment succeeded for subscription: {subscription_id}")
 
 
-# View to create a Checkout Session
+def handle_payment_failed(invoice):
+    subscription_id = invoice.get('subscription')
+    subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
+
+    for subscription in subscriptions:
+        subscription.retry_count += 1
+        if subscription.retry_count > subscription.max_retries:
+            subscription.status = 'expired'
+        else:
+            subscription.status = 'past_due'
+        subscription.save()
+
+        user = subscription.user
+        user.subscription_status = 'past_due' if subscription.retry_count <= subscription.max_retries else 'expired'
+        user.save(update_fields=["subscription_status"])
+        print(f"Payment failed for subscription: {subscription_id}")
+
+
+def handle_subscription_deleted(subscription):
+    subscription_id = subscription.get('id')
+    subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
+
+    for subscription in subscriptions:
+        subscription.status = 'expired'
+        subscription.save()
+
+        user = subscription.user
+        user.subscription_status = 'expired'
+        user.save(update_fields=["subscription_status"])
+        print(f"Subscription deleted: {subscription_id}")
+
+
+def handle_payment_action_required(invoice):
+    subscription_id = invoice.get('subscription')
+    subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
+
+    for subscription in subscriptions:
+        subscription.status = 'pending'
+        subscription.save()
+        print(f"Action required for subscription: {subscription_id}")
+
+
 class CreateCheckoutSessionView(APIView):
     def post(self, request):
         serializer = CreateCheckoutSessionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+
         price_id = serializer.validated_data['price_id']
         success_url = serializer.validated_data['success_url']
         cancel_url = serializer.validated_data['cancel_url']
 
+        current_date = timezone.now()
+        trial_subscription = Subscription.objects.filter(
+            user=request.user,
+            is_trial=True,
+            status='active',
+            end_date__isnull=False,
+            end_date__gt=current_date,
+        ).first()
+
+        if trial_subscription:
+            trial_subscription.status = 'expired'
+            trial_subscription.end_date = current_date
+            trial_subscription.save()
+
         try:
-            # Create a Checkout Session with the email
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
-                line_items=[
-                    {
-                        'price': price_id,
-                        'quantity': 1,
-                    },
-                ],
-                mode='subscription',  # Change to 'payment' for one-time payments
+                line_items=[{'price': price_id, 'quantity': 1}],
+                mode='subscription',
                 success_url=success_url,
                 cancel_url=cancel_url,
-                customer_email=email,  # Pre-fill the customer's email
+                customer_email=request.user.email,
             )
+
+            Subscription.objects.create(
+                user=request.user,
+                stripe_subscription_id=session.get('subscription'),
+                stripe_customer_id=session.get('customer'),
+                plan=price_id,
+                status='pending',
+                start_date=current_date,
+                is_trial=False,
+            )
+
             return Response({'sessionId': session.id, 'url': session.url}, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
+            print(f"Stripe error: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ListPricesView(APIView):
     def get(self, request):
@@ -115,32 +200,36 @@ class CheckSubscriptionStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-       
         try:
             # Retrieve the latest subscription for the authenticated user
-            user_subscription = Subscription.objects.filter(user=request.user).order_by('-subscription_expiry').first()
+            user_subscription = (
+                Subscription.objects.filter(user=request.user)
+                .order_by('-end_date')  # Assuming `end_date` is the expiry field
+                .first()
+            )
             
             if not user_subscription:
-                # Return user details with no active subscription
+                # No active subscription found; return user details
                 serializer = SubscriptionStatusSerializer(request.user)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
             # Check if the subscription is expired
-            if timezone.now() > user_subscription.subscription_expiry:
+            if timezone.now() > user_subscription.end_date:
                 user_subscription.status = "Expired"
-                user_subscription.save()  # Save changes to the subscription
+                user_subscription.save(update_fields=["status"])  # Save changes to the subscription
                 
-                # Update user status if required (assuming `status` is a field on the User model)
+                # Update user's subscription status
                 request.user.subscription_status = "Expired"
-                request.user.save()
+                request.user.save(update_fields=["subscription_status"])
 
             # Serialize and return the user's subscription data
             serializer = SubscriptionStatusSerializer(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
+            print(f"An error occurred while checking subscription status: {str(e)}")
             return Response(
-                {"error": f"An error occurred: {str(e)}"},
+                {"error": "An unexpected error occurred. Please try again later."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
