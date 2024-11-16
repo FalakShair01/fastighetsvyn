@@ -4,7 +4,13 @@ from .models import DemoRequests
 from django.contrib.auth import get_user_model
 from .Utils import Utils
 from userweb.models import Homepage
-from django.contrib.auth.models import User
+from subscription.models import Subscription
+from django.contrib.auth import get_user_model
+from django.conf import settings
+from datetime import timedelta
+from django.utils import timezone
+
+User = get_user_model()
 
 @receiver(post_save, sender=DemoRequests)
 def send_demo_notification_to_admin(sender, instance, created, **kwargs):
@@ -31,9 +37,19 @@ def send_demo_notification_to_admin(sender, instance, created, **kwargs):
 # Add Dummy data to every Register user if they their role is User
 @receiver(post_save, sender=User)
 def fill_dummy_data(sender, instance, created, **kwargs):
+    """
+        This function will populate initial data for a newly registered user.
+        
+        - It will create dummy data on the mini web for the user.
+        - It will set up a trial subscription for the user.
+    """
     try: 
         if created:
-            if instance.role == "USER" and instance.subscription_type == "TRIAL":
+            print("IN DUMMY DATA CREATION")
+            if instance.role == "USER":
+                print("ADDING DATA-----------------")
+
+                # mini website data
                 Homepage.objects.create(
                     user=instance,  # Assuming there's a ForeignKey to User
                     description="Vi på BRF X strävar efter att skapa en trygg och trivsam boendemiljö för alla våra medlemmar. Här på infosidan hittar du all nödvändig information om våra fastigheter, viktiga meddelanden och kommande aktiviteter. Titta in regelbundet för att hålla dig uppdaterad om allt som rör vår förening och vårt arbete.",
@@ -41,6 +57,18 @@ def fill_dummy_data(sender, instance, created, **kwargs):
                     title="Välkommen till BRF X!",
                     banner='mini-web-common-banner.jpeg'
                 )
+
+                # subscription data
+                trial_duration_days = settings.TRIAL_DURATION
+                Subscription.objects.create(
+                    user=instance, 
+                    customer=instance.username, 
+                    receipt_email=instance.email,
+                    status="Active",
+                    subscription_expiry=timezone.now() + timedelta(days=trial_duration_days)
+                    # subscription_expiry=timezone.now() + timedelta(days=trial_duration_days)
+                    )
+                
     except Exception as e:
-        print(f"HomePage Create: {e}")
+        print(f"error in new register user data creation: {e}")
 

@@ -125,14 +125,13 @@ class UserRegisterView(APIView):
 
             data = {
                 "body": email_body,
-                "subject": "Account Verification",
+                "subject": "Aktivering av konto",
                 "to": user.email,
             }
-            print(data)
 
             Utils.send_email(data)
             return Response(
-                {"Message": "Please check you Email for verification."},
+                {"Message": "Your account has been created. Please check you email for account activation."},
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
@@ -157,7 +156,7 @@ class VerifyEmail(generics.GenericAPIView):
                 user.save()
             # return render(request, 'emails/verification_success.html')
             return Response(
-                {"Message": "Email Successfully activated"}, status=status.HTTP_200_OK
+                {"Message": "Your account activated successfully."}, status=status.HTTP_200_OK
             )
 
         except jwt.ExpiredSignatureError:
