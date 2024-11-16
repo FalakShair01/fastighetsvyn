@@ -121,6 +121,7 @@ def handle_payment_action_required(invoice):
 
 
 class CreateCheckoutSessionView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CreateCheckoutSessionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
