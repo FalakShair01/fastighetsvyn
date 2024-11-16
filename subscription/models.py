@@ -24,3 +24,6 @@ class Subscription(models.Model):
     subscription_type = models.CharField(max_length=5, choices=TYPE, default="Trial")
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"subscription | {self.user.username}"

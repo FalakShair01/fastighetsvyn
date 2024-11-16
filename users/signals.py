@@ -45,9 +45,7 @@ def fill_dummy_data(sender, instance, created, **kwargs):
     """
     try: 
         if created:
-            print("IN DUMMY DATA CREATION")
             if instance.role == "USER":
-                print("ADDING DATA-----------------")
 
                 # mini website data
                 Homepage.objects.create(

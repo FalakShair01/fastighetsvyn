@@ -10,6 +10,7 @@ from users.models import User
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 import stripe
+from django.utils import timezone
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
@@ -104,5 +105,32 @@ class CheckSubscriptionStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-       serializer = SubscriptionStatusSerializer(request.user)
-       return Response(serializer.data, status=status.HTTP_200_OK)
+       
+        try:
+            # Retrieve the latest subscription for the authenticated user
+            user_subscription = Subscription.objects.filter(user=request.user).order_by('-subscription_expiry').first()
+            
+            if not user_subscription:
+                # Return user details with no active subscription
+                serializer = SubscriptionStatusSerializer(request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            # Check if the subscription is expired
+            if timezone.now() > user_subscription.subscription_expiry:
+                user_subscription.status = "Expired"
+                user_subscription.save()  # Save changes to the subscription
+                
+                # Update user status if required (assuming `status` is a field on the User model)
+                request.user.subscription_status = "Expired"
+                request.user.save()
+
+            # Serialize and return the user's subscription data
+            serializer = SubscriptionStatusSerializer(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
