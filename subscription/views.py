@@ -131,9 +131,10 @@ class CreateCheckoutSessionView(APIView):
 
         current_date = timezone.now()
         user = User.objects.filter(email=email).first()
+        print(user)
 
         trial_subscription = Subscription.objects.filter(
-            user=request.user,
+            user=user,
             is_trial=True,
             status='active',
             end_date__isnull=False,
