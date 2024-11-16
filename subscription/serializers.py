@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import User
-
+from .models import Subscription
 
 class SubscriptionStatusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,3 +12,8 @@ class CreateCheckoutSessionSerializer(serializers.Serializer):
     price_id = serializers.CharField()
     success_url = serializers.URLField()
     cancel_url = serializers.URLField()
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Subscription
+        fields = '__all__'

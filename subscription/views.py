@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SubscriptionStatusSerializer, CreateCheckoutSessionSerializer
+from .serializers import SubscriptionStatusSerializer, CreateCheckoutSessionSerializer, SubscriptionSerializer
 from .models import Subscription
 from django.views.decorators.csrf import csrf_exempt
 from users.models import User
@@ -11,6 +11,8 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 import stripe
 from django.utils import timezone
+from datetime import timedelta
+
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
@@ -19,13 +21,13 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     # endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-    endpoint_secret = 'whsec_d1e093c14f703db2ee8d875ad860c329ce3605bc3b1ee0ce23b7f1cae2de8bd2'
-    print("Payload:", payload)
-    print("Signature Header:", sig_header)
-    print("endpoint_secret:", endpoint_secret)
+    endpoint_secret = settings.STRIPE_TEST_WEBHOOK_SECRET
+    # endpoint_secret = 'whsec_d1e093c14f703db2ee8d875ad860c329ce3605bc3b1ee0ce23b7f1cae2de8bd2'
+    sig_header = request.headers['STRIPE_SIGNATURE']
+
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, "we_1PuF7pDeQrfo0jRqVkuROglQ"
+            payload, sig_header, endpoint_secret
         )
     except ValueError as e:
         print(str(e))
@@ -34,14 +36,22 @@ def stripe_webhook(request):
         print(f"Signature=> {str(e)}")
         return HttpResponse(status=400)
     
-    print(event)
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
-        amount  = payment_intent.get('email')
-        amount  = payment_intent.get('amount')
-        # Fulfill the purchase or update payment status in your database
-        print('Payment succeeded:', payment_intent.id)
-    
+        data = {
+            "status": "Active",
+            "_id": payment_intent.get('id'),
+            "amount": payment_intent.get('amount'),
+            "amount_received": payment_intent.get('amount_received'),
+            "currency": payment_intent.get('currency'),
+            "customer": payment_intent.get("customer"),
+            "receipt_email": payment_intent.get("receipt_email"),
+            "subscription_expiry": timezone.now() + timedelta(days=31),
+            "subscription_type": "Paid",
+        }
+        serializer = SubscriptionSerializer(data=data)  
+        serializer.is_valid(raise_exception=True) 
+        serializer.save()
     return HttpResponse(status=200)
 
 

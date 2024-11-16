@@ -6,12 +6,10 @@ User = get_user_model()
 
 class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    payment_id = models.TextField(null=True, blank=True)
-    price_id = models.TextField(null=True, blank=True)
+    _id = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, default=0)
     amount_received = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, default=0)
-    tax = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     currency = models.CharField(max_length=255, null=True, blank=True)
     customer = models.TextField(null=True, blank=True)
     receipt_email = models.EmailField(null=True, blank=True)
@@ -26,4 +24,4 @@ class Subscription(models.Model):
     updated_at = models.DateField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"subscription | {self.user.username}"
+        return f"subscription | {self.user}"
