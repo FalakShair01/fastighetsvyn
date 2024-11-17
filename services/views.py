@@ -34,6 +34,7 @@ from property.serializers import PropertySerializer
 from property.models import Property
 from users.models import ServiceProvider
 from users.serializers import ServiceProviderSerializer
+from decimal import Decimal
 
 # Create your views here.
 
@@ -92,15 +93,17 @@ class CreateOrderMaintenanceAPIView(APIView):
     
 class ListOrderMaintenanceAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         status_filter = request.query_params.get('status', 'Pending')
+        
         if request.user.role == "ADMIN":
             order_service = OrderMaintenanceServices.objects.filter(status=status_filter)
         else:
             order_service = OrderMaintenanceServices.objects.filter(user=request.user, status=status_filter)
 
         serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
-        
+
         maintenance_ids = [data['maintenance'] for data in serializer.data]
         property_ids = [prop.id for data in serializer.data for prop in Property.objects.filter(id__in=data['properties'])]
 
@@ -113,10 +116,19 @@ class ListOrderMaintenanceAPIView(APIView):
         property_dict = {property.id: PropertySerializer(property).data for property in property_objects}
         total_property_count = Property.objects.filter(user=request.user).count()
 
+        total_cost = 0  # To track the total cost
+
         for data in serializer.data:
-            data['maintenance'] = maintenance_dict.get(data['maintenance'], None)
+            # Calculate cost for each maintenance service
+            maintenance_id = data['maintenance']
+            maintenance = maintenance_dict.get(maintenance_id, None)
+            if maintenance:
+                total_cost += Decimal(maintenance['price'])  # Sum up prices
+            
+            data['maintenance'] = maintenance
             data['properties'] = [property_dict.get(prop_id) for prop_id in data['properties']]
             data['total_property_count'] = total_property_count
+
             if data['service_provider']:
                 service_provider = ServiceProvider.objects.filter(id=data['service_provider']).first()
                 if service_provider:
@@ -128,7 +140,13 @@ class ListOrderMaintenanceAPIView(APIView):
 
             result.append(data)
 
-        return Response(result, status=status.HTTP_200_OK)
+        # Add total cost to the response
+        response_data = {
+            'results': result,
+            'total_cost': total_cost
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class RetrieveOrderMaintenanceAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -255,6 +273,21 @@ class ExternalSelfServiceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Automatically assign the user when creating a new service
         serializer.save(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Calculate total cost for the authenticated user
+        total_cost = sum(
+            float(service.kostnad_per_manad) for service in queryset if service.kostnad_per_manad.isdigit()
+        )
+
+        # Include total cost in the response
+        return Response({
+            "total_cost": total_cost,
+            "results": serializer.data
+        })
 
 class ListDocumentFolderView(APIView):
     def get(self, request, manual_service):
