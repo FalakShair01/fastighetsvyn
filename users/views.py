@@ -31,6 +31,7 @@ from .permissions import IsAdminOrSelf
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from .filters import TenantFilter
+from django.contrib.auth.hashers import check_password
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -199,40 +200,51 @@ class LoginView(APIView):
             serializer = LoginSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             email = serializer.data.get("email").lower()
-            password = serializer.data.get("password")
-            user = authenticate(email=email, password=password)
+            password = serializer.data.get("password") 
+            try:  
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                        {"Message": "No user found with this email."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
             user_data = UserSerializer(user).data
-
-        if user is not None:
-            if user.is_active:
-                token = get_tokens_for_user(user)
-                if user_type == "manager":
-                    return Response(
-                        {
-                            "user": user_data,
-                            "token": token,
-                            "Message": "Login Successful",
-                        },
-                        status=status.HTTP_200_OK,
-                    )
-                else:
-                    return Response(
-                        {
-                            "user": user_data,
-                            "token": token,
-                            "Message": "Login Successful",
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+        
+        if not check_password(password, user.password):
+            return Response(
+                {"Message": "Password are not valid"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if not user.is_verified:
+            return Response(
+            {"Message": "User account is not verified. Please check your email for verification."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+        
+        if user.is_active:
+            token = get_tokens_for_user(user)
+            if user_type == "manager":
+                return Response(
+                    {
+                        "user": user_data,
+                        "token": token,
+                        "Message": "Login Successful",
+                    },
+                    status=status.HTTP_200_OK,
+                )
             else:
                 return Response(
-                    {"Message": "User is not active. Please Contact the Support team."},
-                    status=status.HTTP_403_FORBIDDEN,
+                    {
+                        "user": user_data,
+                        "token": token,
+                        "Message": "Login Successful",
+                    },
+                    status=status.HTTP_200_OK,
                 )
         else:
             return Response(
-                {"Message": "Email and Password are not valid"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"Message": "User is not active. Please Contact the Support team."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
 
