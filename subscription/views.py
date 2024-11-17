@@ -68,13 +68,6 @@ def handle_payment_succeeded(invoice):
     # Extract the plan name from the invoice line items
     plan_name = invoice.get("plan")
     description = invoice.get("description", "Paid")
-    if not plan_name:
-        line_items = invoice.get('lines', {}).get('data', [])
-        plan_name = line_items.get("plan")
-        if not plan_name:
-            price_info = line_items[0].get('price', {})
-            plan_name = price_info.get('nickname')  # Extract plan name from nickname
-
 
     # Retrieve the user by email
     user = User.objects.filter(email=customer_email).first()
