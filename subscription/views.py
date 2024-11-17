@@ -59,15 +59,21 @@ def stripe_webhook(request):
     return JsonResponse({'status': 'success'}, status=200)
 
 def handle_payment_succeeded(invoice):
-
     customer_email = invoice.get('customer_email')
     amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
     invoice_link = invoice.get('hosted_invoice_url')
     invoice_pdf = invoice.get('invoice_pdf')
     
     # Extract the plan name from the invoice line items
-    plan_name = invoice.get("plan")
-    description = invoice.get("description", "Paid")
+    line_items = invoice.get("lines", {}).get("data", [])
+    plan_name = None
+
+    if line_items:
+        # Attempt to extract plan name or price nickname
+        plan_name = line_items[0].get("plan", {}).get("nickname") or line_items[0].get("price", {}).get("nickname")
+    
+    description = invoice.get("description", "Original")
+    plan_name = plan_name or description or "Original"
 
     # Retrieve the user by email
     user = User.objects.filter(email=customer_email).first()
@@ -90,10 +96,9 @@ def handle_payment_succeeded(invoice):
     subscription.retry_count = 0
     subscription.save()
 
-
     # Update the user's subscription status and type
     user.subscription_status = "ACTIVE"
-    user.subscription_type = plan_name or description 
+    user.subscription_type = plan_name
     user.save(update_fields=["subscription_status", "subscription_type"])
 
     print(f"Payment succeeded for subscription: {subscription.id}")
