@@ -65,7 +65,15 @@ def handle_payment_succeeded(invoice):
     amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
     invoice_link = invoice.get('hosted_invoice_url')
     invoice_pdf = invoice.get('invoice_pdf')
-    plan = invoice.get('invoice_pdf')
+    
+    # Extract the plan name from the invoice line items
+    plan_name = invoice.get("plan")
+    if not plan_name:
+        line_items = invoice.get('lines', {}).get('data', [])
+        if line_items:
+            price_info = line_items[0].get('price', {})
+            plan_name = price_info.get('nickname')  # Extract plan name from nickname
+
 
     # Retrieve the user by email
     user = User.objects.filter(email=customer_email).first()
@@ -81,7 +89,7 @@ def handle_payment_succeeded(invoice):
 
     # Update the subscription record
     subscription.stripe_subscription_id = invoice.get('subscription')  # Set the subscription ID
-    subscription.plan = plan
+    subscription.plan = plan_name
     subscription.last_payment_amount = amount_paid
     subscription.status = 'active'
     subscription.end_date = timezone.now() + timedelta(days=31)  # Update based on billing period
@@ -91,7 +99,7 @@ def handle_payment_succeeded(invoice):
 
     # Update the user's subscription status and type
     user.subscription_status = "ACTIVE"
-    user.subscription_type = subscription.plan
+    user.subscription_type = plan_name
     user.save(update_fields=["subscription_status", "subscription_type"])
 
     print(f"Payment succeeded for subscription: {subscription.id}")
@@ -176,6 +184,7 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=cancel_url,
                 customer_email=email,
             )
+            print(f"session: {session}")
 
             # Create a subscription record without the `stripe_subscription_id` (to be updated later)
             Subscription.objects.create(
