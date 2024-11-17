@@ -158,6 +158,7 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=cancel_url,
                 customer_email=email,
             )
+            print(f"checkout session: {session}")
 
             Subscription.objects.create(
                 user=user,
