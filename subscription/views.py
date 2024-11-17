@@ -110,7 +110,7 @@ def handle_payment_failed(invoice):
         subscription.save()
 
         user = subscription.user
-        user.subscription_status = 'past_due' if subscription.retry_count <= subscription.max_retries else 'expired'
+        user.subscription_status = 'EXPIRED'
         user.save(update_fields=["subscription_status"])
         print(f"Payment failed for subscription: {subscription_id}")
 
@@ -124,7 +124,7 @@ def handle_subscription_deleted(subscription):
         subscription.save()
 
         user = subscription.user
-        user.subscription_status = 'expired'
+        user.subscription_status = 'EXPIRED'
         user.save(update_fields=["subscription_status"])
         print(f"Subscription deleted: {subscription_id}")
 
