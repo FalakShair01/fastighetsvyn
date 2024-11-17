@@ -32,7 +32,7 @@ from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from .filters import TenantFilter
 from django.contrib.auth.hashers import check_password
-
+from django.http import HttpResponse
 
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -155,8 +155,10 @@ class VerifyEmail(generics.GenericAPIView):
                 user.is_verified = True
                 user.save()
             # return render(request, 'emails/verification_success.html')
-            return Response(
-                {"Message": "Your account activated successfully."}, status=status.HTTP_200_OK
+            return HttpResponse(
+                "<h1>Your account has been activated successfully!</h1><p>You can now log in and start using our services.</p>",
+                content_type="text/html",
+                status=status.HTTP_200_OK,
             )
 
         except jwt.ExpiredSignatureError:
