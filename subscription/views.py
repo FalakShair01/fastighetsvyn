@@ -58,27 +58,43 @@ def stripe_webhook(request):
 
     return JsonResponse({'status': 'success'}, status=200)
 
-    
 def handle_payment_succeeded(invoice):
-    print(f"invoice: {invoice}")
-    subscription_id = invoice.get('subscription')
-    print(f"SUBSCRIPTION ID: {subscription_id}")
+    print(f"Invoice: {invoice}")
+
+    customer_email = invoice.get('customer_email')
     amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
-    subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
-    print(subscriptions)
+    invoice_link = invoice.get('hosted_invoice_url')
+    invoice_pdf = invoice.get('invoice_pdf')
+    plan = invoice.get('invoice_pdf')
 
-    for subscription in subscriptions:
-        subscription.last_payment_amount = amount_paid
-        subscription.status = 'active'
-        subscription.end_date = timezone.now() + timedelta(days=31)  # Replace with actual billing period if needed
-        subscription.retry_count = 0
-        subscription.save()
+    # Retrieve the user by email
+    user = User.objects.filter(email=customer_email).first()
+    if not user:
+        print(f"No user found with email {customer_email}")
+        return
 
-        user = subscription.user
-        user.subscription_status = "ACTIVE"
-        user.subscription_type = subscription.plan
-        user.save(update_fields=["subscription_status", "subscription_type"])
-        print(f"Payment succeeded for subscription: {subscription_id}")
+    # Fetch the latest subscription for this user
+    subscription = Subscription.objects.filter(user=user).order_by('-created_at').first()
+    if not subscription:
+        print(f"No subscription found for user {customer_email}")
+        return
+
+    # Update the subscription record
+    subscription.stripe_subscription_id = invoice.get('subscription')  # Set the subscription ID
+    subscription.plan = plan
+    subscription.last_payment_amount = amount_paid
+    subscription.status = 'active'
+    subscription.end_date = timezone.now() + timedelta(days=31)  # Update based on billing period
+    subscription.retry_count = 0
+    subscription.save()
+
+
+    # Update the user's subscription status and type
+    user.subscription_status = "ACTIVE"
+    user.subscription_type = subscription.plan
+    user.save(update_fields=["subscription_status", "subscription_type"])
+
+    print(f"Payment succeeded for subscription: {subscription.id}")
 
 
 def handle_payment_failed(invoice):
@@ -134,7 +150,9 @@ class CreateCheckoutSessionView(APIView):
 
         current_date = timezone.now()
         user = User.objects.filter(email=email).first()
-        print(user)
+
+        if not user:
+            return Response({"error": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
         trial_subscription = Subscription.objects.filter(
             user=user,
@@ -158,13 +176,12 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=cancel_url,
                 customer_email=email,
             )
-            print(f"checkout session: {session}")
 
+            # Create a subscription record without the `stripe_subscription_id` (to be updated later)
             Subscription.objects.create(
                 user=user,
-                stripe_subscription_id=session.get('subscription'),
                 stripe_customer_id=session.get('customer'),
-                plan=price_id,
+                stripe_price_id=price_id,
                 status='pending',
                 start_date=current_date,
                 is_trial=False,

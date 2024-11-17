@@ -15,6 +15,7 @@ class Subscription(models.Model):
     user = models.ForeignKey(User, related_name='subscriptions', on_delete=models.CASCADE, null=True)
     stripe_subscription_id = models.CharField(max_length=255, null=True, blank=True)
     stripe_customer_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_price_id = models.CharField(max_length=255, null=True, blank=True)
     plan = models.CharField(max_length=255, null=True, blank=True)  # Plan name or details
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     start_date = models.DateTimeField(auto_now_add=True)
