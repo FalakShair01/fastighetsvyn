@@ -60,9 +60,12 @@ def stripe_webhook(request):
 
     
 def handle_payment_succeeded(invoice):
+    print(f"invoice: {invoice}")
     subscription_id = invoice.get('subscription')
+    print(f"SUBSCRIPTION ID: {subscription_id}")
     amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
     subscriptions = Subscription.objects.filter(stripe_subscription_id=subscription_id)
+    print(subscriptions)
 
     for subscription in subscriptions:
         subscription.last_payment_amount = amount_paid
