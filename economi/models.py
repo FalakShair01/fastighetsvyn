@@ -15,9 +15,9 @@ class Expense(models.Model):
     type_of_transaction = models.CharField(max_length=255)
     type_of_cost_or_revenue = models.CharField(max_length=255)
     date_of_transaction = models.DateField(null=True)
-    total_sum = models.DecimalField(max_digits=10, decimal_places=2)
+    total_sum = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     value_added_tax = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=10, decimal_places=2, default=0
     )
     account = models.TextField(null=True)
     building = models.ForeignKey(

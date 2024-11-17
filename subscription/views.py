@@ -67,9 +67,11 @@ def handle_payment_succeeded(invoice):
     
     # Extract the plan name from the invoice line items
     plan_name = invoice.get("plan")
+    description = invoice.get("description", "Paid")
     if not plan_name:
         line_items = invoice.get('lines', {}).get('data', [])
-        if line_items:
+        plan_name = line_items.get("plan")
+        if not plan_name:
             price_info = line_items[0].get('price', {})
             plan_name = price_info.get('nickname')  # Extract plan name from nickname
 
@@ -98,7 +100,7 @@ def handle_payment_succeeded(invoice):
 
     # Update the user's subscription status and type
     user.subscription_status = "ACTIVE"
-    user.subscription_type = plan_name
+    user.subscription_type = plan_name or description 
     user.save(update_fields=["subscription_status", "subscription_type"])
 
     print(f"Payment succeeded for subscription: {subscription.id}")
