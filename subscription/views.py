@@ -59,7 +59,6 @@ def stripe_webhook(request):
     return JsonResponse({'status': 'success'}, status=200)
 
 def handle_payment_succeeded(invoice):
-    print(f"Invoice: {invoice}")
 
     customer_email = invoice.get('customer_email')
     amount_paid = invoice.get('amount_paid') / 100  # Convert cents to dollars
@@ -184,7 +183,6 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=cancel_url,
                 customer_email=email,
             )
-            print(f"session: {session}")
 
             # Create a subscription record without the `stripe_subscription_id` (to be updated later)
             Subscription.objects.create(
