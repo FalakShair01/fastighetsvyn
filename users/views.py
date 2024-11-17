@@ -51,8 +51,7 @@ class UserViewset(viewsets.ModelViewSet):
         request.data["password"] = generated_password
 
         # # add this true because user is added by admin
-        # request.data["is_active"] = True
-        # request.data["is_verified"] = True
+        request.data["is_verified"] = True
 
         # Use the serializer to create the user
         serializer = self.get_serializer(data=request.data)
