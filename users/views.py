@@ -154,7 +154,7 @@ class VerifyEmail(generics.GenericAPIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
-            # return render(request, 'emails/verification_success.html')
+                Utils.replicate_dummy_data(user)
             return HttpResponse(
                 "<h1>Your account has been activated successfully!</h1><p>You can now log in and start using our services.</p>",
                 content_type="text/html",

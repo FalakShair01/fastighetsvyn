@@ -51,35 +51,6 @@ class Property(models.Model):
             self.byggnad = self.gatuadress
         super(Property, self).save(*args, **kwargs)
 
-    # def save(self, *args, **kwargs):
-    #     if not self.latitude or not self.longitude or self.address != self._original_address:
-    #         # If latitude or longitude is not set, or if the address has changed, fetch them from the new address
-    #         address = self.address
-    #         url = 'https://nominatim.openstreetmap.org/search?q=' + urllib.parse.quote(address) + '&format=json'
-
-    #         try:
-    #             response = requests.get(url).json()
-
-    #             if response:
-    #                 # Check if response has data
-    #                 latitude = response[0]["lat"]
-    #                 longitude = response[0]["lon"]
-
-    #                 # Update the instance with the fetched latitude and longitude
-    #                 self.latitude = latitude
-    #                 self.longitude = longitude
-
-    #         except requests.RequestException as e:
-    #             # Handle request exception (e.g., connection error, timeout)
-    #             print(f"Error fetching coordinates: {e}")
-
-    #     super(Property, self).save(*args, **kwargs)
-
-    # def __init__(self, *args, **kwargs):
-    #     super(Property, self).__init__(*args, **kwargs)
-    #     self._original_address = self.address
-
-
 class Folder(models.Model):
     property = models.ForeignKey(
         Property, on_delete=models.CASCADE, related_name="folders", null=True

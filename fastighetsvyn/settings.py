@@ -199,7 +199,8 @@ CORS_ALLOWED_ORIGINS = [
 # FRONTEND_DOMAIN = 'http://localhost:3000'
 # FRONTEND_DOMAIN = 'https://fastighetsvyn.se'
 FRONTEND_DOMAIN = "https://fastvyn.se"
-
+STRIPE_PAYMENT_SUCCESS = f"{FRONTEND_DOMAIN}/payment-success"
+STRIPE_PAYMENT_FAILED = f"{FRONTEND_DOMAIN}/payment-failed"
 
 # STRIPE
 STRIPE_TEST_PUBLIC_KEY = config("STRIPE_TEST_PUBLIC_KEY")

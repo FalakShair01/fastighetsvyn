@@ -152,8 +152,7 @@ class CreateCheckoutSessionView(APIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         price_id = serializer.validated_data['price_id']
-        success_url = serializer.validated_data['success_url']
-        cancel_url = serializer.validated_data['cancel_url']
+        
 
         current_date = timezone.now()
         user = User.objects.filter(email=email).first()
@@ -179,8 +178,8 @@ class CreateCheckoutSessionView(APIView):
                 payment_method_types=['card'],
                 line_items=[{'price': price_id, 'quantity': 1}],
                 mode='subscription',
-                success_url=success_url,
-                cancel_url=cancel_url,
+                success_url=settings.STRIPE_PAYMENT_SUCCESS,
+                cancel_url=settings.STRIPE_PAYMENT_FAILED,
                 customer_email=email,
             )
 
