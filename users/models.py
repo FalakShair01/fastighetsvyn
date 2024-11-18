@@ -102,8 +102,15 @@ class User(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         if not self.username_slug:
-            self.username_slug = slugify(self.username)
+            base_slug = slugify(self.username)
+            slug = base_slug
+            counter = 1
+            while User.objects.filter(username_slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.username_slug = slug
         super(User, self).save(*args, **kwargs)
+
 
 
 # imported here to avoid circular import
