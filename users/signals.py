@@ -37,16 +37,21 @@ def send_demo_notification_to_admin(sender, instance, created, **kwargs):
 def create_trial_subscription(sender, instance, created, **kwargs):
     if created:
         if instance.role == "USER":
-            # Create a trial subscription for the new user
+            # Calculate end date
+            end_date=timezone.now() + timedelta(minutes=settings.TRIAL_DURATION)
+            
+            # Create trial subscription
             Subscription.objects.create(
                 user=instance,
                 is_trial=True,
                 status='active',
                 start_date=timezone.now(),
-                # end_date=timezone.now() + timedelta(days=settings.TRIAL_DURATION)
-                end_date=timezone.now() + timedelta(minutes=settings.TRIAL_DURATION)
-            )  
-
+                end_date=end_date,
+            )
+            
+            # Update user's subscription expiry
+            instance.subscription_expiry = end_date
+            instance.save(update_fields=["subscription_expiry"])
 
 # Add Dummy data to every Register user if they their role is User
 @receiver(post_save, sender=User)

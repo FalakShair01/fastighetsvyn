@@ -68,6 +68,7 @@ class User(AbstractBaseUser):
     subscription_status = models.CharField(
         max_length=7, choices=SUB_STATUS, default="ACTIVE"
     )
+    subscription_expiry=models.DateTimeField(null=True, blank=True)
     allow_access_account = models.BooleanField(default=False)
     username_slug = models.SlugField(blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)

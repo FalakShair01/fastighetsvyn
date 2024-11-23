@@ -88,18 +88,20 @@ def handle_payment_succeeded(invoice):
         return
 
     # Update the subscription record
+    end_date = timezone.now() + timedelta(days=31)
     subscription.stripe_subscription_id = invoice.get('subscription')  # Set the subscription ID
     subscription.plan = plan_name
     subscription.last_payment_amount = amount_paid
     subscription.status = 'active'
-    subscription.end_date = timezone.now() + timedelta(days=31)  # Update based on billing period
+    subscription.end_date = end_date  # Update based on billing period
     subscription.retry_count = 0
     subscription.save()
 
     # Update the user's subscription status and type
     user.subscription_status = "ACTIVE"
     user.subscription_type = plan_name
-    user.save(update_fields=["subscription_status", "subscription_type"])
+    user.subscription_expiry = end_date
+    user.save(update_fields=["subscription_status", "subscription_type", "subscription_expiry"])
 
     print(f"Payment succeeded for subscription: {subscription.id}")
 
