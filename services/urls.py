@@ -24,7 +24,8 @@ from .views import (
     CreateOrderServiceFileView,
     DeleteOrderServiceFileView,
     RetrieveOrderMaintenanceAPIView,
-    ListOrderServiceFileView
+    ListOrderServiceFileView,
+    CombinedServicesAPIView
 )
 
 router = DefaultRouter()
@@ -61,5 +62,6 @@ urlpatterns = [
     path('service/file/list/<int:folder_id>/', FileRetrieveAPIView.as_view(), name='document-create'),
     path('service/file/delete/<int:pk>/', FileDeleteAPIView.as_view(), name='document-delete'),
     path('service/file/upload/', UploadFileAPIView.as_view(), name='document-upload'),
+    path('combined-services/', CombinedServicesAPIView.as_view(), name='combine-service'),
     path("", include(router.urls)),
     ]
