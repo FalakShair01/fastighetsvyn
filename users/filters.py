@@ -28,4 +28,7 @@ class TenantFilter(filters.FilterSet):
         return queryset.filter(phone__in=phones) 
 
     def filter_by_comments(self, queryset, name, value):
-        return queryset.filter(comment__icontains=value) 
+        if value.lower() == "no":
+            return queryset.filter(comment__isnull=True)
+        if value.lower() == "yes":
+            return queryset.filter(comment__isnull=False).exclude(comment__exact='')
