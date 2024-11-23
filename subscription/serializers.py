@@ -16,3 +16,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model= Subscription
         fields = '__all__'
+
+class ExtendSubscriptionSerializer(serializers.Serializer):
+    user_email = serializers.EmailField()
+    extension_days = serializers.IntegerField(min_value=1, help_text="Number of days to extend the subscription")

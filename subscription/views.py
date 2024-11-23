@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SubscriptionStatusSerializer, CreateCheckoutSessionSerializer, SubscriptionSerializer
+from .serializers import SubscriptionStatusSerializer, CreateCheckoutSessionSerializer, SubscriptionSerializer, ExtendSubscriptionSerializer
 from .models import Subscription
 from django.views.decorators.csrf import csrf_exempt
 from users.models import User
@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 import stripe
 from django.utils import timezone
 from datetime import timedelta
-
+from users.Utils import Utils
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
@@ -102,8 +102,25 @@ def handle_payment_succeeded(invoice):
     user.subscription_type = plan_name
     user.subscription_expiry = end_date
     user.save(update_fields=["subscription_status", "subscription_type", "subscription_expiry"])
-
     print(f"Payment succeeded for subscription: {subscription.id}")
+
+    send_invoice_email(user, invoice_link)
+
+def send_invoice_email(user, invoice_link):
+    data = {
+        "to": user.email,
+        "subject": "Your Invoice and Subscription Details from Fastighetsvyn",
+        "body": f"""
+            <p>Thank you for subscribing to Fastighetsvyn!</p>
+            <p>Hi {user.username}, we are excited to inform you that your subscription has been activated. Here are the details:</p>
+            <p>You can view or download your invoice by clicking the link below:</p>
+            <p><a href="{invoice_link}" style="color: #007bff; text-decoration: none;">View Invoice</a></p>
+            <p>If you have any questions or need assistance, please don’t hesitate to contact us at <a href="mailto:support@fastighetsvyn.com">support@fastighetsvyn.com</a>.</p>
+            <p>Thank you for choosing Fastighetsvyn!</p>
+            <p>Best regards,<br>The Fastighetsvyn Team</p>
+        """
+    }
+    Utils.send_email(data)
 
 
 def handle_payment_failed(invoice):
@@ -265,3 +282,53 @@ class CheckSubscriptionStatus(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+class ExtendSubscriptionView(APIView):
+    """
+    API to extend a user's subscription end date and update it in the User table.
+    """
+    def post(self, request):
+        serializer = ExtendSubscriptionSerializer(data=request.data)
+        if serializer.is_valid():
+            user_email = serializer.validated_data['user_email']
+            extension_days = serializer.validated_data['extension_days']
+
+            # Get the user
+            user = User.objects.filter(email=user_email).first()
+            if not user:
+                return Response(
+                    {"error": "User not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Get the latest active subscription for the user
+            subscription = Subscription.objects.filter(user=user, status='active').order_by('-end_date').first()
+            if not subscription:
+                return Response(
+                    {"error": "Active subscription not found for this user."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Calculate the new end date
+            if subscription.end_date:
+                new_end_date = subscription.end_date + timedelta(days=extension_days)
+            else:
+                new_end_date = timezone.now() + timedelta(days=extension_days)
+
+            # Update the subscription end date
+            subscription.end_date = new_end_date
+            subscription.save()
+
+            # Update the User table with the new subscription end date
+            user.subscription_expiry = new_end_date
+            user.save()
+
+            return Response(
+                {
+                    "message": "Subscription extended successfully.",
+                    "new_end_date": new_end_date.strftime("%Y-%m-%d %H:%M:%S")
+                },
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
