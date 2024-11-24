@@ -382,20 +382,21 @@ class CombinedServicesAPIView(APIView):
         # Get External Self Service data
         external_services = ExternalSelfServices.objects.filter(user=request.user).order_by('-created_at')
         external_service_serializer = ExternalSelfServicesSerializer(external_services, many=True, context={'request': request})
-        
+
         # Calculate total cost for external services
         total_external_cost = sum(
             float(service['kostnad_per_manad']) for service in external_service_serializer.data if str(service['kostnad_per_manad']).isdigit()
         )
+
+        # Get Order Maintenance data
         order_service = OrderMaintenanceServices.objects.filter(user=request.user, status="Active")
-        
         order_service_serializer = OrderMaintenanceServicesSerializer(order_service, many=True)
 
         maintenance_ids = [data['maintenance'] for data in order_service_serializer.data]
         property_ids = [
             prop.id for data in order_service_serializer.data for prop in Property.objects.filter(id__in=data['properties'])
         ]
-        
+
         # Prefetch Maintenance and Properties
         maintenance_objects = Maintenance.objects.filter(id__in=maintenance_ids)
         property_objects = Property.objects.filter(id__in=property_ids)
@@ -407,14 +408,14 @@ class CombinedServicesAPIView(APIView):
 
         total_order_cost = 0  # To track the total cost of orders
         combined_result = []
-        
+
         # Add order maintenance data
         for data in order_service_serializer.data:
             maintenance_id = data['maintenance']
             maintenance = maintenance_dict.get(maintenance_id, None)
             if maintenance:
                 total_order_cost += Decimal(maintenance['price'])  # Sum up prices
-                
+
             data['maintenance'] = maintenance
             data['properties'] = [property_dict.get(prop_id) for prop_id in data['properties']]
             data['total_property_count'] = total_property_count
@@ -429,14 +430,15 @@ class CombinedServicesAPIView(APIView):
                 data['service_provider'] = None
 
             combined_result.append(data)
-        
-        # Combine the results from both ExternalSelfServices and OrderMaintenanceServices
-        combined_data = {
-            "total_external_cost": total_external_cost,
-            "external_services": external_service_serializer.data,
-            "total_order_cost": total_order_cost,
-            "order_maintenance": combined_result,
-            "sum": Decimal(total_external_cost) + Decimal(total_order_cost)
-        }
-        
-        return Response(combined_data, status=status.HTTP_200_OK)
+
+        # Combine External Self Services and Order Maintenance into a single list
+        results = external_service_serializer.data + combined_result
+
+        # Calculate total cost
+        total_cost = Decimal(total_external_cost) + Decimal(total_order_cost)
+
+        # Return the response with the required structure
+        return Response({
+            "total_cost": total_cost,
+            "results": results
+        }, status=status.HTTP_200_OK)
