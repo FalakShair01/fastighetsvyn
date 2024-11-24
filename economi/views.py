@@ -55,6 +55,7 @@ class BalanceIllustrationView(APIView):
         # Parse start_date and end_date from query params, if available
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
+        past_30_days = timezone.now() - timedelta(days=30)
 
         # Convert start_date and end_date to date objects if provided, otherwise None
         if start_date_str:
@@ -87,6 +88,10 @@ class BalanceIllustrationView(APIView):
         cost_monthly_data = cost_expenses.annotate(month=TruncMonth('date_of_transaction')).values('month').annotate(
             total_sum=Sum('total_sum')
         ).order_by('month')
+
+        past_30_days_cost = Expense.objects.filter(
+            user=user, type_of_transaction='Cost', date_of_transaction__gte=past_30_days
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
 
         total_cost_sum = cost_monthly_data.aggregate(Sum('total_sum'))['total_sum__sum'] or 0
         
@@ -121,16 +126,21 @@ class BalanceIllustrationView(APIView):
             total_sum=Sum('total_sum')
         )['total_sum'] or 0
 
+        past_30_days_revenue = Expense.objects.filter(
+            user=user, type_of_transaction='Revenue', date_of_transaction__gte=past_30_days
+        ).aggregate(total_sum=Sum('total_sum'))['total_sum'] or 0
+
+
         # Calculate the percentage for Cost
         if cost_monthly_average > 0:
-            cost_percentage = (current_month_cost / cost_monthly_average) * 100
+            cost_percentage = (past_30_days_cost / cost_monthly_average) * 100
             cost_percentage = min(cost_percentage, 100)  # Cap at 100%
         else:
             cost_percentage = 0
 
         # Calculate the percentage for Revenue
         if revenue_monthly_average > 0:
-            revenue_percentage = (current_month_revenue / revenue_monthly_average) * 100
+            revenue_percentage = (past_30_days_revenue / revenue_monthly_average) * 100
             revenue_percentage = min(revenue_percentage, 100)  # Cap at 100%
 
             # Subtract 0.1 from the percentage if it is exactly 100
