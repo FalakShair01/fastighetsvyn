@@ -436,7 +436,7 @@ class CombinedServicesAPIView(APIView):
             "external_services": external_service_serializer.data,
             "total_order_cost": total_order_cost,
             "order_maintenance": combined_result,
-            "sum": total_external_cost + total_order_cost
+            "sum": Decimal(total_external_cost) + Decimal(total_order_cost)
         }
         
         return Response(combined_data, status=status.HTTP_200_OK)
