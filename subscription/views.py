@@ -64,17 +64,6 @@ def handle_payment_succeeded(invoice):
     invoice_link = invoice.get('hosted_invoice_url')
     invoice_pdf = invoice.get('invoice_pdf')
     
-    # Extract the plan name from the invoice line items
-    line_items = invoice.get("lines", {}).get("data", [])
-    plan_name = None
-
-    if line_items:
-        # Attempt to extract plan name or price nickname
-        plan_name = line_items[0].get("plan", {}).get("nickname") or line_items[0].get("price", {}).get("nickname")
-    
-    description = invoice.get("description", "Original")
-    plan_name = plan_name or description or "Original"
-
     # Retrieve the user by email
     user = User.objects.filter(email=customer_email).first()
     if not user:
@@ -90,7 +79,6 @@ def handle_payment_succeeded(invoice):
     # Update the subscription record
     end_date = timezone.now() + timedelta(days=31)
     subscription.stripe_subscription_id = invoice.get('subscription')  # Set the subscription ID
-    subscription.plan = plan_name
     subscription.last_payment_amount = amount_paid
     subscription.status = 'active'
     subscription.end_date = end_date  # Update based on billing period
@@ -99,7 +87,7 @@ def handle_payment_succeeded(invoice):
 
     # Update the user's subscription status and type
     user.subscription_status = "ACTIVE"
-    user.subscription_type = plan_name
+    user.subscription_type = subscription.plan
     user.subscription_expiry = end_date
     user.save(update_fields=["subscription_status", "subscription_type", "subscription_expiry"])
     print(f"Payment succeeded for subscription: {subscription.id}")
@@ -171,7 +159,6 @@ class CreateCheckoutSessionView(APIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         price_id = serializer.validated_data['price_id']
-        
 
         current_date = timezone.now()
         user = User.objects.filter(email=email).first()
@@ -196,11 +183,24 @@ class CreateCheckoutSessionView(APIView):
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{'price': price_id, 'quantity': 1}],
-                mode='subscription',
+                mode='subscription', # recuring
+                # mode="payment"  # one-time
                 success_url=settings.STRIPE_PAYMENT_SUCCESS,
                 cancel_url=settings.STRIPE_PAYMENT_FAILED,
                 customer_email=email,
             )
+            
+            # TODO: Remove this is later when we will use dynamic package
+            products = stripe.Product.list(active=True)
+
+            for product in products.data:
+                # Fetch all prices for each product
+                prices = stripe.Price.list(product=product.id)
+
+                for price in prices.data:
+                    if price.id == price_id:
+                        plan_name = product.name
+                print(plan_name)
 
             # Create a subscription record without the `stripe_subscription_id` (to be updated later)
             Subscription.objects.create(
@@ -210,9 +210,10 @@ class CreateCheckoutSessionView(APIView):
                 status='pending',
                 start_date=current_date,
                 is_trial=False,
+                plan=plan_name
             )
 
-            return Response({'sessionId': session.id, 'url': session.url}, status=status.HTTP_200_OK)
+            return Response({'sessionId': session.id, 'url': session.url, "Session": session}, status=status.HTTP_200_OK)
 
         except stripe.error.StripeError as e:
             print(f"Stripe error: {str(e)}")
