@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from property.models import Property
-from services.models import OrderMaintenanceServices
+from services.models import OrderMaintenanceServices, ExternalSelfServices
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import ServiceProviderSerializer
 from django.db.models import Sum, Avg, Count
@@ -37,6 +37,8 @@ class UserDashboardstatusCount(APIView):
         # Count active maintenance services
         active_maintenance_count = active_maintenance_services.count()
 
+        self_maintenance_service_count = ExternalSelfServices.objects.filter(user=request.user).count()
+
         # Calculate the fixed maintenance cost (sum of prices of active services)
         fixed_cost = active_maintenance_services.aggregate(
             total_cost=Sum('maintenance__price')
@@ -45,7 +47,7 @@ class UserDashboardstatusCount(APIView):
         data = {
             "buildings": building_count,
             "appartments": total_apartments,
-            "active_maintenance": active_maintenance_count,
+            "active_maintenance": int(active_maintenance_count) + int(self_maintenance_service_count),
             "fixed_maintenance": fixed_cost,
         }
         return Response(data, status=status.HTTP_200_OK)
