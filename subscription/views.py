@@ -200,7 +200,6 @@ class CreateCheckoutSessionView(APIView):
                 for price in prices.data:
                     if price.id == price_id:
                         plan_name = product.name
-                print(plan_name)
 
             # Create a subscription record without the `stripe_subscription_id` (to be updated later)
             Subscription.objects.create(

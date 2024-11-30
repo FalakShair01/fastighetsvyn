@@ -24,7 +24,7 @@ class Utils:
             email = EmailMessage(
                 subject=data["subject"],
                 body=data["body"],
-                from_email="Support Fastighetsvyn <fastighetsvyn2@gmail.com>",
+                from_email="Stöd Fastighetsvyn <fastvyn@gmail.com>",
                 to=to_emails,
             )
             email.content_subtype = "html"
