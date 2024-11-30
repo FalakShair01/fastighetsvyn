@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.db.models.functions import TruncMonth
 from blog.models import Blog
 from feedback.models import UserFeedback
+from decimal import Decimal
 # Create your views here.
 
 
@@ -20,7 +21,7 @@ class UserDashboardstatusCount(APIView):
 
     def get(self, request):
         properties = Property.objects.filter(user=request.user)
-        
+
         # Count the number of buildings
         building_count = properties.count()
 
@@ -37,12 +38,21 @@ class UserDashboardstatusCount(APIView):
         # Count active maintenance services
         active_maintenance_count = active_maintenance_services.count()
 
+        # Count external self-maintenance services
         self_maintenance_service_count = ExternalSelfServices.objects.filter(user=request.user).count()
 
-        # Calculate the fixed maintenance cost (sum of prices of active services)
-        fixed_cost = active_maintenance_services.aggregate(
+        # Calculate the fixed maintenance cost for OrderMaintenanceServices
+        order_maintenance_cost = active_maintenance_services.aggregate(
             total_cost=Sum('maintenance__price')
         )['total_cost'] or 0
+
+        # Calculate the fixed maintenance cost for ExternalSelfServices
+        external_service_cost = ExternalSelfServices.objects.filter(user=request.user).aggregate(
+            total_cost=Sum('kostnad_per_manad')
+        )['total_cost'] or 0
+
+        # Total fixed maintenance cost
+        fixed_cost = Decimal(order_maintenance_cost) + Decimal(external_service_cost)
 
         data = {
             "buildings": building_count,
