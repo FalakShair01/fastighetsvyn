@@ -32,6 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_verified",
             "subscription_type",
             "subscription_status",
+            "subscription_expiry",
             "allow_access_account",
             "username_slug",
             "created_at",
