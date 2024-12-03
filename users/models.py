@@ -43,6 +43,8 @@ class MyUserManager(BaseUserManager):
             email, password=password, username=username, role="ADMIN", **kwargs
         )
         user.is_admin = True
+        user.is_verified = True
+        user.is_active = True
         user.save(using=self._db)
         return user
 

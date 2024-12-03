@@ -123,17 +123,7 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql', 
-#         # 'NAME': config("DB_NAME"),
-#         'NAME': "fastighetsvyn$fastvyn-db",
-#         'USER': "fastighetsvyn",
-#         'PASSWORD': "root@admin",
-#         'HOST': "fastighetsvyn.mysql.pythonanywhere-services.com",  # Or an IP Address that your DB is hosted on
-#         'CHARSET': 'utf8',
-#     }
-# }
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
