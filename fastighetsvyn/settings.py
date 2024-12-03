@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-he7o*mcjlz-=e!b_4f5hdy09rc(#b=^&wm#ge=5kzi1kg_1k-q"
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -123,7 +123,17 @@ DATABASES = {
     }
 }
 
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql', 
+#         # 'NAME': config("DB_NAME"),
+#         'NAME': "fastighetsvyn$fastvyn-db",
+#         'USER': "fastighetsvyn",
+#         'PASSWORD': "root@admin",
+#         'HOST': "fastighetsvyn.mysql.pythonanywhere-services.com",  # Or an IP Address that your DB is hosted on
+#         'CHARSET': 'utf8',
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

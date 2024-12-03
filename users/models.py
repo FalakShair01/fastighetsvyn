@@ -15,7 +15,7 @@ def upload_to(instance, filename):
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, username, phone, role, password=None):
+    def create_user(self, email, username, phone, role, password=None, **kwargs):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -28,6 +28,7 @@ class MyUserManager(BaseUserManager):
             username=username,
             phone=phone,
             role=role,
+            **kwargs
         )
         user.set_password(password)
         user.save(using=self._db)
