@@ -76,3 +76,27 @@ def fill_dummy_data(sender, instance, created, **kwargs):
     except Exception as e:
         print(f"error in new register user data creation: {e}")
 
+@receiver(post_save, sender=User)
+def update_subscription_on_user_change(sender, instance, **kwargs):
+    # Check if subscription_expiry is set
+    if instance.subscription_expiry:
+        # Update all related subscriptions
+        subscriptions = Subscription.objects.filter(user=instance)
+        for subscription in subscriptions:
+            # Update `end_date` in Subscription table
+            subscription.end_date = instance.subscription_expiry
+            
+            # Update `status` in Subscription table
+            if instance.subscription_expiry > timezone.now():
+                subscription.status = 'active'
+            else:
+                subscription.status = 'expired'
+            
+            subscription.save()
+
+        # Update `subscription_status` in User table
+        if instance.subscription_expiry > timezone.now():
+            instance.subscription_status = "ACTIVE"
+        else:
+            instance.subscription_status = "EXPIRED"
+        instance.save(update_fields=['subscription_status'])
