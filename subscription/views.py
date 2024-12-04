@@ -317,10 +317,12 @@ class ExtendSubscriptionView(APIView):
 
             # Update the subscription end date
             subscription.end_date = new_end_date
+            subscription.status = "active"
             subscription.save()
 
             # Update the User table with the new subscription end date
             user.subscription_expiry = new_end_date
+            user.subscription_status = "ACTIVE"
             user.save()
 
             return Response(
