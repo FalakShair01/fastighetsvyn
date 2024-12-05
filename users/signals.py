@@ -38,7 +38,7 @@ def create_trial_subscription(sender, instance, created, **kwargs):
     if created:
         if instance.role == "USER":
             # Calculate end date
-            end_date=timezone.now() + timedelta(minutes=settings.TRIAL_DURATION)
+            end_date=timezone.now() + timedelta(days=settings.TRIAL_DURATION)
             
             # Create trial subscription
             Subscription.objects.create(
