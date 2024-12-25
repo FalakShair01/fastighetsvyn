@@ -182,18 +182,12 @@ EMAIL_PORT = 587
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    # 'http://localhost:3000',
+    # 'http://127.0.0.1:3000',
     'https://fastighetsvyn.vercel.app',
     'https://fastighetsvyn.se',
     'https://fastvyn.se'
 ]
-# CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_HEADERS = [
-#     "content-type",
-#     "Authorization",
-# ]
-# CORS_ALLOW_ALL_ORIGINS = True
 
 # Set this Domain to generate read blog link
 # FRONTEND_DOMAIN = 'http://localhost:3000'
