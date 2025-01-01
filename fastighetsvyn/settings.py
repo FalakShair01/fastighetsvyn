@@ -28,15 +28,14 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    # 'fastighetsvyn.vercel.app',
-    # 'fastighetsvyn.se',
-    # 'fastvyn.se',
-    # 'localhost',
-    # '127.0.0.1',
-    "*"
-]
-
+# ALLOWED_HOSTS = [
+#     # 'fastighetsvyn.vercel.app',
+#     # 'fastighetsvyn.se',
+#     # 'fastvyn.se',
+#     # 'localhost',
+#     # '127.0.0.1',
+# ]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -189,8 +188,8 @@ EMAIL_PORT = 587
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    # 'http://localhost:3000',
-    # 'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'https://fastighetsvyn.vercel.app',
     'https://fastighetsvyn.se',
     'https://fastvyn.se'
