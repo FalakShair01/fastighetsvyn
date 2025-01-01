@@ -29,11 +29,12 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'fastighetsvyn.vercel.app',
-    'fastighetsvyn.se',
-    'fastvyn.se',
+    # 'fastighetsvyn.vercel.app',
+    # 'fastighetsvyn.se',
+    # 'fastvyn.se',
     # 'localhost',
     # '127.0.0.1',
+    "*"
 ]
 
 
