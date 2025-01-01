@@ -194,7 +194,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://fastighetsvyn.se',
     'https://fastvyn.se'
 ]
-CORS_ALLOW_CREDENTIALS = True
 
 # Set this Domain to generate read blog link
 # FRONTEND_DOMAIN = 'http://localhost:3000'
