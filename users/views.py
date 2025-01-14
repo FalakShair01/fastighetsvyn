@@ -49,6 +49,7 @@ class UserViewset(viewsets.ModelViewSet):
 
         # Set the generated password in the request data
         request.data["password"] = generated_password
+        request.data["confirm_password"] = generated_password
 
         # # add this true because user is added by admin
         request.data["is_verified"] = True
