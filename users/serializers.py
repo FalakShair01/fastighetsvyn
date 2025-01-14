@@ -14,7 +14,7 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
